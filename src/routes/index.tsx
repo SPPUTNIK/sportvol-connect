@@ -1,24 +1,92 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { Nav } from "@/components/site/Nav";
+import { Hero } from "@/components/site/Hero";
+import { TrustedBy } from "@/components/site/TrustedBy";
+import { Mission } from "@/components/site/Mission";
+import { WhyVolunteer } from "@/components/site/WhyVolunteer";
+import { Events } from "@/components/site/Events";
+import { Journey } from "@/components/site/Journey";
+import { Impact } from "@/components/site/Impact";
+import { Stories } from "@/components/site/Stories";
+import { Gallery } from "@/components/site/Gallery";
+import { Faq } from "@/components/site/Faq";
+import { CallToAction, Footer } from "@/components/site/CallToAction";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+const title = "SportVol Morocco — Sports Volunteer Platform";
+const description =
+  "Join thousands of volunteers creating unforgettable sporting events across Morocco. Find events, get certified hours and build your sports career.";
+
 export const Route = createFileRoute("/")({
   component: Index,
+  head: () => ({
+    meta: [
+      { title },
+      { name: "description", content: description },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "/" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [{ rel: "canonical", href: "/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "SportVol Morocco",
+          description,
+          areaServed: "MA",
+        }),
+      },
+    ],
+  }),
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
+  useEffect(() => {
+    let lenis: { destroy: () => void; raf: (t: number) => void } | null = null;
+    let raf = 0;
+    let cancelled = false;
+
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      import("lenis").then(({ default: Lenis }) => {
+        if (cancelled) return;
+        lenis = new Lenis({ duration: 1.1, smoothWheel: true });
+        const loop = (time: number) => {
+          lenis?.raf(time);
+          raf = requestAnimationFrame(loop);
+        };
+        raf = requestAnimationFrame(loop);
+      });
+    }
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf);
+      lenis?.destroy();
+    };
+  }, []);
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="bg-background">
+      <Nav />
+      <main>
+        <Hero />
+        <TrustedBy />
+        <Mission />
+        <WhyVolunteer />
+        <Events />
+        <Journey />
+        <Impact />
+        <Stories />
+        <Gallery />
+        <Faq />
+        <CallToAction />
+      </main>
+      <Footer />
     </div>
   );
 }
