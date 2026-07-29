@@ -52,7 +52,28 @@ export function Gallery() {
               </figure>
             </Reveal>
           ))}
+
+          <Reveal delay={0.3} className="sm:col-span-4">
+            <div className="ink-panel flex h-full flex-col justify-between rounded-2xl p-8">
+              <p className="eyebrow">Next season</p>
+              <div className="mt-10">
+                <p className="font-display text-5xl font-semibold tracking-tight text-ink-foreground">
+                  42
+                </p>
+                <p className="mt-3 max-w-[14rem] text-sm leading-relaxed text-ink-foreground/60">
+                  events already open for volunteer applications across twelve regions.
+                </p>
+              </div>
+              <a
+                href="#events"
+                className="mt-10 inline-flex w-fit items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-transform duration-500 hover:-translate-y-0.5"
+              >
+                Browse events
+              </a>
+            </div>
+          </Reveal>
         </div>
+
       </div>
     </section>
   );
