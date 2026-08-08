@@ -71,7 +71,7 @@ function Index() {
   }, []);
 
   return (
-    <div className="bg-background">
+    <div>
       <Nav />
       <main>
         <Hero />
