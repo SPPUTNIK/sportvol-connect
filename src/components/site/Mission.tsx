@@ -16,7 +16,7 @@ export function Mission() {
   const y = useTransform(scrollYProgress, [0, 1], ["-8%", "8%"]);
 
   return (
-    <section id="mission" ref={ref} className="relative bg-background/80 py-24 lg:py-36">
+    <section id="mission" ref={ref} className="relative bg-background/60 py-24 lg:py-36">
       <div className="shell grid items-center gap-14 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
         <div>
           <Reveal>

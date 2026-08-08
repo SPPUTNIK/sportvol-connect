@@ -43,7 +43,7 @@ const benefits = [
 
 export function WhyVolunteer() {
   return (
-    <section className="relative bg-sand/80 py-24 lg:py-32">
+    <section className="relative bg-sand/60 py-24 lg:py-32">
       <div className="shell">
         <div className="max-w-3xl">
           <Reveal>
