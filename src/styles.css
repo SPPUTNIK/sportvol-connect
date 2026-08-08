@@ -6,7 +6,7 @@
 
 /*
  * SportVol Morocco — editorial sports-tech design system.
- * Ink-first neutrals, electric green accent, cobalt + gold support.
+ * Zellij-inspired: deep Moroccan green, terracotta red, warm sand.
  */
 
 @theme inline {
@@ -56,86 +56,87 @@
 :root {
   --radius: 0.75rem;
 
-  --background: oklch(0.995 0.002 106);
-  --foreground: oklch(0.21 0.037 265.6);
+  --background: oklch(0.99 0.006 106);
+  --foreground: oklch(0.22 0.032 155);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.21 0.037 265.6);
+  --card-foreground: oklch(0.22 0.032 155);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.21 0.037 265.6);
+  --popover-foreground: oklch(0.22 0.032 155);
 
-  /* #0F172A */
-  --ink: oklch(0.208 0.042 265.755);
-  --ink-soft: oklch(0.268 0.04 264);
-  --ink-foreground: oklch(0.985 0.002 247);
+  /* deep zellij green ink */
+  --ink: oklch(0.215 0.048 158);
+  --ink-soft: oklch(0.275 0.05 158);
+  --ink-foreground: oklch(0.98 0.008 100);
 
-  /* #22C55E */
-  --primary: oklch(0.752 0.194 149.6);
-  --primary-foreground: oklch(0.19 0.04 160);
+  /* Moroccan green #0F8A55 */
+  --primary: oklch(0.62 0.145 158);
+  --primary-foreground: oklch(0.985 0.01 120);
 
-  --secondary: oklch(0.965 0.004 247);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.966 0.004 247);
-  --muted-foreground: oklch(0.55 0.028 258);
-  --accent: oklch(0.752 0.194 149.6);
-  --accent-foreground: oklch(0.19 0.04 160);
+  --secondary: oklch(0.962 0.01 120);
+  --secondary-foreground: oklch(0.215 0.048 158);
+  --muted: oklch(0.964 0.008 110);
+  --muted-foreground: oklch(0.53 0.028 155);
+  /* zellij red #C1272D */
+  --accent: oklch(0.53 0.196 27.5);
+  --accent-foreground: oklch(0.98 0.01 90);
 
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.53 0.196 27.5);
   --destructive-foreground: oklch(0.985 0.002 247);
 
-  --border: oklch(0.922 0.008 255);
-  --input: oklch(0.922 0.008 255);
-  --ring: oklch(0.752 0.194 149.6);
+  --border: oklch(0.918 0.012 140);
+  --input: oklch(0.918 0.012 140);
+  --ring: oklch(0.62 0.145 158);
 
-  /* #F5F3EE-ish warm sand */
-  --sand: oklch(0.968 0.008 95);
-  /* #2563EB */
-  --cobalt: oklch(0.546 0.215 262.9);
-  /* #F59E0B */
-  --gold: oklch(0.769 0.157 70.1);
+  /* warm sand */
+  --sand: oklch(0.965 0.018 85);
+  /* terracotta red (replaces cobalt) */
+  --cobalt: oklch(0.53 0.196 27.5);
+  /* saffron */
+  --gold: oklch(0.78 0.152 72);
 
   --hairline: oklch(0 0 0 / 8%);
   --hairline-invert: oklch(1 0 0 / 12%);
 
   --gradient-ink: linear-gradient(
     160deg,
-    oklch(0.208 0.042 265.755) 0%,
-    oklch(0.17 0.035 265) 55%,
-    oklch(0.23 0.05 250) 100%
+    oklch(0.215 0.048 158) 0%,
+    oklch(0.17 0.04 160) 55%,
+    oklch(0.26 0.06 150) 100%
   );
   --gradient-accent: linear-gradient(
     100deg,
-    oklch(0.752 0.194 149.6) 0%,
-    oklch(0.82 0.16 160) 100%
+    oklch(0.62 0.145 158) 0%,
+    oklch(0.62 0.19 30) 100%
   );
   --gradient-veil: linear-gradient(
     180deg,
-    oklch(0.15 0.03 265 / 0.82) 0%,
-    oklch(0.15 0.03 265 / 0.45) 40%,
-    oklch(0.13 0.03 265 / 0.92) 100%
+    oklch(0.16 0.035 158 / 0.82) 0%,
+    oklch(0.16 0.035 158 / 0.45) 40%,
+    oklch(0.14 0.032 158 / 0.92) 100%
   );
 
   --shadow-float:
-    0 1px 2px oklch(0.2 0.04 265 / 0.06), 0 24px 60px -24px oklch(0.2 0.04 265 / 0.28);
+    0 1px 2px oklch(0.2 0.04 158 / 0.06), 0 24px 60px -24px oklch(0.2 0.04 158 / 0.28);
   --shadow-lift:
-    0 2px 4px oklch(0.2 0.04 265 / 0.05), 0 40px 80px -30px oklch(0.2 0.04 265 / 0.4);
+    0 2px 4px oklch(0.2 0.04 158 / 0.05), 0 40px 80px -30px oklch(0.2 0.04 158 / 0.4);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark {
-  --background: oklch(0.17 0.035 265);
-  --foreground: oklch(0.985 0.002 247);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.985 0.002 247);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.985 0.002 247);
-  --secondary: oklch(0.268 0.04 264);
-  --secondary-foreground: oklch(0.985 0.002 247);
-  --muted: oklch(0.268 0.04 264);
-  --muted-foreground: oklch(0.72 0.03 258);
+  --background: oklch(0.17 0.04 158);
+  --foreground: oklch(0.98 0.008 100);
+  --card: oklch(0.215 0.048 158);
+  --card-foreground: oklch(0.98 0.008 100);
+  --popover: oklch(0.215 0.048 158);
+  --popover-foreground: oklch(0.98 0.008 100);
+  --secondary: oklch(0.275 0.05 158);
+  --secondary-foreground: oklch(0.98 0.008 100);
+  --muted: oklch(0.275 0.05 158);
+  --muted-foreground: oklch(0.73 0.03 155);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
-  --sand: oklch(0.24 0.03 265);
+  --sand: oklch(0.25 0.035 158);
   --hairline: oklch(1 0 0 / 12%);
 }
 
@@ -248,6 +249,19 @@
   background-image:
     linear-gradient(to right, var(--hairline-invert) 1px, transparent 1px);
   background-size: 25% 100%;
+}
+
+/* Moroccan zellij tile lattice */
+@utility zellij {
+  background-image:
+    repeating-conic-gradient(
+      from 45deg,
+      oklch(1 0 0 / 0.05) 0deg 90deg,
+      transparent 90deg 180deg
+    ),
+    linear-gradient(45deg, transparent 46%, var(--hairline-invert) 46% 54%, transparent 54%),
+    linear-gradient(-45deg, transparent 46%, var(--hairline-invert) 46% 54%, transparent 54%);
+  background-size: 96px 96px, 96px 96px, 96px 96px;
 }
 
 @utility lift {
