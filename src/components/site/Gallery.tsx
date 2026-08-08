@@ -15,7 +15,7 @@ const items = [
 
 export function Gallery() {
   return (
-    <section className="bg-background/60 py-24 lg:py-32">
+    <section className="bg-background/70 py-24 lg:py-32">
       <div className="shell">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <Reveal>
