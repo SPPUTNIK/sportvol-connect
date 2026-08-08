@@ -12,7 +12,7 @@ const steps = [
 
 export function Journey() {
   return (
-    <section id="journey" className="bg-background py-24 lg:py-32">
+    <section id="journey" className="bg-background/80 py-24 lg:py-32">
       <div className="shell grid gap-16 lg:grid-cols-[0.7fr_1.3fr]">
         <div className="lg:sticky lg:top-32 lg:self-start">
           <Reveal>
