@@ -33,7 +33,9 @@ export function Hero() {
         style={{ backgroundImage: "var(--gradient-veil)" }}
         aria-hidden
       />
-      <div className="absolute inset-0 hairline-grid opacity-40" aria-hidden />
+      <div className="absolute inset-0 zellij opacity-50" aria-hidden />
+      <div className="absolute inset-0 hairline-grid opacity-25" aria-hidden />
+
 
       <motion.div
         style={{ opacity: fade }}
