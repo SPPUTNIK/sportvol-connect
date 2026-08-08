@@ -157,6 +157,25 @@
     font-feature-settings: "cv02", "cv03", "cv04", "ss01";
   }
 
+  /* Moroccan zellij pattern behind the whole site */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: url("/__l5e/assets-v1/f5e1cfbd-08be-4b66-9ba0-d6e381eb9d10/zellij-pattern.png");
+    background-size: 720px auto;
+    background-repeat: repeat;
+    opacity: 0.3;
+  }
+
+  body > * {
+    position: relative;
+    z-index: 1;
+  }
+
+
   h1,
   h2,
   h3,

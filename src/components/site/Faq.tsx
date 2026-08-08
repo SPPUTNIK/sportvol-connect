@@ -30,7 +30,7 @@ export function Faq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="bg-sand py-24 lg:py-32">
+    <section id="faq" className="bg-sand/70 py-24 lg:py-32">
       <div className="shell grid gap-14 lg:grid-cols-[0.6fr_1.4fr] lg:gap-20">
         <div className="lg:sticky lg:top-32 lg:self-start">
           <Reveal>
