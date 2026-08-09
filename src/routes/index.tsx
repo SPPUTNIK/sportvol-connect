@@ -12,6 +12,8 @@ import { Stories } from "@/components/site/Stories";
 import { Gallery } from "@/components/site/Gallery";
 import { Faq } from "@/components/site/Faq";
 import { CallToAction, Footer } from "@/components/site/CallToAction";
+import { I18nProvider } from "@/lib/i18n";
+
 
 const title = "SportVol Morocco — Sports Volunteer Platform";
 const description =
@@ -71,22 +73,25 @@ function Index() {
   }, []);
 
   return (
-    <div>
-      <Nav />
-      <main>
-        <Hero />
-        <TrustedBy />
-        <Mission />
-        <WhyVolunteer />
-        <Events />
-        <Journey />
-        <Impact />
-        <Stories />
-        <Gallery />
-        <Faq />
-        <CallToAction />
-      </main>
-      <Footer />
-    </div>
+    <I18nProvider>
+      <div>
+        <Nav />
+        <main>
+          <Hero />
+          <TrustedBy />
+          <Mission />
+          <WhyVolunteer />
+          <Events />
+          <Journey />
+          <Impact />
+          <Stories />
+          <Gallery />
+          <Faq />
+          <CallToAction />
+        </main>
+        <Footer />
+      </div>
+    </I18nProvider>
   );
 }
+
