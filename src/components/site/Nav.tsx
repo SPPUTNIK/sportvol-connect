@@ -1,18 +1,21 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Menu, X, Activity } from "lucide-react";
-
-const links = [
-  { label: "Mission", href: "#mission" },
-  { label: "Events", href: "#events" },
-  { label: "Journey", href: "#journey" },
-  { label: "Stories", href: "#stories" },
-  { label: "FAQ", href: "#faq" },
-];
+import { useI18n } from "@/lib/i18n";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const { t } = useI18n();
+
+  const links = [
+    { label: t.nav.mission, href: "#mission" },
+    { label: t.nav.events, href: "#events" },
+    { label: t.nav.journey, href: "#journey" },
+    { label: t.nav.stories, href: "#stories" },
+    { label: t.nav.faq, href: "#faq" },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -20,6 +23,7 @@ export function Nav() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
 
   return (
     <motion.header
