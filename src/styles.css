@@ -283,6 +283,25 @@
   background-size: 96px 96px, 96px 96px, 96px 96px;
 }
 
+/* Photographic zellij tile overlay */
+@utility zellij-tile {
+  background-image: url("/__l5e/assets-v1/f5e1cfbd-08be-4b66-9ba0-d6e381eb9d10/zellij-pattern.png");
+  background-size: 520px auto;
+  background-repeat: repeat;
+}
+
+/* Arabic typography + RTL adjustments */
+[dir="rtl"] body,
+[dir="rtl"] .font-display,
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4 {
+  font-family: "Noto Kufi Arabic", "Inter", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+
 @utility lift {
   transition:
     transform 0.6s var(--ease-out-expo),
