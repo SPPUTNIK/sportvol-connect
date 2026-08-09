@@ -49,8 +49,9 @@ export function Nav() {
                 SportVol
               </span>
               <span className="block font-mono text-[0.6rem] uppercase tracking-[0.28em] text-ink-foreground/55">
-                Morocco
+                {t.nav.tagline}
               </span>
+
             </span>
           </a>
 
@@ -62,25 +63,29 @@ export function Nav() {
                 className="group relative text-sm font-medium text-ink-foreground/70 transition-colors hover:text-ink-foreground"
               >
                 {l.label}
-                <span className="absolute -bottom-1.5 left-0 h-px w-0 bg-primary transition-all duration-500 group-hover:w-full" />
+                <span className="absolute -bottom-1.5 start-0 h-px w-0 bg-primary transition-all duration-500 group-hover:w-full" />
               </a>
             ))}
           </div>
 
           <div className="flex items-center gap-3">
+            <div className="hidden sm:block">
+              <LanguageSwitcher />
+            </div>
             <a
               href="#cta"
               className="hidden rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-transform duration-500 hover:-translate-y-0.5 sm:inline-flex"
             >
-              Join now
+              {t.nav.join}
             </a>
             <button
               onClick={() => setOpen((v) => !v)}
-              aria-label="Toggle menu"
+              aria-label={t.nav.menu}
               className="flex size-10 items-center justify-center rounded-full border border-hairline-invert text-ink-foreground lg:hidden"
             >
               {open ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
+
           </div>
         </nav>
       </div>
