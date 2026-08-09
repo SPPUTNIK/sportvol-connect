@@ -71,22 +71,25 @@ function Index() {
   }, []);
 
   return (
-    <div>
-      <Nav />
-      <main>
-        <Hero />
-        <TrustedBy />
-        <Mission />
-        <WhyVolunteer />
-        <Events />
-        <Journey />
-        <Impact />
-        <Stories />
-        <Gallery />
-        <Faq />
-        <CallToAction />
-      </main>
-      <Footer />
-    </div>
+    <I18nProvider>
+      <div>
+        <Nav />
+        <main>
+          <Hero />
+          <TrustedBy />
+          <Mission />
+          <WhyVolunteer />
+          <Events />
+          <Journey />
+          <Impact />
+          <Stories />
+          <Gallery />
+          <Faq />
+          <CallToAction />
+        </main>
+        <Footer />
+      </div>
+    </I18nProvider>
   );
 }
+
