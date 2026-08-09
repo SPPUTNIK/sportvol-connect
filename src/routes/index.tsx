@@ -12,6 +12,8 @@ import { Stories } from "@/components/site/Stories";
 import { Gallery } from "@/components/site/Gallery";
 import { Faq } from "@/components/site/Faq";
 import { CallToAction, Footer } from "@/components/site/CallToAction";
+import { I18nProvider } from "@/lib/i18n";
+
 
 const title = "SportVol Morocco — Sports Volunteer Platform";
 const description =
