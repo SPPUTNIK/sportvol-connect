@@ -32,6 +32,7 @@ export function Hero() {
         aria-hidden
       />
       <div className="absolute inset-0 zellij opacity-50" aria-hidden />
+      <div className="absolute inset-0 zellij-tile opacity-20 mix-blend-screen" aria-hidden />
       <div className="absolute inset-0 hairline-grid opacity-25" aria-hidden />
 
 
@@ -40,6 +41,15 @@ export function Hero() {
         className="relative z-10 flex min-h-svh flex-col justify-end pb-14 pt-32"
       >
         <div className="shell">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-8 flex lg:hidden"
+          >
+            <LanguageSwitcher />
+          </motion.div>
+
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -47,11 +57,11 @@ export function Hero() {
             className="eyebrow"
           >
             <span className="size-1.5 rounded-full bg-primary" />
-            Together, every event is possible
+            {t.hero.eyebrow}
           </motion.p>
 
           <h1 className="display-xl mt-6 max-w-5xl text-ink-foreground">
-            {["Morocco's Largest", "Sports Volunteer"].map((line, i) => (
+            {t.hero.titleLines.map((line, i) => (
               <span key={line} className="block overflow-hidden">
                 <motion.span
                   className="block"
@@ -74,7 +84,7 @@ export function Hero() {
                 animate={{ y: 0 }}
                 transition={{ delay: 0.65, duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
               >
-                Platform
+                {t.hero.titleAccent}
               </motion.span>
             </span>
           </h1>
@@ -86,8 +96,7 @@ export function Hero() {
             className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between"
           >
             <p className="max-w-md text-base leading-relaxed text-ink-foreground/70">
-              Join thousands of passionate volunteers creating unforgettable sporting
-              events across Morocco — from Rabat's marathon lanes to the Atlas climbs.
+              {t.hero.lead}
             </p>
 
             <div className="flex flex-wrap items-center gap-3">
@@ -95,14 +104,18 @@ export function Hero() {
                 href="#cta"
                 className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-transform duration-500 hover:-translate-y-0.5"
               >
-                Become a volunteer
-                <ArrowRight className="size-4 transition-transform duration-500 group-hover:translate-x-1" />
+                {t.hero.ctaPrimary}
+                <ArrowRight
+                  className={`size-4 transition-transform duration-500 group-hover:translate-x-1 ${
+                    dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : ""
+                  }`}
+                />
               </a>
               <a
                 href="#events"
                 className="glass inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold text-ink-foreground transition-transform duration-500 hover:-translate-y-0.5"
               >
-                Organize an event
+                {t.hero.ctaSecondary}
               </a>
             </div>
           </motion.div>
@@ -128,17 +141,18 @@ export function Hero() {
 
             <a href="#mission" className="group flex shrink-0 items-center gap-3">
               <span className="flex size-12 items-center justify-center rounded-full border border-hairline-invert text-ink-foreground transition-colors duration-500 group-hover:bg-primary group-hover:text-primary-foreground">
-                <Play className="size-4 fill-current" />
+                <Play className={`size-4 fill-current ${dir === "rtl" ? "rotate-180" : ""}`} />
               </span>
-              <span className="text-left">
+              <span className="text-start">
                 <span className="block text-sm font-semibold text-ink-foreground">
-                  Watch the impact
+                  {t.hero.watchTitle}
                 </span>
                 <span className="block text-xs text-ink-foreground/50">
-                  90 seconds inside a race day
+                  {t.hero.watchSub}
                 </span>
               </span>
             </a>
+
           </motion.div>
         </div>
       </motion.div>
