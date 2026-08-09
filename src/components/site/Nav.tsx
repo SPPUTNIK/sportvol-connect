@@ -103,7 +103,11 @@ export function Nav() {
                 {l.label}
               </a>
             ))}
+            <div className="mt-4 sm:hidden">
+              <LanguageSwitcher />
+            </div>
           </div>
+
         </div>
       )}
     </motion.header>
