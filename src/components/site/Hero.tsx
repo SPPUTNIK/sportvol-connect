@@ -2,20 +2,18 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { ArrowRight, Play } from "lucide-react";
 import heroImg from "@/assets/hero.jpg";
-
-const stats = [
-  { value: "12,400+", label: "Active volunteers" },
-  { value: "310", label: "Events staffed" },
-  { value: "64", label: "Partner federations" },
-  { value: "148K", label: "Volunteer hours" },
-];
+import { useI18n } from "@/lib/i18n";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function Hero() {
   const ref = useRef<HTMLDivElement>(null);
+  const { t, dir } = useI18n();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
   const scale = useTransform(scrollYProgress, [0, 1], [1.05, 1.18]);
   const fade = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const stats = t.hero.stats;
+
 
   return (
     <section ref={ref} id="top" className="relative min-h-svh overflow-hidden bg-ink">
