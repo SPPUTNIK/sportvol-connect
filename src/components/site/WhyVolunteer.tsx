@@ -7,53 +7,25 @@ import {
   Users,
 } from "lucide-react";
 import { Reveal, Stagger, StaggerItem } from "./motion";
+import { useI18n } from "@/lib/i18n";
 
-const benefits = [
-  {
-    icon: Compass,
-    title: "Leadership",
-    body: "Run zones, brief crews and take real decisions under real pressure.",
-  },
-  {
-    icon: Users,
-    title: "Network",
-    body: "Stand shoulder to shoulder with federations, clubs and athletes.",
-  },
-  {
-    icon: Sparkles,
-    title: "Experience",
-    body: "Operations know-how you cannot get from a classroom.",
-  },
-  {
-    icon: Award,
-    title: "Certificates",
-    body: "Every verified hour becomes a credential you can actually use.",
-  },
-  {
-    icon: HeartHandshake,
-    title: "Community",
-    body: "A crew that reunites season after season, city after city.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Career",
-    body: "Direct pipeline into event management and sports-tech roles.",
-  },
-];
+const icons = [Compass, Users, Sparkles, Award, HeartHandshake, TrendingUp];
 
 export function WhyVolunteer() {
+  const { t } = useI18n();
+  const benefits = t.why.items.map((b, i) => ({ ...b, icon: icons[i] }));
   return (
     <section className="relative bg-sand/70 py-24 lg:py-32">
       <div className="shell">
         <div className="max-w-3xl">
           <Reveal>
-            <p className="eyebrow">Why volunteer</p>
+            <p className="eyebrow">{t.why.eyebrow}</p>
           </Reveal>
           <Reveal delay={0.05}>
             <h2 className="display-lg mt-6 text-foreground">
-              More than volunteering.
+              {t.why.titleLine}
               <br />
-              <span className="text-muted-foreground">A life experience.</span>
+              <span className="text-muted-foreground">{t.why.titleSub}</span>
             </h2>
           </Reveal>
         </div>

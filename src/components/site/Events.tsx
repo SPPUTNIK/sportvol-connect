@@ -1,57 +1,29 @@
 import { useRef } from "react";
 import { ArrowLeft, ArrowRight, MapPin, Users } from "lucide-react";
 import { Reveal } from "./motion";
+import { useI18n } from "@/lib/i18n";
+import { openJoin } from "@/lib/join";
 import marathon from "@/assets/event-marathon.jpg";
 import cycling from "@/assets/event-cycling.jpg";
 import football from "@/assets/event-football.jpg";
 import basketball from "@/assets/event-basketball.jpg";
 
-const events = [
-  {
-    tag: "Marathon",
-    title: "Rabat Coastal Marathon",
-    city: "Rabat",
-    date: "12 Oct",
-    filled: 84,
-    needed: 120,
-    img: marathon,
-  },
-  {
-    tag: "Football",
-    title: "Atlantic University Cup",
-    city: "Casablanca",
-    date: "19 Oct",
-    filled: 52,
-    needed: 80,
-    img: football,
-  },
-  {
-    tag: "Cycling",
-    title: "Atlas Ridge Challenge",
-    city: "Marrakech",
-    date: "26 Oct",
-    filled: 38,
-    needed: 60,
-    img: cycling,
-  },
-  {
-    tag: "Basketball",
-    title: "Northern League Finals",
-    city: "Tangier",
-    date: "02 Nov",
-    filled: 21,
-    needed: 40,
-    img: basketball,
-  },
+const eventMeta = [
+  { filled: 84, needed: 120, img: marathon },
+  { filled: 52, needed: 80, img: football },
+  { filled: 38, needed: 60, img: cycling },
+  { filled: 21, needed: 40, img: basketball },
 ];
 
 export function Events() {
+  const { t, dir } = useI18n();
+  const events = t.events.items.map((e, i) => ({ ...e, ...eventMeta[i] }));
   const scroller = useRef<HTMLDivElement>(null);
 
-  const scrollBy = (dir: number) => {
+  const scrollBy = (delta: number) => {
     const el = scroller.current;
     if (!el) return;
-    el.scrollBy({ left: dir * (el.clientWidth * 0.6), behavior: "smooth" });
+    el.scrollBy({ left: (dir === "rtl" ? -delta : delta) * (el.clientWidth * 0.6), behavior: "smooth" });
   };
 
   return (
@@ -61,13 +33,10 @@ export function Events() {
         <div className="shell flex flex-wrap items-end justify-between gap-8">
           <div>
             <Reveal>
-              <p className="eyebrow">Upcoming events</p>
-            </Reveal>
-            <Reveal delay={0.05}>
               <h2 className="display-lg mt-6 text-ink-foreground">
-                Don't miss the
+                {t.events.titleLines[0]}
                 <br />
-                next big start line.
+                {t.events.titleLines[1]}
               </h2>
             </Reveal>
           </div>
@@ -75,14 +44,14 @@ export function Events() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => scrollBy(-1)}
-                aria-label="Previous events"
+                aria-label={t.events.prev}
                 className="flex size-11 items-center justify-center rounded-full border border-hairline-invert text-ink-foreground transition-colors duration-500 hover:bg-ink-foreground/10"
               >
                 <ArrowLeft className="size-4" />
               </button>
               <button
                 onClick={() => scrollBy(1)}
-                aria-label="Next events"
+                aria-label={t.events.next}
                 className="flex size-11 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform duration-500 hover:-translate-y-0.5"
               >
                 <ArrowRight className="size-4" />
@@ -111,10 +80,10 @@ export function Events() {
                     height={900}
                     className="size-full object-cover"
                   />
-                  <span className="absolute left-4 top-4 rounded-full bg-primary px-3 py-1 font-mono text-[0.6rem] uppercase tracking-[0.16em] text-primary-foreground">
+                  <span className="absolute start-4 top-4 rounded-full bg-primary px-3 py-1 font-mono text-[0.6rem] uppercase tracking-[0.16em] text-primary-foreground">
                     {e.tag}
                   </span>
-                  <span className="absolute bottom-4 right-4 rounded-xl bg-card px-3 py-2 text-center leading-none">
+                  <span className="absolute bottom-4 end-4 rounded-xl bg-card px-3 py-2 text-center leading-none">
                     <span className="block font-display text-xl font-semibold text-foreground">
                       {e.date.split(" ")[0]}
                     </span>
@@ -133,7 +102,7 @@ export function Events() {
                       <MapPin className="size-3.5" /> {e.city}
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <Users className="size-3.5" /> {e.needed} volunteers needed
+                      <Users className="size-3.5" /> {e.needed} {t.events.needed}
                     </span>
                   </div>
 
@@ -147,15 +116,16 @@ export function Events() {
                   <div className="mt-4 flex items-center justify-between">
                     <p className="text-xs text-muted-foreground">
                       <span className="font-semibold text-foreground">{e.filled}</span> /{" "}
-                      {e.needed} registered
+                      {e.needed} {t.events.registered}
                     </p>
-                    <a
-                      href="#cta"
+                    <button
+                      type="button"
+                      onClick={openJoin}
                       className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
                     >
-                      Apply
+                      {t.events.apply}
                       <ArrowRight className="size-3.5 transition-transform duration-500 group-hover:translate-x-1" />
-                    </a>
+                    </button>
                   </div>
                 </div>
               </article>

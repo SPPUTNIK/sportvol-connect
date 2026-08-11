@@ -13,6 +13,7 @@ import { Gallery } from "@/components/site/Gallery";
 import { Faq } from "@/components/site/Faq";
 import { CallToAction, Footer } from "@/components/site/CallToAction";
 import { I18nProvider } from "@/lib/i18n";
+import { JoinDialog } from "@/components/site/JoinDialog";
 
 
 const title = "SportVol Morocco — Sports Volunteer Platform";
@@ -90,6 +91,7 @@ function Index() {
           <CallToAction />
         </main>
         <Footer />
+        <JoinDialog />
       </div>
     </I18nProvider>
   );

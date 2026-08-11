@@ -1,4 +1,5 @@
 import { Reveal } from "./motion";
+import { useI18n } from "@/lib/i18n";
 import g1 from "@/assets/gal-1.jpg";
 import g2 from "@/assets/gal-2.jpg";
 import g3 from "@/assets/gal-3.jpg";
@@ -14,24 +15,24 @@ const items = [
 ];
 
 export function Gallery() {
+  const { t } = useI18n();
   return (
     <section className="bg-background/70 py-24 lg:py-32">
       <div className="shell">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <Reveal>
             <div>
-              <p className="eyebrow">Field notes</p>
+              <p className="eyebrow">{t.gallery.eyebrow}</p>
               <h2 className="display-md mt-6 text-foreground">
-                Race days, from
+                {t.gallery.titleLines[0]}
                 <br />
-                the inside.
+                {t.gallery.titleLines[1]}
               </h2>
             </div>
           </Reveal>
           <Reveal delay={0.08}>
             <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
-              Twelve regions. Nine disciplines. One crew that shows up before sunrise and
-              leaves after the last athlete.
+{t.gallery.body}
             </p>
           </Reveal>
         </div>
@@ -55,20 +56,20 @@ export function Gallery() {
 
           <Reveal delay={0.3} className="sm:col-span-4">
             <div className="ink-panel flex h-full flex-col justify-between rounded-2xl p-8">
-              <p className="eyebrow">Next season</p>
+              <p className="eyebrow">{t.gallery.nextSeason}</p>
               <div className="mt-10">
                 <p className="font-display text-5xl font-semibold tracking-tight text-ink-foreground">
                   42
                 </p>
                 <p className="mt-3 max-w-[14rem] text-sm leading-relaxed text-ink-foreground/60">
-                  events already open for volunteer applications across twelve regions.
+                  {t.gallery.nextSeasonBody}
                 </p>
               </div>
               <a
                 href="#events"
                 className="mt-10 inline-flex w-fit items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-transform duration-500 hover:-translate-y-0.5"
               >
-                Browse events
+                {t.gallery.browse}
               </a>
             </div>
           </Reveal>

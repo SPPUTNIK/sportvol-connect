@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { ArrowRight, Play } from "lucide-react";
 import heroImg from "@/assets/hero.jpg";
 import { useI18n } from "@/lib/i18n";
+import { openJoin } from "@/lib/join";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function Hero() {
@@ -100,8 +101,9 @@ export function Hero() {
             </p>
 
             <div className="flex flex-wrap items-center gap-3">
-              <a
-                href="#cta"
+              <button
+                type="button"
+                onClick={openJoin}
                 className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-transform duration-500 hover:-translate-y-0.5"
               >
                 {t.hero.ctaPrimary}
@@ -110,13 +112,7 @@ export function Hero() {
                     dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : ""
                   }`}
                 />
-              </a>
-              <a
-                href="#events"
-                className="glass inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold text-ink-foreground transition-transform duration-500 hover:-translate-y-0.5"
-              >
-                {t.hero.ctaSecondary}
-              </a>
+              </button>
             </div>
           </motion.div>
 

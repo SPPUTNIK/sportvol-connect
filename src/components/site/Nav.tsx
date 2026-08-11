@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Menu, X, Activity } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { openJoin } from "@/lib/join";
+import logoAsset from "@/assets/volunsport-logo.png.asset.json";
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -40,18 +42,21 @@ export function Nav() {
         }`}
       >
         <nav className="shell flex h-20 items-center justify-between">
-          <a href="#top" className="flex items-center gap-2.5 text-ink-foreground">
-            <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Activity className="size-5" strokeWidth={2.4} />
-            </span>
+          <a href="#top" className="flex items-center gap-3 text-ink-foreground">
+            <img
+              src={logoAsset.url}
+              alt="VolunSport Morocco logo"
+              width={160}
+              height={90}
+              className="h-11 w-auto"
+            />
             <span className="leading-none">
               <span className="block font-display text-[1.05rem] font-semibold tracking-tight">
-                SportVol
+                VolunSport
               </span>
               <span className="block font-mono text-[0.6rem] uppercase tracking-[0.28em] text-ink-foreground/55">
                 {t.nav.tagline}
               </span>
-
             </span>
           </a>
 
@@ -72,12 +77,13 @@ export function Nav() {
             <div className="hidden sm:block">
               <LanguageSwitcher />
             </div>
-            <a
-              href="#cta"
+            <button
+              type="button"
+              onClick={openJoin}
               className="hidden rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-transform duration-500 hover:-translate-y-0.5 sm:inline-flex"
             >
               {t.nav.join}
-            </a>
+            </button>
             <button
               onClick={() => setOpen((v) => !v)}
               aria-label={t.nav.menu}
@@ -103,8 +109,18 @@ export function Nav() {
                 {l.label}
               </a>
             ))}
-            <div className="mt-4 sm:hidden">
+            <div className="mt-4 flex flex-col gap-4 sm:hidden">
               <LanguageSwitcher />
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  openJoin();
+                }}
+                className="w-fit rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
+              >
+                {t.nav.join}
+              </button>
             </div>
           </div>
 

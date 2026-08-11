@@ -3,8 +3,12 @@ import { useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import ctaImg from "@/assets/cta.jpg";
 import { Reveal } from "./motion";
+import { useI18n } from "@/lib/i18n";
+import { openJoin } from "@/lib/join";
+import logoAsset from "@/assets/volunsport-logo.png.asset.json";
 
 export function CallToAction() {
+  const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], ["-12%", "12%"]);
@@ -27,30 +31,25 @@ export function CallToAction() {
       />
       <div className="shell relative py-28 lg:py-40">
         <Reveal>
-          <p className="eyebrow">Ready when you are</p>
+          <p className="eyebrow">{t.cta.eyebrow}</p>
         </Reveal>
         <Reveal delay={0.05}>
           <h2 className="display-lg mt-6 max-w-3xl text-ink-foreground">
-            Be part of something
+            {t.cta.titleLines[0]}
             <br />
-            bigger than the score.
+            {t.cta.titleLines[1]}
           </h2>
         </Reveal>
         <Reveal delay={0.1}>
           <div className="mt-10 flex flex-wrap gap-3">
-            <a
-              href="#top"
+            <button
+              type="button"
+              onClick={openJoin}
               className="group inline-flex items-center gap-2 rounded-full bg-primary px-7 py-4 text-sm font-semibold text-primary-foreground transition-transform duration-500 hover:-translate-y-0.5"
             >
-              Become a volunteer
+              {t.cta.primary}
               <ArrowRight className="size-4 transition-transform duration-500 group-hover:translate-x-1" />
-            </a>
-            <a
-              href="#events"
-              className="glass inline-flex items-center gap-2 rounded-full px-7 py-4 text-sm font-semibold text-ink-foreground transition-transform duration-500 hover:-translate-y-0.5"
-            >
-              Organize an event
-            </a>
+            </button>
           </div>
         </Reveal>
       </div>
@@ -59,25 +58,30 @@ export function CallToAction() {
 }
 
 export function Footer() {
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
 
-  const columns = [
-    { title: "Platform", links: ["Events", "Volunteers", "Organizations", "About"] },
-    { title: "Resources", links: ["Volunteer guide", "Training", "Journal", "Press"] },
-    { title: "Support", links: ["Help center", "Privacy", "Terms", "Cookies"] },
-  ];
+  const columns = t.footer.columns;
 
   return (
     <footer className="border-t border-hairline-invert bg-ink text-ink-foreground">
       <div className="shell grid gap-14 py-20 lg:grid-cols-[1.2fr_2fr] lg:py-24">
         <div>
-          <p className="font-display text-2xl font-semibold tracking-tight">SportVol</p>
+          <img
+            src={logoAsset.url}
+            alt="VolunSport Morocco logo"
+            width={200}
+            height={112}
+            loading="lazy"
+            className="h-16 w-auto"
+          />
+          <p className="mt-4 font-display text-2xl font-semibold tracking-tight">VolunSport</p>
           <p className="mt-1 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-ink-foreground/45">
-            Morocco
+            {t.nav.tagline}
           </p>
           <p className="mt-6 max-w-xs text-sm leading-relaxed text-ink-foreground/60">
-            The operating layer connecting volunteers with sporting events across Morocco.
+            {t.footer.blurb}
           </p>
 
           <form
@@ -91,7 +95,7 @@ export function Footer() {
               htmlFor="newsletter"
               className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-ink-foreground/45"
             >
-              Stay updated
+              {t.footer.newsletter}
             </label>
             <div className="mt-3 flex items-center gap-2 rounded-full border border-hairline-invert bg-ink-foreground/5 p-1.5 pl-5">
               <input
@@ -100,19 +104,19 @@ export function Footer() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
+                placeholder={t.footer.placeholder}
                 className="w-full bg-transparent text-sm text-ink-foreground outline-none placeholder:text-ink-foreground/35"
               />
               <button
                 type="submit"
-                aria-label="Subscribe"
+                aria-label={t.footer.subscribe}
                 className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform duration-500 hover:-translate-y-0.5"
               >
                 <ArrowRight className="size-4" />
               </button>
             </div>
             {sent && (
-              <p className="mt-3 text-xs text-primary">You're on the list. See you at the start line.</p>
+              <p className="mt-3 text-xs text-primary">{t.footer.sent}</p>
             )}
           </form>
         </div>
@@ -142,8 +146,10 @@ export function Footer() {
 
       <div className="border-t border-hairline-invert">
         <div className="shell flex flex-wrap items-center justify-between gap-3 py-6 text-xs text-ink-foreground/45">
-          <p>© {new Date().getFullYear()} SportVol Morocco. All rights reserved.</p>
-          <p>Built in Casablanca.</p>
+          <p>
+            © {new Date().getFullYear()} VolunSport Morocco. {t.footer.rights}
+          </p>
+          <p>{t.footer.built}</p>
         </div>
       </div>
     </footer>
