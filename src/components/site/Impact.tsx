@@ -1,26 +1,29 @@
 import { Counter } from "./Counter";
 import { Reveal } from "./motion";
+import { useI18n } from "@/lib/i18n";
 
-const numbers = [
-  { to: 12400, suffix: "+", label: "Active volunteers" },
-  { to: 310, suffix: "", label: "Events organized" },
-  { to: 64, suffix: "", label: "Partner organizations" },
-  { to: 148, suffix: "K", label: "Volunteer hours" },
+const figures = [
+  { to: 12400, suffix: "+" },
+  { to: 310, suffix: "" },
+  { to: 64, suffix: "" },
+  { to: 148, suffix: "K" },
 ];
 
 export function Impact() {
+  const { t } = useI18n();
+  const numbers = figures.map((f, i) => ({ ...f, label: t.impact.labels[i] }));
   return (
     <section className="ink-panel relative overflow-hidden">
       <div className="shell grid gap-0 lg:grid-cols-2">
         <div className="border-b border-hairline-invert py-20 lg:border-b-0 lg:border-r lg:py-28 lg:pr-16">
           <Reveal>
-            <p className="eyebrow">Our impact</p>
+            <p className="eyebrow">{t.impact.eyebrow}</p>
           </Reveal>
           <Reveal delay={0.05}>
             <h2 className="display-md mt-6 text-ink-foreground">
-              Impact, in numbers
+              {t.impact.titleLines[0]}
               <br />
-              that keep moving.
+              {t.impact.titleLines[1]}
             </h2>
           </Reveal>
 
@@ -40,12 +43,11 @@ export function Impact() {
 
         <div className="flex flex-col justify-center py-20 lg:py-28 lg:pl-16">
           <Reveal>
-            <p className="eyebrow">Growth curve</p>
+            <p className="eyebrow">{t.impact.growthEyebrow}</p>
           </Reveal>
           <Reveal delay={0.05}>
             <p className="mt-6 max-w-md text-lg leading-relaxed text-ink-foreground/70">
-              Four seasons ago SportVol staffed a single city race. Today it coordinates
-              crews across twelve regions, with retention above 70% year over year.
+{t.impact.growthBody}
             </p>
           </Reveal>
 

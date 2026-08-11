@@ -2,29 +2,11 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Quote } from "lucide-react";
 import { Reveal } from "./motion";
-
-const stories = [
-  {
-    quote:
-      "I signed up for one weekend at the coastal marathon and ended up leading a hydration zone of nineteen people. It rewired how I see my own city.",
-    name: "Yassine El Amrani",
-    role: "Volunteer since 2022 · Rabat",
-  },
-  {
-    quote:
-      "The briefing packs are better than at events I've been paid to work. Everyone knows their zone before the sun comes up.",
-    name: "Salma Bennani",
-    role: "Zone lead · Casablanca",
-  },
-  {
-    quote:
-      "My certified hours went straight onto my CV. Three months later I was hired by a race organizer in Marrakech.",
-    name: "Omar Tazi",
-    role: "Volunteer since 2023 · Marrakech",
-  },
-];
+import { useI18n } from "@/lib/i18n";
 
 export function Stories() {
+  const { t } = useI18n();
+  const stories = t.stories.items;
   const [i, setI] = useState(0);
   const go = (d: number) => setI((v) => (v + d + stories.length) % stories.length);
   const s = stories[i];
@@ -34,27 +16,27 @@ export function Stories() {
       <div className="shell grid gap-14 lg:grid-cols-[0.6fr_1.4fr] lg:gap-20">
         <div>
           <Reveal>
-            <p className="eyebrow">Volunteer stories</p>
+            <p className="eyebrow">{t.stories.eyebrow}</p>
           </Reveal>
           <Reveal delay={0.05}>
             <h2 className="display-md mt-6 text-foreground">
-              What the crew
+              {t.stories.titleLines[0]}
               <br />
-              actually says.
+              {t.stories.titleLines[1]}
             </h2>
           </Reveal>
           <Reveal delay={0.1}>
             <div className="mt-10 flex items-center gap-3">
               <button
                 onClick={() => go(-1)}
-                aria-label="Previous story"
+                aria-label={t.stories.prev}
                 className="flex size-11 items-center justify-center rounded-full border border-border bg-background text-foreground transition-transform duration-500 hover:-translate-y-0.5"
               >
                 <ArrowLeft className="size-4" />
               </button>
               <button
                 onClick={() => go(1)}
-                aria-label="Next story"
+                aria-label={t.stories.next}
                 className="flex size-11 items-center justify-center rounded-full bg-ink text-ink-foreground transition-transform duration-500 hover:-translate-y-0.5"
               >
                 <ArrowRight className="size-4" />

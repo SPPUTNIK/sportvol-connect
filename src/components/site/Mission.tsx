@@ -3,14 +3,11 @@ import { useRef } from "react";
 import { ArrowUpRight, Check } from "lucide-react";
 import missionImg from "@/assets/mission.jpg";
 import { Reveal } from "./motion";
-
-const points = [
-  "Match volunteers to events by skill, city and availability",
-  "Federation-grade scheduling, briefings and accreditation",
-  "Verified hours that turn into real certificates",
-];
+import { useI18n } from "@/lib/i18n";
 
 export function Mission() {
+  const { t } = useI18n();
+  const points = t.mission.points;
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], ["-8%", "8%"]);
@@ -20,20 +17,18 @@ export function Mission() {
       <div className="shell grid items-center gap-14 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
         <div>
           <Reveal>
-            <p className="eyebrow">Our mission</p>
+            <p className="eyebrow">{t.mission.eyebrow}</p>
           </Reveal>
           <Reveal delay={0.05}>
             <h2 className="display-lg mt-6 text-foreground">
-              We believe sport runs
+              {t.mission.titleLines[0]}
               <br />
-              on the people beside it.
+              {t.mission.titleLines[1]}
             </h2>
           </Reveal>
           <Reveal delay={0.1}>
             <p className="mt-7 max-w-md text-base leading-relaxed text-muted-foreground">
-              SportVol is the operating layer between organizers and the people who make
-              race day happen. Not charity — infrastructure. Built in Morocco, for the
-              clubs, federations and cities shaping its sporting decade.
+{t.mission.body}
             </p>
           </Reveal>
 
@@ -55,7 +50,7 @@ export function Mission() {
               href="#journey"
               className="group mt-10 inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3.5 text-sm font-semibold text-ink-foreground transition-transform duration-500 hover:-translate-y-0.5"
             >
-              How it works
+              {t.mission.cta}
               <ArrowUpRight className="size-4 transition-transform duration-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </a>
           </Reveal>
@@ -82,7 +77,7 @@ export function Mission() {
             className="glass-light absolute -bottom-8 -left-4 w-[16rem] rounded-2xl p-5 shadow-[var(--shadow-float)] sm:left-8"
           >
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">
-              Lives impacted
+              {t.mission.cardLabel}
             </p>
             <p className="mt-2 font-display text-4xl font-semibold tracking-tight text-foreground">
               95,400
@@ -99,7 +94,7 @@ export function Mission() {
               </svg>
             </div>
             <p className="mt-1 text-xs font-medium text-primary">
-              +36% <span className="text-muted-foreground">vs last season</span>
+              +36% <span className="text-muted-foreground">{t.mission.cardDelta}</span>
             </p>
           </motion.div>
         </Reveal>

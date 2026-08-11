@@ -2,31 +2,11 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { Reveal } from "./motion";
-
-const faqs = [
-  {
-    q: "Do I need sports experience to volunteer?",
-    a: "No. Most roles need reliability and a good attitude, not athletic background. Every event includes a short online module and an on-site briefing.",
-  },
-  {
-    q: "How much time does a typical event take?",
-    a: "Between four and ten hours, usually across a single day. You choose the shifts that match your availability when you apply.",
-  },
-  {
-    q: "Is volunteering paid?",
-    a: "Roles are unpaid, but organizers cover meals, transport in most cities and full kit. Your hours are certified and count toward the SportVol credential.",
-  },
-  {
-    q: "Can my club or federation list an event?",
-    a: "Yes. Organizers get a scheduling workspace, accreditation tools and access to the volunteer pool filtered by skill, language and city.",
-  },
-  {
-    q: "What languages are supported?",
-    a: "Darija, Arabic, French and English across briefings, the platform and event documentation.",
-  },
-];
+import { useI18n } from "@/lib/i18n";
 
 export function Faq() {
+  const { t } = useI18n();
+  const faqs = t.faq.items;
   const [open, setOpen] = useState<number | null>(0);
 
   return (
@@ -34,13 +14,13 @@ export function Faq() {
       <div className="shell grid gap-14 lg:grid-cols-[0.6fr_1.4fr] lg:gap-20">
         <div className="lg:sticky lg:top-32 lg:self-start">
           <Reveal>
-            <p className="eyebrow">Questions</p>
+            <p className="eyebrow">{t.faq.eyebrow}</p>
           </Reveal>
           <Reveal delay={0.05}>
             <h2 className="display-md mt-6 text-foreground">
-              Everything you
+              {t.faq.titleLines[0]}
               <br />
-              might ask.
+              {t.faq.titleLines[1]}
             </h2>
           </Reveal>
         </div>
@@ -54,7 +34,7 @@ export function Faq() {
                   <button
                     onClick={() => setOpen(isOpen ? null : i)}
                     aria-expanded={isOpen}
-                    className="flex w-full items-center justify-between gap-8 py-7 text-left"
+                    className="flex w-full items-center justify-between gap-8 py-7 text-start"
                   >
                     <span className="font-display text-lg font-medium tracking-tight text-foreground lg:text-xl">
                       {f.q}
