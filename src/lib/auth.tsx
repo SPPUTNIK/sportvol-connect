@@ -27,7 +27,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 async function fetchProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
-    .from<Profile>("profiles")
+    .from("profiles")
     .select("*")
     .eq("id", userId)
     .single();
@@ -37,7 +37,7 @@ async function fetchProfile(userId: string): Promise<Profile | null> {
     return null;
   }
 
-  return data;
+  return data as Profile;
 }
 
 export function useAuth() {
@@ -155,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const { error, data } = await supabase
-      .from<Profile>("profiles")
+      .from("profiles")
       .upsert(payload, { onConflict: "id" });
 
     if (!error && data?.[0]) {

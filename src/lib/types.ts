@@ -63,3 +63,82 @@ export interface Event {
   featured: boolean;
   event_roles?: EventRole[];
 }
+
+export type ApplicationStatus = "pending" | "accepted" | "waitlisted" | "rejected" | "withdrawn";
+
+export interface Application {
+  id: string;
+  event_id: string;
+  event_title: string;
+  role_name: string;
+  submitted_at: string;
+  status: ApplicationStatus;
+  message: string | null;
+}
+
+export interface Shift {
+  id: string;
+  event_id: string;
+  event_title: string;
+  role_name: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  location: string;
+  instructions: string | null;
+}
+
+export interface TrainingResource {
+  type: string;
+  title: string;
+  url: string;
+}
+
+export interface Training {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  resources: TrainingResource[];
+}
+
+export interface AttendanceRecord {
+  id: string;
+  event_title: string;
+  role_name: string;
+  date: string;
+  status: string;
+  check_in_time: string | null;
+  check_out_time: string | null;
+}
+
+export interface Certificate {
+  id: string;
+  event_title: string;
+  role_name: string;
+  hours: number;
+  date: string;
+  certificate_id: string;
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  body: string;
+  date: string;
+  event_id: string | null;
+  read: boolean;
+  category: string;
+}
+
+export interface LabelledValue {
+  label: string;
+  value: number;
+}
+
+export interface VolunteerHours {
+  total: number;
+  current_year: number;
+  by_sport: LabelledValue[];
+  by_event: LabelledValue[];
+}

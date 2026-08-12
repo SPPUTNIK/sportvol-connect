@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { I18nProvider, useI18n } from "@/lib/i18n";
 import { getEventBySlug } from "@/services/mockService";
 import { RoleCard } from "@/components/ui/role-card";
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/events/$slug")({
 
 function EventDetails() {
   const { t } = useI18n();
-  const params = useParams();
+  const params = Route.useParams();
   const [event, setEvent] = useState<Awaited<ReturnType<typeof getEventBySlug>>>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
