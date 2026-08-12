@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { I18nProvider, useI18n } from "@/lib/i18n";
-import { getEventBySlug } from "@/services/mockService";
+import { useAuth } from "@/lib/auth";
+import { getEventBySlug, applyForRole } from "@/services/mockService";
 import { RoleCard } from "@/components/ui/role-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
@@ -25,7 +26,9 @@ function EventDetails() {
   const [availability, setAvailability] = useState("");
   const [experience, setExperience] = useState("");
   const [motivation, setMotivation] = useState("");
+  const { profile } = useAuth();
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     getEventBySlug(params.slug)
@@ -46,9 +49,26 @@ function EventDetails() {
   const filled = event.event_roles?.reduce((sum, role) => sum + role.filled_positions, 0) ?? 0;
   const remaining = event.total_volunteers_needed - filled;
 
-  const handleSubmit = (eventSubmit: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (eventSubmit: React.FormEvent<HTMLFormElement>) => {
     eventSubmit.preventDefault();
-    setSubmitted(true);
+    setSubmitError(null);
+
+    if (!profile) {
+      setSubmitError("Sign in to apply for this event.");
+      return;
+    }
+
+    if (!selectedRole) {
+      setSubmitError("Please select a volunteer role before submitting.");
+      return;
+    }
+
+    try {
+      await applyForRole(event.id, selectedRole.id, availability, experience, motivation);
+      setSubmitted(true);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Unable to submit your application.");
+    }
   };
 
   return (
