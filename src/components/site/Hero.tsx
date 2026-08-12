@@ -3,8 +3,9 @@ import { useRef } from "react";
 import { ArrowRight, Play } from "lucide-react";
 import heroImg from "@/assets/hero.jpg";
 import { useI18n } from "@/lib/i18n";
-import { openJoin } from "@/lib/join";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { Link } from "@tanstack/react-router";
+
 
 export function Hero() {
   const ref = useRef<HTMLDivElement>(null);
@@ -101,9 +102,8 @@ export function Hero() {
             </p>
 
             <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={openJoin}
+              <Link
+                to="/register"
                 className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-transform duration-500 hover:-translate-y-0.5"
               >
                 {t.hero.ctaPrimary}
@@ -112,7 +112,7 @@ export function Hero() {
                     dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : ""
                   }`}
                 />
-              </button>
+              </Link>
             </div>
           </motion.div>
 

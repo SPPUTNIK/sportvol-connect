@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 import ctaImg from "@/assets/cta.jpg";
 import { Reveal } from "./motion";
 import { useI18n } from "@/lib/i18n";
-import { openJoin } from "@/lib/join";
+import { Link } from "@tanstack/react-router";
 import logoAsset from "@/assets/volunsport-logo.png";
 
 export function CallToAction() {
@@ -41,15 +41,14 @@ export function CallToAction() {
           </h2>
         </Reveal>
         <Reveal delay={0.1}>
-          <div className="mt-10 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={openJoin}
+            <div className="mt-10 flex flex-wrap gap-3">
+            <Link
+              to="/register"
               className="group inline-flex items-center gap-2 rounded-full bg-primary px-7 py-4 text-sm font-semibold text-primary-foreground transition-transform duration-500 hover:-translate-y-0.5"
             >
               {t.cta.primary}
               <ArrowRight className="size-4 transition-transform duration-500 group-hover:translate-x-1" />
-            </button>
+            </Link>
           </div>
         </Reveal>
       </div>

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import { openJoin } from "@/lib/join";
 import logoAsset from "@/assets/volunsport-logo.png";
 
 export function Nav() {
@@ -77,13 +77,12 @@ export function Nav() {
             <div className="hidden sm:block">
               <LanguageSwitcher />
             </div>
-            <button
-              type="button"
-              onClick={openJoin}
+            <Link
+              to="/register"
               className="hidden rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-transform duration-500 hover:-translate-y-0.5 sm:inline-flex"
             >
               {t.nav.join}
-            </button>
+            </Link>
             <button
               onClick={() => setOpen((v) => !v)}
               aria-label={t.nav.menu}
@@ -111,16 +110,12 @@ export function Nav() {
             ))}
             <div className="mt-4 flex flex-col gap-4 sm:hidden">
               <LanguageSwitcher />
-              <button
-                type="button"
-                onClick={() => {
-                  setOpen(false);
-                  openJoin();
-                }}
+              <Link
+                to="/register"
                 className="w-fit rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
               >
                 {t.nav.join}
-              </button>
+              </Link>
             </div>
           </div>
 

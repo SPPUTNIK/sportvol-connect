@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { ArrowLeft, ArrowRight, MapPin, Users } from "lucide-react";
 import { Reveal } from "./motion";
 import { useI18n } from "@/lib/i18n";
-import { openJoin } from "@/lib/join";
+import { Link } from "@tanstack/react-router";
 import marathon from "@/assets/event-marathon.jpg";
 import cycling from "@/assets/event-cycling.jpg";
 import football from "@/assets/event-football.jpg";
@@ -118,14 +118,13 @@ export function Events() {
                       <span className="font-semibold text-foreground">{e.filled}</span> /{" "}
                       {e.needed} {t.events.registered}
                     </p>
-                    <button
-                      type="button"
-                      onClick={openJoin}
+                    <Link
+                      to="/register"
                       className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
                     >
                       {t.events.apply}
                       <ArrowRight className="size-3.5 transition-transform duration-500 group-hover:translate-x-1" />
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </article>

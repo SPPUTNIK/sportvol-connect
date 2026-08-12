@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { Reveal, Stagger, StaggerItem } from "./motion";
 import { useI18n } from "@/lib/i18n";
-import { openJoin } from "@/lib/join";
+import { Link } from "@tanstack/react-router";
 
 export function Journey() {
   const { t } = useI18n();
@@ -26,14 +26,13 @@ export function Journey() {
             </p>
           </Reveal>
           <Reveal delay={0.15}>
-            <button
-              type="button"
-              onClick={openJoin}
+            <Link
+              to="/register"
               className="group mt-8 inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3.5 text-sm font-semibold text-ink-foreground transition-transform duration-500 hover:-translate-y-0.5"
             >
               {t.journey.cta}
               <ArrowRight className="size-4 transition-transform duration-500 group-hover:translate-x-1" />
-            </button>
+            </Link>
           </Reveal>
         </div>
 
