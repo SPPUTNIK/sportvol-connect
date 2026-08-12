@@ -41,7 +41,8 @@ export function EventCard({ event }: { event: Event }) {
         <div className="flex items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">{filled} / {event.total_volunteers_needed} filled</p>
           <Link
-            to={`/events/${event.slug}`}
+            to="/events/$slug"
+            params={{ slug: event.slug }}
             className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
           >
             View role
