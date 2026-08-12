@@ -1,4 +1,4 @@
-import {
+﻿import {
   createContext,
   useContext,
   useEffect,
@@ -155,14 +155,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: new Error("Not authenticated") };
     }
 
-    const payload = {
-      ...updates,
-      id: user.id,
-    };
-
-    const { error, data } = await supabase
-      .from("profiles")
-      .upsert(payload, { onConflict: "id" });
+    const { role: _ignoredRole, id: _ignoredId, ...safeUpdates } = updates as Partial<Profile> & { role?: unknown; id?: unknown };
+    const payload = { ...safeUpdates, id: user.id };
+    const { error, data } = await supabase.from("profiles").update(payload).eq("id", user.id).select().single();
 
     if (!error && data?.[0]) {
       setProfile(data[0] as Profile);

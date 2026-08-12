@@ -435,3 +435,4 @@ create trigger volunteer_hours_set_updated_at before update on volunteer_hours f
 create trigger certificates_set_updated_at before update on certificates for each row execute function trigger_set_updated_at();
 create trigger notifications_set_updated_at before update on notifications for each row execute function trigger_set_updated_at();
 create trigger reports_set_updated_at before update on reports for each row execute function trigger_set_updated_at();
+

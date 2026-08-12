@@ -1,4 +1,4 @@
-export type UserRole = "volunteer" | "admin";
+﻿export type UserRole = "volunteer" | "admin";
 
 export type EventStatus =
   | "draft"
@@ -81,11 +81,6 @@ export interface Event {
   event_roles?: EventRole[];
 }
 
-<<<<<<< HEAD
-export type ApplicationStatus = "pending" | "accepted" | "waitlisted" | "rejected" | "withdrawn";
-
-=======
->>>>>>> 90df118 (supabase)
 export interface Application {
   id: string;
   event_id: string;
@@ -105,19 +100,10 @@ export interface Shift {
   start_time: string;
   end_time: string;
   location: string;
-<<<<<<< HEAD
   instructions: string | null;
 }
-
-export interface TrainingResource {
-  type: string;
-=======
-  instructions: string;
-}
-
 export interface TrainingResource {
   type: TrainingResourceType;
->>>>>>> 90df118 (supabase)
   title: string;
   url: string;
 }
@@ -156,26 +142,16 @@ export interface Notification {
   date: string;
   event_id: string | null;
   read: boolean;
-<<<<<<< HEAD
-  category: string;
+  category: NotificationCategory;
 }
-
 export interface LabelledValue {
   label: string;
   value: number;
-=======
-  category: NotificationCategory;
->>>>>>> 90df118 (supabase)
 }
 
 export interface VolunteerHours {
   total: number;
   current_year: number;
-<<<<<<< HEAD
   by_sport: LabelledValue[];
   by_event: LabelledValue[];
-=======
-  by_sport: Array<{ label: string; value: number }>;
-  by_event: Array<{ label: string; value: number }>;
->>>>>>> 90df118 (supabase)
 }
