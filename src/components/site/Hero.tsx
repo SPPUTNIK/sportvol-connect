@@ -33,7 +33,7 @@ export function Hero() {
         aria-hidden
       />
       
-      <div className="absolute inset-0 zellij-tile opacity-20 mix-blend-screen" aria-hidden />
+      <div className="absolute inset-0 zellij-tile opacity-[7%] mix-blend-screen" aria-hidden />
       <div className="absolute inset-0 hairline-grid opacity-25" aria-hidden />
 
 

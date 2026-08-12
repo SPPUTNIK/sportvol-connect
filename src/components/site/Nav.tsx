@@ -4,7 +4,7 @@ import { Menu, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { openJoin } from "@/lib/join";
-import logoAsset from "@/assets/volunsport-logo.png.asset.json";
+import logoAsset from "@/assets/volunsport-logo.png";
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -44,11 +44,11 @@ export function Nav() {
         <nav className="shell flex h-20 items-center justify-between">
           <a href="#top" className="flex items-center gap-3 text-ink-foreground">
             <img
-              src={logoAsset.url}
+              src={logoAsset}
               alt="VolunSport Morocco logo"
-              width={160}
-              height={90}
-              className="h-11 w-auto"
+              width={180}
+              height={100}
+              className="h-16 w-auto"
             />
             <span className="leading-none">
               <span className="block font-display text-[1.05rem] font-semibold tracking-tight">

@@ -5,7 +5,7 @@ import ctaImg from "@/assets/cta.jpg";
 import { Reveal } from "./motion";
 import { useI18n } from "@/lib/i18n";
 import { openJoin } from "@/lib/join";
-import logoAsset from "@/assets/volunsport-logo.png.asset.json";
+import logoAsset from "@/assets/volunsport-logo.png";
 
 export function CallToAction() {
   const { t } = useI18n();
@@ -69,7 +69,7 @@ export function Footer() {
       <div className="shell grid gap-14 py-20 lg:grid-cols-[1.2fr_2fr] lg:py-24">
         <div>
           <img
-            src={logoAsset.url}
+            src={logoAsset}
             alt="VolunSport Morocco logo"
             width={200}
             height={112}
