@@ -77,11 +77,18 @@ function Dashboard() {
   ] as const;
   return (
     <AppShell title="Dashboard">
-      <div className="mx-auto max-w-[1440px] space-y-8">
-        <section className="relative overflow-hidden rounded-[2rem] bg-ink px-7 py-9 text-white shadow-[var(--shadow-lift)] sm:px-10">
-          <div className="absolute -right-16 -top-24 h-64 w-64 rounded-full border-[36px] border-primary/30" />
+      <div className="mx-auto max-w-[1440px] space-y-10">
+        <section className="relative min-h-[248px] overflow-hidden rounded-[2rem] bg-[linear-gradient(118deg,#102f2a_0%,#1b4b40_58%,#9e7a2f_145%)] px-7 py-9 text-white shadow-[var(--shadow-lift)] sm:px-10 sm:py-10">
+          <div className="absolute -right-16 -top-24 h-64 w-64 rounded-full border-[36px] border-primary/25" />
+          <div className="absolute -bottom-28 right-24 h-44 w-44 rounded-full border border-white/10" />
+          <div className="absolute right-8 top-8 hidden items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-white/80 sm:flex">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Morocco volunteer network
+          </div>
           <div className="relative max-w-2xl">
-            <p className="eyebrow text-white/60">Your volunteer journey</p>
+            <div className="flex items-center gap-3">
+              <p className="eyebrow text-white/60">Your volunteer journey</p>
+              <span className="h-px w-10 bg-white/25" />
+            </div>
             <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
               Welcome back, {firstName}.
             </h2>
@@ -99,12 +106,17 @@ function Dashboard() {
         </section>
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {stats.map(([label, value, Icon, helper]) => (
-            <div key={label} className="rounded-[1.5rem] border border-border bg-card p-5">
+            <div
+              key={label}
+              className="group relative overflow-hidden rounded-[1.5rem] border border-border bg-card p-5 transition duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[var(--shadow-lift)]"
+            >
               <div className="flex items-center justify-between">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-primary">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
                   <Icon className="h-5 w-5" />
                 </div>
-                <span className="text-2xl font-semibold text-foreground">{value}</span>
+                <span className="text-2xl font-semibold tracking-tight text-foreground">
+                  {value}
+                </span>
               </div>
               <p className="mt-5 text-sm font-semibold text-foreground">{label}</p>
               <p className="mt-1 text-xs text-muted-foreground">{helper}</p>
@@ -122,10 +134,11 @@ function Dashboard() {
                 View all
               </a>
             </div>
-            <div className="mt-7 overflow-hidden rounded-3xl bg-background">
-              <div className="flex min-h-48 items-end bg-[linear-gradient(120deg,#153d35,#2e8066_58%,#d9a441)] p-6">
+            <div className="mt-7 overflow-hidden rounded-3xl border border-border bg-background">
+              <div className="flex min-h-56 items-end bg-[linear-gradient(120deg,#153d35,#2e8066_58%,#d9a441)] p-6 sm:p-7">
                 <div>
-                  <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                     {demoUpcomingEvent.status}
                   </span>
                   <h3 className="mt-3 max-w-md text-2xl font-semibold text-white">
@@ -172,7 +185,7 @@ function Dashboard() {
                 <a
                   key={href}
                   href={href}
-                  className="group flex items-center gap-3 rounded-2xl border border-border p-4 transition hover:border-primary hover:bg-muted"
+                  className="group flex items-center gap-3 rounded-2xl border border-border bg-background/40 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-primary hover:bg-muted"
                 >
                   <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted text-primary">
                     <Icon className="h-4 w-4" />
