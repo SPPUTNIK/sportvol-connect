@@ -1,13 +1,11 @@
 # Frontend Remaining
 
-The current frontend already contains the principal public and volunteer routes, and the new admin dashboard provides a responsive overview and management entry point. The following work remains for a complete production-grade frontend matching the full specification.
+The public and volunteer-facing foundation is now substantially complete, and the admin overview route is available. The following items remain for a full production-grade frontend matching every section of the expanded specification.
 
 ## Remaining
 
-The admin workspace needs dedicated CRUD screens for events, event roles, shifts, applications, volunteers, training, attendance, certificates, notifications, reports, and analytics rather than the current management overview cards.
+The admin shell needs to become a dedicated fixed-sidebar shell with individual frontend workspaces for events, event roles, shifts, applications, volunteers, training, accreditation, attendance, hours, certificates, notifications, reports, and analytics. The current `/admin` route provides the overview and management entry point, but those operational screens are not yet separate routes.
 
-The admin action forms should be wired to dedicated backend mutations for publishing events, accepting applications, assigning shifts, correcting attendance, issuing certificates, and sending notifications.
+The volunteer experience still needs richer detail pages for training modules, certificate details, notification dropdown/read states, profile edit mode, and settings interactions. The current screens provide the primary presentation states and navigation foundation.
 
-The volunteer dashboard can be expanded with richer upcoming-event, next-shift, training-progress, certificate, and notification summaries instead of relying on the current route-level cards.
-
-The remaining polish pass should include full mobile visual QA for event details, schedule, accreditation, attendance, and admin data tables, followed by full-repository lint cleanup and authenticated browser-flow tests.
+Where backend mutations do not exist, the remaining forms should use clearly separated mock adapters rather than pretending to persist data. Authenticated browser-flow testing and full mobile visual QA should be completed with real environment variables and representative volunteer/admin accounts.

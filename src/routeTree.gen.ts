@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as R404RouteImport } from './routes/404'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AccreditationRouteImport } from './routes/accreditation'
+import { Route as AchievementsRouteImport } from './routes/achievements'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ApplicationsRouteImport } from './routes/applications'
 import { Route as AttendanceRouteImport } from './routes/attendance'
@@ -20,13 +21,16 @@ import { Route as CertificatesRouteImport } from './routes/certificates'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as HoursRouteImport } from './routes/hours'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as MyEventsRouteImport } from './routes/my-events'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ScheduleRouteImport } from './routes/schedule'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TrainingRouteImport } from './routes/training'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
@@ -52,6 +56,11 @@ const AboutRoute = AboutRouteImport.update({
 const AccreditationRoute = AccreditationRouteImport.update({
   id: '/accreditation',
   path: '/accreditation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AchievementsRoute = AchievementsRouteImport.update({
+  id: '/achievements',
+  path: '/achievements',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -89,6 +98,11 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HoursRoute = HoursRouteImport.update({
+  id: '/hours',
+  path: '/hours',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -97,6 +111,11 @@ const LoginRoute = LoginRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyEventsRoute = MyEventsRouteImport.update({
+  id: '/my-events',
+  path: '/my-events',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotificationsRoute = NotificationsRouteImport.update({
@@ -122,6 +141,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const ScheduleRoute = ScheduleRouteImport.update({
   id: '/schedule',
   path: '/schedule',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TrainingRoute = TrainingRouteImport.update({
@@ -163,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/404': typeof R404Route
   '/about': typeof AboutRoute
   '/accreditation': typeof AccreditationRoute
+  '/achievements': typeof AchievementsRoute
   '/admin': typeof AdminRoute
   '/applications': typeof ApplicationsRoute
   '/attendance': typeof AttendanceRoute
@@ -170,13 +195,16 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/events': typeof EventsRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
+  '/hours': typeof HoursRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/my-events': typeof MyEventsRoute
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/schedule': typeof ScheduleRoute
+  '/settings': typeof SettingsRoute
   '/training': typeof TrainingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -189,6 +217,7 @@ export interface FileRoutesByTo {
   '/404': typeof R404Route
   '/about': typeof AboutRoute
   '/accreditation': typeof AccreditationRoute
+  '/achievements': typeof AchievementsRoute
   '/admin': typeof AdminRoute
   '/applications': typeof ApplicationsRoute
   '/attendance': typeof AttendanceRoute
@@ -196,13 +225,16 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/events': typeof EventsRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
+  '/hours': typeof HoursRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/my-events': typeof MyEventsRoute
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/schedule': typeof ScheduleRoute
+  '/settings': typeof SettingsRoute
   '/training': typeof TrainingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -216,6 +248,7 @@ export interface FileRoutesById {
   '/404': typeof R404Route
   '/about': typeof AboutRoute
   '/accreditation': typeof AccreditationRoute
+  '/achievements': typeof AchievementsRoute
   '/admin': typeof AdminRoute
   '/applications': typeof ApplicationsRoute
   '/attendance': typeof AttendanceRoute
@@ -223,13 +256,16 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/events': typeof EventsRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
+  '/hours': typeof HoursRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
+  '/my-events': typeof MyEventsRoute
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/schedule': typeof ScheduleRoute
+  '/settings': typeof SettingsRoute
   '/training': typeof TrainingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -244,6 +280,7 @@ export interface FileRouteTypes {
     | '/404'
     | '/about'
     | '/accreditation'
+    | '/achievements'
     | '/admin'
     | '/applications'
     | '/attendance'
@@ -251,13 +288,16 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/events'
     | '/forgot-password'
+    | '/hours'
     | '/login'
     | '/mcp'
+    | '/my-events'
     | '/notifications'
     | '/profile'
     | '/register'
     | '/reset-password'
     | '/schedule'
+    | '/settings'
     | '/training'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -270,6 +310,7 @@ export interface FileRouteTypes {
     | '/404'
     | '/about'
     | '/accreditation'
+    | '/achievements'
     | '/admin'
     | '/applications'
     | '/attendance'
@@ -277,13 +318,16 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/events'
     | '/forgot-password'
+    | '/hours'
     | '/login'
     | '/mcp'
+    | '/my-events'
     | '/notifications'
     | '/profile'
     | '/register'
     | '/reset-password'
     | '/schedule'
+    | '/settings'
     | '/training'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -296,6 +340,7 @@ export interface FileRouteTypes {
     | '/404'
     | '/about'
     | '/accreditation'
+    | '/achievements'
     | '/admin'
     | '/applications'
     | '/attendance'
@@ -303,13 +348,16 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/events'
     | '/forgot-password'
+    | '/hours'
     | '/login'
     | '/mcp'
+    | '/my-events'
     | '/notifications'
     | '/profile'
     | '/register'
     | '/reset-password'
     | '/schedule'
+    | '/settings'
     | '/training'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -323,6 +371,7 @@ export interface RootRouteChildren {
   R404Route: typeof R404Route
   AboutRoute: typeof AboutRoute
   AccreditationRoute: typeof AccreditationRoute
+  AchievementsRoute: typeof AchievementsRoute
   AdminRoute: typeof AdminRoute
   ApplicationsRoute: typeof ApplicationsRoute
   AttendanceRoute: typeof AttendanceRoute
@@ -330,13 +379,16 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   EventsRoute: typeof EventsRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  HoursRoute: typeof HoursRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
+  MyEventsRoute: typeof MyEventsRoute
   NotificationsRoute: typeof NotificationsRoute
   ProfileRoute: typeof ProfileRoute
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ScheduleRoute: typeof ScheduleRoute
+  SettingsRoute: typeof SettingsRoute
   TrainingRoute: typeof TrainingRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -372,6 +424,13 @@ declare module '@tanstack/react-router' {
       path: '/accreditation'
       fullPath: '/accreditation'
       preLoaderRoute: typeof AccreditationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/achievements': {
+      id: '/achievements'
+      path: '/achievements'
+      fullPath: '/achievements'
+      preLoaderRoute: typeof AchievementsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -423,6 +482,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/hours': {
+      id: '/hours'
+      path: '/hours'
+      fullPath: '/hours'
+      preLoaderRoute: typeof HoursRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -435,6 +501,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-events': {
+      id: '/my-events'
+      path: '/my-events'
+      fullPath: '/my-events'
+      preLoaderRoute: typeof MyEventsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notifications': {
@@ -470,6 +543,13 @@ declare module '@tanstack/react-router' {
       path: '/schedule'
       fullPath: '/schedule'
       preLoaderRoute: typeof ScheduleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/training': {
@@ -533,6 +613,7 @@ const rootRouteChildren: RootRouteChildren = {
   R404Route: R404Route,
   AboutRoute: AboutRoute,
   AccreditationRoute: AccreditationRoute,
+  AchievementsRoute: AchievementsRoute,
   AdminRoute: AdminRoute,
   ApplicationsRoute: ApplicationsRoute,
   AttendanceRoute: AttendanceRoute,
@@ -540,13 +621,16 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   EventsRoute: EventsRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  HoursRoute: HoursRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
+  MyEventsRoute: MyEventsRoute,
   NotificationsRoute: NotificationsRoute,
   ProfileRoute: ProfileRoute,
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ScheduleRoute: ScheduleRoute,
+  SettingsRoute: SettingsRoute,
   TrainingRoute: TrainingRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
