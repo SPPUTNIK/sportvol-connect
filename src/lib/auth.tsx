@@ -7,7 +7,13 @@ import {
   type ReactNode,
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "./supabase";
+import { supabase as typedSupabase } from "./supabase";
+
+// The profiles table is not part of the generated database types yet.
+const supabase = typedSupabase as unknown as {
+  from: (table: string) => any;
+  auth: (typeof typedSupabase)["auth"];
+};
 import type { Profile } from "./types";
 
 interface AuthContextValue {
