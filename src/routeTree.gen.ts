@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as R404RouteImport } from './routes/404'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AccreditationRouteImport } from './routes/accreditation'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ApplicationsRouteImport } from './routes/applications'
 import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as CertificatesRouteImport } from './routes/certificates'
@@ -51,6 +52,11 @@ const AboutRoute = AboutRouteImport.update({
 const AccreditationRoute = AccreditationRouteImport.update({
   id: '/accreditation',
   path: '/accreditation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApplicationsRoute = ApplicationsRouteImport.update({
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/404': typeof R404Route
   '/about': typeof AboutRoute
   '/accreditation': typeof AccreditationRoute
+  '/admin': typeof AdminRoute
   '/applications': typeof ApplicationsRoute
   '/attendance': typeof AttendanceRoute
   '/certificates': typeof CertificatesRoute
@@ -182,6 +189,7 @@ export interface FileRoutesByTo {
   '/404': typeof R404Route
   '/about': typeof AboutRoute
   '/accreditation': typeof AccreditationRoute
+  '/admin': typeof AdminRoute
   '/applications': typeof ApplicationsRoute
   '/attendance': typeof AttendanceRoute
   '/certificates': typeof CertificatesRoute
@@ -208,6 +216,7 @@ export interface FileRoutesById {
   '/404': typeof R404Route
   '/about': typeof AboutRoute
   '/accreditation': typeof AccreditationRoute
+  '/admin': typeof AdminRoute
   '/applications': typeof ApplicationsRoute
   '/attendance': typeof AttendanceRoute
   '/certificates': typeof CertificatesRoute
@@ -235,6 +244,7 @@ export interface FileRouteTypes {
     | '/404'
     | '/about'
     | '/accreditation'
+    | '/admin'
     | '/applications'
     | '/attendance'
     | '/certificates'
@@ -260,6 +270,7 @@ export interface FileRouteTypes {
     | '/404'
     | '/about'
     | '/accreditation'
+    | '/admin'
     | '/applications'
     | '/attendance'
     | '/certificates'
@@ -285,6 +296,7 @@ export interface FileRouteTypes {
     | '/404'
     | '/about'
     | '/accreditation'
+    | '/admin'
     | '/applications'
     | '/attendance'
     | '/certificates'
@@ -311,6 +323,7 @@ export interface RootRouteChildren {
   R404Route: typeof R404Route
   AboutRoute: typeof AboutRoute
   AccreditationRoute: typeof AccreditationRoute
+  AdminRoute: typeof AdminRoute
   ApplicationsRoute: typeof ApplicationsRoute
   AttendanceRoute: typeof AttendanceRoute
   CertificatesRoute: typeof CertificatesRoute
@@ -359,6 +372,13 @@ declare module '@tanstack/react-router' {
       path: '/accreditation'
       fullPath: '/accreditation'
       preLoaderRoute: typeof AccreditationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/applications': {
@@ -513,6 +533,7 @@ const rootRouteChildren: RootRouteChildren = {
   R404Route: R404Route,
   AboutRoute: AboutRoute,
   AccreditationRoute: AccreditationRoute,
+  AdminRoute: AdminRoute,
   ApplicationsRoute: ApplicationsRoute,
   AttendanceRoute: AttendanceRoute,
   CertificatesRoute: CertificatesRoute,
