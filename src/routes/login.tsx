@@ -3,8 +3,13 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { I18nProvider, useI18n } from "@/lib/i18n";
 
+function safeNext(value: unknown): string | null {
+  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : null;
+}
+
 export const Route = createFileRoute("/login")({
   component: Login,
+  validateSearch: (search: Record<string, unknown>) => ({ next: safeNext(search["next"]) ?? undefined }),
   head: () => ({
     meta: [{ title: "Login | VolunSport Morocco" }],
   }),
@@ -13,6 +18,8 @@ export const Route = createFileRoute("/login")({
 function Login() {
   const { t } = useI18n();
   const { user, signIn, loading } = useAuth();
+  const { next } = Route.useSearch();
+  const destination = safeNext(next) ?? "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +27,7 @@ function Login() {
 
   useEffect(() => {
     if (user) {
-      window.location.href = "/dashboard";
+      window.location.href = destination;
     }
   }, [user]);
 
@@ -44,7 +51,7 @@ function Login() {
                 return;
               }
               setSuccess(true);
-              window.location.href = "/dashboard";
+              window.location.href = destination;
             }}
           >
             <label className="block text-sm font-medium text-foreground">
@@ -87,7 +94,7 @@ function Login() {
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            Don&apos;t have an account? <Link to="/register" className="text-primary">Create one</Link>
+            Don&apos;t have an account? <Link to="/register" search={{ next }} className="text-primary">Create one</Link>
           </p>
         </div>
       </div>

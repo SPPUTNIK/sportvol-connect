@@ -3,8 +3,13 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { I18nProvider, useI18n } from "@/lib/i18n";
 
+function safeNext(value: unknown): string | null {
+  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : null;
+}
+
 export const Route = createFileRoute("/register")({
   component: Register,
+  validateSearch: (search: Record<string, unknown>) => ({ next: safeNext(search["next"]) ?? undefined }),
   head: () => ({
     meta: [{ title: "Register | VolunSport Morocco" }],
   }),
@@ -13,6 +18,7 @@ export const Route = createFileRoute("/register")({
 function Register() {
   const { t } = useI18n();
   const { signUp } = useAuth();
+  const { next } = Route.useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
