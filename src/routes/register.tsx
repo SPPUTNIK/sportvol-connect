@@ -85,7 +85,7 @@ function Register() {
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            Already registered? <Link to="/login" className="text-primary">Sign in</Link>
+            Already registered? <Link to="/login" search={{ next }} className="text-primary">Sign in</Link>
           </p>
         </div>
       </div>
