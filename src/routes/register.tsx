@@ -9,7 +9,10 @@ function safeNext(value: unknown): string | null {
 
 export const Route = createFileRoute("/register")({
   component: Register,
-  validateSearch: (search: Record<string, unknown>) => ({ next: safeNext(search["next"]) ?? undefined }),
+  validateSearch: (search: Record<string, unknown>): { next?: string } => {
+    const next = safeNext(search["next"]);
+    return next ? { next } : {};
+  },
   head: () => ({
     meta: [{ title: "Register | VolunSport Morocco" }],
   }),
