@@ -50,7 +50,12 @@ function Profile() {
   }
 
   if (!profile) {
-    return <EmptyState title="Profile unavailable" description="Sign in or register to manage your volunteer profile." />;
+    return (
+      <EmptyState
+        title="Profile unavailable"
+        description="Sign in or register to manage your volunteer profile."
+      />
+    );
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -63,9 +68,18 @@ function Profile() {
       city: formState.city,
       country: formState.country,
       bio: formState.bio,
-      interests: formState.interests.split(",").map((value) => value.trim()).filter(Boolean),
-      skills: formState.skills.split(",").map((value) => value.trim()).filter(Boolean),
-      languages: formState.languages.split(",").map((value) => value.trim()).filter(Boolean),
+      interests: formState.interests
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean),
+      skills: formState.skills
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean),
+      languages: formState.languages
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean),
     };
     const { error } = await updateProfile(updates);
     if (error) {
@@ -85,7 +99,8 @@ function Profile() {
               <p className="eyebrow">Profile</p>
               <h1 className="display-md text-ink-foreground">Complete your volunteer profile</h1>
               <p className="max-w-2xl text-sm text-muted-foreground">
-                Keep your contact details, sports interests and skills up to date for better role matches.
+                Keep your contact details, sports interests and skills up to date for better role
+                matches.
               </p>
             </div>
 
@@ -93,47 +108,102 @@ function Profile() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block text-sm font-medium text-foreground">
                   First name
-                  <Input value={formState.first_name} onChange={(event) => setFormState((prev) => ({ ...prev, first_name: event.target.value }))} required />
+                  <Input
+                    value={formState.first_name}
+                    onChange={(event) =>
+                      setFormState((prev) => ({ ...prev, first_name: event.target.value }))
+                    }
+                    required
+                  />
                 </label>
                 <label className="block text-sm font-medium text-foreground">
                   Last name
-                  <Input value={formState.last_name} onChange={(event) => setFormState((prev) => ({ ...prev, last_name: event.target.value }))} required />
+                  <Input
+                    value={formState.last_name}
+                    onChange={(event) =>
+                      setFormState((prev) => ({ ...prev, last_name: event.target.value }))
+                    }
+                    required
+                  />
                 </label>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block text-sm font-medium text-foreground">
                   Phone
-                  <Input value={formState.phone} onChange={(event) => setFormState((prev) => ({ ...prev, phone: event.target.value }))} />
+                  <Input
+                    value={formState.phone}
+                    onChange={(event) =>
+                      setFormState((prev) => ({ ...prev, phone: event.target.value }))
+                    }
+                  />
                 </label>
                 <label className="block text-sm font-medium text-foreground">
                   City
-                  <Input value={formState.city} onChange={(event) => setFormState((prev) => ({ ...prev, city: event.target.value }))} />
+                  <Input
+                    value={formState.city}
+                    onChange={(event) =>
+                      setFormState((prev) => ({ ...prev, city: event.target.value }))
+                    }
+                  />
                 </label>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block text-sm font-medium text-foreground">
                   Country
-                  <Input value={formState.country} onChange={(event) => setFormState((prev) => ({ ...prev, country: event.target.value }))} />
+                  <Input
+                    value={formState.country}
+                    onChange={(event) =>
+                      setFormState((prev) => ({ ...prev, country: event.target.value }))
+                    }
+                  />
                 </label>
                 <label className="block text-sm font-medium text-foreground">
                   Languages
-                  <Input value={formState.languages} onChange={(event) => setFormState((prev) => ({ ...prev, languages: event.target.value }))} placeholder="English, French" />
+                  <Input
+                    value={formState.languages}
+                    onChange={(event) =>
+                      setFormState((prev) => ({ ...prev, languages: event.target.value }))
+                    }
+                    placeholder="English, French"
+                  />
                 </label>
               </div>
               <label className="block text-sm font-medium text-foreground">
                 Bio
-                <textarea value={formState.bio} onChange={(event) => setFormState((prev) => ({ ...prev, bio: event.target.value }))} rows={4} className="mt-2 w-full rounded-3xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none focus:border-primary" />
+                <textarea
+                  value={formState.bio}
+                  onChange={(event) =>
+                    setFormState((prev) => ({ ...prev, bio: event.target.value }))
+                  }
+                  rows={4}
+                  className="mt-2 w-full rounded-3xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none focus:border-primary"
+                />
               </label>
               <label className="block text-sm font-medium text-foreground">
                 Sports interests
-                <Input value={formState.interests} onChange={(event) => setFormState((prev) => ({ ...prev, interests: event.target.value }))} placeholder="Running, Football" />
+                <Input
+                  value={formState.interests}
+                  onChange={(event) =>
+                    setFormState((prev) => ({ ...prev, interests: event.target.value }))
+                  }
+                  placeholder="Running, Football"
+                />
               </label>
               <label className="block text-sm font-medium text-foreground">
                 Skills
-                <Input value={formState.skills} onChange={(event) => setFormState((prev) => ({ ...prev, skills: event.target.value }))} placeholder="Teamwork, Communication" />
+                <Input
+                  value={formState.skills}
+                  onChange={(event) =>
+                    setFormState((prev) => ({ ...prev, skills: event.target.value }))
+                  }
+                  placeholder="Teamwork, Communication"
+                />
               </label>
               {status && <p className="text-sm text-foreground">{status}</p>}
-              <button className="rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90">
+              <button
+                type="submit"
+                className="rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+              >
                 Save profile
               </button>
             </form>
@@ -158,7 +228,9 @@ function Profile() {
               </div>
             </div>
             <div className="rounded-[2rem] border border-hairline-invert bg-card p-8 shadow-[var(--shadow-lift)]">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Volunteer history</p>
+              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                Volunteer history
+              </p>
               <div className="mt-6 space-y-4 text-sm text-muted-foreground">
                 <p className="font-semibold text-foreground">Skills</p>
                 <p>{profile.skills.join(", ") || "Not specified"}</p>

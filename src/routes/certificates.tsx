@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { I18nProvider } from "@/lib/i18n";
-import { getCertificates } from "@/services/mockService";
+import { certificateService } from "@/services/certificateService";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -20,7 +20,8 @@ function Certificates() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getCertificates()
+    certificateService
+      .getCertificates()
       .then((data) => setCertificates(data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -42,7 +43,10 @@ function Certificates() {
         ) : error ? (
           <EmptyState title="Error" description={error} />
         ) : certificates.length === 0 ? (
-          <EmptyState title="No certificates yet" description="Complete a volunteer event to earn your first certificate." />
+          <EmptyState
+            title="No certificates yet"
+            description="Complete a volunteer event to earn your first certificate."
+          />
         ) : (
           <div className="grid gap-6 lg:grid-cols-2">
             {certificates.map((certificate) => (
@@ -63,8 +67,13 @@ function Certificates() {
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">ID: {certificate.certificate_id}</p>
-                    <button className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90">
+                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                      ID: {certificate.certificate_id}
+                    </p>
+                    <button
+                      type="button"
+                      className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                    >
                       Download
                     </button>
                   </div>

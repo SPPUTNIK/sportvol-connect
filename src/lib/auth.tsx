@@ -1,11 +1,4 @@
-﻿import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+﻿import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase as typedSupabase } from "./supabase";
 
@@ -32,11 +25,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 async function fetchProfile(userId: string): Promise<Profile | null> {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .single();
+  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
 
   if (error) {
     console.warn("Unable to load profile", error.message);
@@ -83,21 +72,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     restoreSession();
 
-    const { data: subscription } = supabase.auth.onAuthStateChange(
-      async (_, authSession) => {
-        if (!mounted) return;
-        setSession(authSession ?? null);
-        setUser(authSession?.user ?? null);
-        if (authSession?.user) {
-          const inboundProfile = await fetchProfile(authSession.user.id);
-          if (mounted) {
-            setProfile(inboundProfile);
-          }
-        } else {
-          setProfile(null);
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (_, authSession) => {
+      if (!mounted) return;
+      setSession(authSession ?? null);
+      setUser(authSession?.user ?? null);
+      if (authSession?.user) {
+        const inboundProfile = await fetchProfile(authSession.user.id);
+        if (mounted) {
+          setProfile(inboundProfile);
         }
-      },
-    );
+      } else {
+        setProfile(null);
+      }
+    });
 
     return () => {
       mounted = false;
@@ -155,9 +142,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: new Error("Not authenticated") };
     }
 
-    const { role: _ignoredRole, id: _ignoredId, ...safeUpdates } = updates as Partial<Profile> & { role?: unknown; id?: unknown };
+    const {
+      role: _ignoredRole,
+      id: _ignoredId,
+      ...safeUpdates
+    } = updates as Partial<Profile> & { role?: unknown; id?: unknown };
     const payload = { ...safeUpdates, id: user.id };
-    const { error, data } = await supabase.from("profiles").update(payload).eq("id", user.id).select().single();
+    const { error, data } = await supabase
+      .from("profiles")
+      .update(payload)
+      .eq("id", user.id)
+      .select()
+      .single();
 
     if (!error && data?.[0]) {
       setProfile(data[0] as Profile);
@@ -179,7 +175,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sendResetPasswordEmail,
       updateProfile,
     }),
-    [session, user, profile, loading, isAdmin],
+    [
+      session,
+      user,
+      profile,
+      loading,
+      isAdmin,
+      signIn,
+      signUp,
+      signOut,
+      sendResetPasswordEmail,
+      updateProfile,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

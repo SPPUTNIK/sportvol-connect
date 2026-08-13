@@ -34,9 +34,25 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TrainingRouteImport } from './routes/training'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
+import { Route as AdminApplicationsRouteImport } from './routes/admin/applications'
+import { Route as AdminAttendanceRouteImport } from './routes/admin/attendance'
+import { Route as AdminCertificatesRouteImport } from './routes/admin/certificates'
+import { Route as AdminEventsRouteImport } from './routes/admin/events'
+import { Route as AdminNotificationsRouteImport } from './routes/admin/notifications'
+import { Route as AdminProfileRouteImport } from './routes/admin/profile'
+import { Route as AdminReportsRouteImport } from './routes/admin/reports'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
+import { Route as AdminTrainingRouteImport } from './routes/admin/training'
+import { Route as AdminVolunteersRouteImport } from './routes/admin/volunteers'
+import { Route as CertificatesCertificateIdRouteImport } from './routes/certificates/$certificateId'
 import { Route as EventsSlugRouteImport } from './routes/events/$slug'
+import { Route as TrainingTrainingIdRouteImport } from './routes/training/$trainingId'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as AdminEventsEventIdRouteImport } from './routes/admin/events/$eventId'
+import { Route as AdminEventsCreateRouteImport } from './routes/admin/events/create'
+import { Route as AdminVolunteersVolunteerIdRouteImport } from './routes/admin/volunteers/$volunteerId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -165,10 +181,76 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminApplicationsRoute = AdminApplicationsRouteImport.update({
+  id: '/applications',
+  path: '/applications',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAttendanceRoute = AdminAttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCertificatesRoute = AdminCertificatesRouteImport.update({
+  id: '/certificates',
+  path: '/certificates',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEventsRoute = AdminEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProfileRoute = AdminProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTrainingRoute = AdminTrainingRouteImport.update({
+  id: '/training',
+  path: '/training',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminVolunteersRoute = AdminVolunteersRouteImport.update({
+  id: '/volunteers',
+  path: '/volunteers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const CertificatesCertificateIdRoute =
+  CertificatesCertificateIdRouteImport.update({
+    id: '/$certificateId',
+    path: '/$certificateId',
+    getParentRoute: () => CertificatesRoute,
+  } as any)
 const EventsSlugRoute = EventsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => EventsRoute,
+} as any)
+const TrainingTrainingIdRoute = TrainingTrainingIdRouteImport.update({
+  id: '/$trainingId',
+  path: '/$trainingId',
+  getParentRoute: () => TrainingRoute,
 } as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
@@ -181,6 +263,22 @@ const Char91DotmcpChar93InvokeToolToolRoute =
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminEventsEventIdRoute = AdminEventsEventIdRouteImport.update({
+  id: '/$eventId',
+  path: '/$eventId',
+  getParentRoute: () => AdminEventsRoute,
+} as any)
+const AdminEventsCreateRoute = AdminEventsCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => AdminEventsRoute,
+} as any)
+const AdminVolunteersVolunteerIdRoute =
+  AdminVolunteersVolunteerIdRouteImport.update({
+    id: '/$volunteerId',
+    path: '/$volunteerId',
+    getParentRoute: () => AdminVolunteersRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -188,10 +286,10 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/accreditation': typeof AccreditationRoute
   '/achievements': typeof AchievementsRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/applications': typeof ApplicationsRoute
   '/attendance': typeof AttendanceRoute
-  '/certificates': typeof CertificatesRoute
+  '/certificates': typeof CertificatesRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/events': typeof EventsRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
@@ -205,12 +303,28 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
-  '/training': typeof TrainingRoute
+  '/training': typeof TrainingRouteWithChildren
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/attendance': typeof AdminAttendanceRoute
+  '/admin/certificates': typeof AdminCertificatesRoute
+  '/admin/events': typeof AdminEventsRouteWithChildren
+  '/admin/notifications': typeof AdminNotificationsRoute
+  '/admin/profile': typeof AdminProfileRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/training': typeof AdminTrainingRoute
+  '/admin/volunteers': typeof AdminVolunteersRouteWithChildren
+  '/certificates/$certificateId': typeof CertificatesCertificateIdRoute
   '/events/$slug': typeof EventsSlugRoute
+  '/training/$trainingId': typeof TrainingTrainingIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/admin/events/$eventId': typeof AdminEventsEventIdRoute
+  '/admin/events/create': typeof AdminEventsCreateRoute
+  '/admin/volunteers/$volunteerId': typeof AdminVolunteersVolunteerIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -218,10 +332,10 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/accreditation': typeof AccreditationRoute
   '/achievements': typeof AchievementsRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/applications': typeof ApplicationsRoute
   '/attendance': typeof AttendanceRoute
-  '/certificates': typeof CertificatesRoute
+  '/certificates': typeof CertificatesRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/events': typeof EventsRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
@@ -235,12 +349,28 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
-  '/training': typeof TrainingRoute
+  '/training': typeof TrainingRouteWithChildren
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/attendance': typeof AdminAttendanceRoute
+  '/admin/certificates': typeof AdminCertificatesRoute
+  '/admin/events': typeof AdminEventsRouteWithChildren
+  '/admin/notifications': typeof AdminNotificationsRoute
+  '/admin/profile': typeof AdminProfileRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/training': typeof AdminTrainingRoute
+  '/admin/volunteers': typeof AdminVolunteersRouteWithChildren
+  '/certificates/$certificateId': typeof CertificatesCertificateIdRoute
   '/events/$slug': typeof EventsSlugRoute
+  '/training/$trainingId': typeof TrainingTrainingIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/admin/events/$eventId': typeof AdminEventsEventIdRoute
+  '/admin/events/create': typeof AdminEventsCreateRoute
+  '/admin/volunteers/$volunteerId': typeof AdminVolunteersVolunteerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -249,10 +379,10 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/accreditation': typeof AccreditationRoute
   '/achievements': typeof AchievementsRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/applications': typeof ApplicationsRoute
   '/attendance': typeof AttendanceRoute
-  '/certificates': typeof CertificatesRoute
+  '/certificates': typeof CertificatesRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/events': typeof EventsRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
@@ -266,12 +396,28 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
-  '/training': typeof TrainingRoute
+  '/training': typeof TrainingRouteWithChildren
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/attendance': typeof AdminAttendanceRoute
+  '/admin/certificates': typeof AdminCertificatesRoute
+  '/admin/events': typeof AdminEventsRouteWithChildren
+  '/admin/notifications': typeof AdminNotificationsRoute
+  '/admin/profile': typeof AdminProfileRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/training': typeof AdminTrainingRoute
+  '/admin/volunteers': typeof AdminVolunteersRouteWithChildren
+  '/certificates/$certificateId': typeof CertificatesCertificateIdRoute
   '/events/$slug': typeof EventsSlugRoute
+  '/training/$trainingId': typeof TrainingTrainingIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/admin/events/$eventId': typeof AdminEventsEventIdRoute
+  '/admin/events/create': typeof AdminEventsCreateRoute
+  '/admin/volunteers/$volunteerId': typeof AdminVolunteersVolunteerIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -301,9 +447,25 @@ export interface FileRouteTypes {
     | '/training'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/admin/analytics'
+    | '/admin/applications'
+    | '/admin/attendance'
+    | '/admin/certificates'
+    | '/admin/events'
+    | '/admin/notifications'
+    | '/admin/profile'
+    | '/admin/reports'
+    | '/admin/settings'
+    | '/admin/training'
+    | '/admin/volunteers'
+    | '/certificates/$certificateId'
     | '/events/$slug'
+    | '/training/$trainingId'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/admin/events/$eventId'
+    | '/admin/events/create'
+    | '/admin/volunteers/$volunteerId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -331,9 +493,25 @@ export interface FileRouteTypes {
     | '/training'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/admin/analytics'
+    | '/admin/applications'
+    | '/admin/attendance'
+    | '/admin/certificates'
+    | '/admin/events'
+    | '/admin/notifications'
+    | '/admin/profile'
+    | '/admin/reports'
+    | '/admin/settings'
+    | '/admin/training'
+    | '/admin/volunteers'
+    | '/certificates/$certificateId'
     | '/events/$slug'
+    | '/training/$trainingId'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/admin/events/$eventId'
+    | '/admin/events/create'
+    | '/admin/volunteers/$volunteerId'
   id:
     | '__root__'
     | '/'
@@ -361,9 +539,25 @@ export interface FileRouteTypes {
     | '/training'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/admin/analytics'
+    | '/admin/applications'
+    | '/admin/attendance'
+    | '/admin/certificates'
+    | '/admin/events'
+    | '/admin/notifications'
+    | '/admin/profile'
+    | '/admin/reports'
+    | '/admin/settings'
+    | '/admin/training'
+    | '/admin/volunteers'
+    | '/certificates/$certificateId'
     | '/events/$slug'
+    | '/training/$trainingId'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/admin/events/$eventId'
+    | '/admin/events/create'
+    | '/admin/volunteers/$volunteerId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -372,10 +566,10 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AccreditationRoute: typeof AccreditationRoute
   AchievementsRoute: typeof AchievementsRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   ApplicationsRoute: typeof ApplicationsRoute
   AttendanceRoute: typeof AttendanceRoute
-  CertificatesRoute: typeof CertificatesRoute
+  CertificatesRoute: typeof CertificatesRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   EventsRoute: typeof EventsRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -389,7 +583,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ScheduleRoute: typeof ScheduleRoute
   SettingsRoute: typeof SettingsRoute
-  TrainingRoute: typeof TrainingRoute
+  TrainingRoute: typeof TrainingRouteWithChildren
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
@@ -573,12 +767,103 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/applications': {
+      id: '/admin/applications'
+      path: '/applications'
+      fullPath: '/admin/applications'
+      preLoaderRoute: typeof AdminApplicationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/attendance': {
+      id: '/admin/attendance'
+      path: '/attendance'
+      fullPath: '/admin/attendance'
+      preLoaderRoute: typeof AdminAttendanceRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/certificates': {
+      id: '/admin/certificates'
+      path: '/certificates'
+      fullPath: '/admin/certificates'
+      preLoaderRoute: typeof AdminCertificatesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/events': {
+      id: '/admin/events'
+      path: '/events'
+      fullPath: '/admin/events'
+      preLoaderRoute: typeof AdminEventsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/notifications': {
+      id: '/admin/notifications'
+      path: '/notifications'
+      fullPath: '/admin/notifications'
+      preLoaderRoute: typeof AdminNotificationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/profile': {
+      id: '/admin/profile'
+      path: '/profile'
+      fullPath: '/admin/profile'
+      preLoaderRoute: typeof AdminProfileRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/training': {
+      id: '/admin/training'
+      path: '/training'
+      fullPath: '/admin/training'
+      preLoaderRoute: typeof AdminTrainingRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/volunteers': {
+      id: '/admin/volunteers'
+      path: '/volunteers'
+      fullPath: '/admin/volunteers'
+      preLoaderRoute: typeof AdminVolunteersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/certificates/$certificateId': {
+      id: '/certificates/$certificateId'
+      path: '/$certificateId'
+      fullPath: '/certificates/$certificateId'
+      preLoaderRoute: typeof CertificatesCertificateIdRouteImport
+      parentRoute: typeof CertificatesRoute
+    }
     '/events/$slug': {
       id: '/events/$slug'
       path: '/$slug'
       fullPath: '/events/$slug'
       preLoaderRoute: typeof EventsSlugRouteImport
       parentRoute: typeof EventsRoute
+    }
+    '/training/$trainingId': {
+      id: '/training/$trainingId'
+      path: '/$trainingId'
+      fullPath: '/training/$trainingId'
+      preLoaderRoute: typeof TrainingTrainingIdRouteImport
+      parentRoute: typeof TrainingRoute
     }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
@@ -594,8 +879,97 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/events/$eventId': {
+      id: '/admin/events/$eventId'
+      path: '/$eventId'
+      fullPath: '/admin/events/$eventId'
+      preLoaderRoute: typeof AdminEventsEventIdRouteImport
+      parentRoute: typeof AdminEventsRoute
+    }
+    '/admin/events/create': {
+      id: '/admin/events/create'
+      path: '/create'
+      fullPath: '/admin/events/create'
+      preLoaderRoute: typeof AdminEventsCreateRouteImport
+      parentRoute: typeof AdminEventsRoute
+    }
+    '/admin/volunteers/$volunteerId': {
+      id: '/admin/volunteers/$volunteerId'
+      path: '/$volunteerId'
+      fullPath: '/admin/volunteers/$volunteerId'
+      preLoaderRoute: typeof AdminVolunteersVolunteerIdRouteImport
+      parentRoute: typeof AdminVolunteersRoute
+    }
   }
 }
+
+interface AdminEventsRouteChildren {
+  AdminEventsEventIdRoute: typeof AdminEventsEventIdRoute
+  AdminEventsCreateRoute: typeof AdminEventsCreateRoute
+}
+
+const AdminEventsRouteChildren: AdminEventsRouteChildren = {
+  AdminEventsEventIdRoute: AdminEventsEventIdRoute,
+  AdminEventsCreateRoute: AdminEventsCreateRoute,
+}
+
+const AdminEventsRouteWithChildren = AdminEventsRoute._addFileChildren(
+  AdminEventsRouteChildren,
+)
+
+interface AdminVolunteersRouteChildren {
+  AdminVolunteersVolunteerIdRoute: typeof AdminVolunteersVolunteerIdRoute
+}
+
+const AdminVolunteersRouteChildren: AdminVolunteersRouteChildren = {
+  AdminVolunteersVolunteerIdRoute: AdminVolunteersVolunteerIdRoute,
+}
+
+const AdminVolunteersRouteWithChildren = AdminVolunteersRoute._addFileChildren(
+  AdminVolunteersRouteChildren,
+)
+
+interface AdminRouteChildren {
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminApplicationsRoute: typeof AdminApplicationsRoute
+  AdminAttendanceRoute: typeof AdminAttendanceRoute
+  AdminCertificatesRoute: typeof AdminCertificatesRoute
+  AdminEventsRoute: typeof AdminEventsRouteWithChildren
+  AdminNotificationsRoute: typeof AdminNotificationsRoute
+  AdminProfileRoute: typeof AdminProfileRoute
+  AdminReportsRoute: typeof AdminReportsRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminTrainingRoute: typeof AdminTrainingRoute
+  AdminVolunteersRoute: typeof AdminVolunteersRouteWithChildren
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminApplicationsRoute: AdminApplicationsRoute,
+  AdminAttendanceRoute: AdminAttendanceRoute,
+  AdminCertificatesRoute: AdminCertificatesRoute,
+  AdminEventsRoute: AdminEventsRouteWithChildren,
+  AdminNotificationsRoute: AdminNotificationsRoute,
+  AdminProfileRoute: AdminProfileRoute,
+  AdminReportsRoute: AdminReportsRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminTrainingRoute: AdminTrainingRoute,
+  AdminVolunteersRoute: AdminVolunteersRouteWithChildren,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface CertificatesRouteChildren {
+  CertificatesCertificateIdRoute: typeof CertificatesCertificateIdRoute
+}
+
+const CertificatesRouteChildren: CertificatesRouteChildren = {
+  CertificatesCertificateIdRoute: CertificatesCertificateIdRoute,
+}
+
+const CertificatesRouteWithChildren = CertificatesRoute._addFileChildren(
+  CertificatesRouteChildren,
+)
 
 interface EventsRouteChildren {
   EventsSlugRoute: typeof EventsSlugRoute
@@ -608,16 +982,28 @@ const EventsRouteChildren: EventsRouteChildren = {
 const EventsRouteWithChildren =
   EventsRoute._addFileChildren(EventsRouteChildren)
 
+interface TrainingRouteChildren {
+  TrainingTrainingIdRoute: typeof TrainingTrainingIdRoute
+}
+
+const TrainingRouteChildren: TrainingRouteChildren = {
+  TrainingTrainingIdRoute: TrainingTrainingIdRoute,
+}
+
+const TrainingRouteWithChildren = TrainingRoute._addFileChildren(
+  TrainingRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   R404Route: R404Route,
   AboutRoute: AboutRoute,
   AccreditationRoute: AccreditationRoute,
   AchievementsRoute: AchievementsRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   ApplicationsRoute: ApplicationsRoute,
   AttendanceRoute: AttendanceRoute,
-  CertificatesRoute: CertificatesRoute,
+  CertificatesRoute: CertificatesRouteWithChildren,
   DashboardRoute: DashboardRoute,
   EventsRoute: EventsRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
@@ -631,7 +1017,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ScheduleRoute: ScheduleRoute,
   SettingsRoute: SettingsRoute,
-  TrainingRoute: TrainingRoute,
+  TrainingRoute: TrainingRouteWithChildren,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,

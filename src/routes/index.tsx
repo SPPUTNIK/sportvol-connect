@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Nav } from "@/components/site/Nav";
 import { Hero } from "@/components/site/Hero";
 import { TrustedBy } from "@/components/site/TrustedBy";
 import { Mission } from "@/components/site/Mission";
@@ -11,10 +10,10 @@ import { Impact } from "@/components/site/Impact";
 import { Stories } from "@/components/site/Stories";
 import { Gallery } from "@/components/site/Gallery";
 import { Faq } from "@/components/site/Faq";
-import { CallToAction, Footer } from "@/components/site/CallToAction";
+import { CallToAction } from "@/components/site/CallToAction";
+import { PublicLayout } from "@/components/layouts/PublicLayout";
 import { I18nProvider } from "@/lib/i18n";
 import { JoinDialog } from "@/components/site/JoinDialog";
-
 
 const title = "SportVol Morocco — Sports Volunteer Platform";
 const description =
@@ -75,9 +74,8 @@ function Index() {
 
   return (
     <I18nProvider>
-      <div>
-        <Nav />
-        <main>
+      <PublicLayout>
+        <div>
           <Hero />
           <TrustedBy />
           <Mission />
@@ -89,11 +87,9 @@ function Index() {
           <Gallery />
           <Faq />
           <CallToAction />
-        </main>
-        <Footer />
-        <JoinDialog />
-      </div>
+          <JoinDialog />
+        </div>
+      </PublicLayout>
     </I18nProvider>
   );
 }
-

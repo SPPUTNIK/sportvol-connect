@@ -32,6 +32,7 @@ export function Faq() {
               <Reveal key={f.q} delay={i * 0.04}>
                 <div>
                   <button
+                    type="button"
                     onClick={() => setOpen(isOpen ? null : i)}
                     aria-expanded={isOpen}
                     className="flex w-full items-center justify-between gap-8 py-7 text-start"

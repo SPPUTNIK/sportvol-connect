@@ -11,7 +11,9 @@ type OAuthResult = {
 };
 
 type OAuthApi = {
-  getAuthorizationDetails: (id: string) => Promise<{ data: OAuthResult | null; error: Error | null }>;
+  getAuthorizationDetails: (
+    id: string,
+  ) => Promise<{ data: OAuthResult | null; error: Error | null }>;
   approveAuthorization: (id: string) => Promise<{ data: OAuthResult | null; error: Error | null }>;
   denyAuthorization: (id: string) => Promise<{ data: OAuthResult | null; error: Error | null }>;
 };
@@ -21,7 +23,8 @@ const oauth = (supabase.auth as unknown as { oauth: OAuthApi }).oauth;
 export const Route = createFileRoute("/.lovable/oauth/consent")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>) => ({
-    authorization_id: typeof search["authorization_id"] === "string" ? search["authorization_id"] : "",
+    authorization_id:
+      typeof search["authorization_id"] === "string" ? search["authorization_id"] : "",
   }),
   beforeLoad: async ({ search, location }) => {
     if (!search.authorization_id) throw new Error("Missing authorization_id");
@@ -123,6 +126,7 @@ function Consent() {
 
         <div className="mt-8 flex gap-3">
           <button
+            type="button"
             disabled={busy}
             onClick={() => decide(true)}
             className="flex-1 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
@@ -130,6 +134,7 @@ function Consent() {
             Approve
           </button>
           <button
+            type="button"
             disabled={busy}
             onClick={() => decide(false)}
             className="flex-1 rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition hover:bg-muted disabled:opacity-60"

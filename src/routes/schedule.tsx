@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { I18nProvider } from "@/lib/i18n";
-import { getShifts } from "@/services/mockService";
+import { scheduleService } from "@/services/scheduleService";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { Shift } from "@/lib/types";
 
 export const Route = createFileRoute("/schedule")({
@@ -20,7 +27,8 @@ function Schedule() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getShifts()
+    scheduleService
+      .getShifts()
       .then((data) => setShifts(data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -42,16 +50,28 @@ function Schedule() {
         ) : error ? (
           <EmptyState title="Error" description={error} />
         ) : shifts.length === 0 ? (
-          <EmptyState title="No shifts scheduled" description="Accept an event to see your next assignments here." />
+          <EmptyState
+            title="No shifts scheduled"
+            description="Accept an event to see your next assignments here."
+          />
         ) : (
           <div className="space-y-4">
             {shifts.map((shift) => (
-              <div key={shift.id} className="rounded-[2rem] border border-hairline-invert bg-card p-6 shadow-[var(--shadow-lift)]">
+              <div
+                key={shift.id}
+                className="rounded-[2rem] border border-hairline-invert bg-card p-6 shadow-[var(--shadow-lift)]"
+              >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">{shift.event_title}</p>
-                    <h2 className="mt-2 text-2xl font-semibold text-foreground">{shift.role_name}</h2>
-                    <p className="mt-1 text-sm text-muted-foreground">{shift.date} · {shift.start_time} – {shift.end_time}</p>
+                    <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                      {shift.event_title}
+                    </p>
+                    <h2 className="mt-2 text-2xl font-semibold text-foreground">
+                      {shift.role_name}
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {shift.date} · {shift.start_time} – {shift.end_time}
+                    </p>
                   </div>
                   <div className="rounded-3xl bg-background p-4 text-sm">
                     <p className="text-muted-foreground">Location</p>

@@ -9,7 +9,16 @@ export const languages: { code: Lang; label: string; native: string }[] = [
 ];
 
 type Dict = {
-  nav: { mission: string; events: string; journey: string; stories: string; faq: string; join: string; menu: string; tagline: string };
+  nav: {
+    mission: string;
+    events: string;
+    journey: string;
+    stories: string;
+    faq: string;
+    join: string;
+    menu: string;
+    tagline: string;
+  };
   hero: {
     eyebrow: string;
     titleLines: [string, string];
@@ -151,10 +160,19 @@ export const dict: Record<Lang, Dict> = {
       titleLine: "More than volunteering.",
       titleSub: "A life experience.",
       items: [
-        { title: "Leadership", body: "Run zones, brief crews and take real decisions under real pressure." },
-        { title: "Network", body: "Stand shoulder to shoulder with federations, clubs and athletes." },
+        {
+          title: "Leadership",
+          body: "Run zones, brief crews and take real decisions under real pressure.",
+        },
+        {
+          title: "Network",
+          body: "Stand shoulder to shoulder with federations, clubs and athletes.",
+        },
         { title: "Experience", body: "Operations know-how you cannot get from a classroom." },
-        { title: "Certificates", body: "Every verified hour becomes a credential you can actually use." },
+        {
+          title: "Certificates",
+          body: "Every verified hour becomes a credential you can actually use.",
+        },
         { title: "Community", body: "A crew that reunites season after season, city after city." },
         { title: "Career", body: "Direct pipeline into event management and sports-tech roles." },
       ],
@@ -334,12 +352,24 @@ export const dict: Record<Lang, Dict> = {
       titleLine: "Plus que du bénévolat.",
       titleSub: "Une expérience de vie.",
       items: [
-        { title: "Leadership", body: "Gérez des zones, briefez des équipes et décidez sous pression réelle." },
+        {
+          title: "Leadership",
+          body: "Gérez des zones, briefez des équipes et décidez sous pression réelle.",
+        },
         { title: "Réseau", body: "Côtoyez fédérations, clubs et athlètes au quotidien." },
-        { title: "Expérience", body: "Un savoir-faire opérationnel qu'aucune salle de cours n'enseigne." },
+        {
+          title: "Expérience",
+          body: "Un savoir-faire opérationnel qu'aucune salle de cours n'enseigne.",
+        },
         { title: "Certificats", body: "Chaque heure vérifiée devient une attestation utile." },
-        { title: "Communauté", body: "Une équipe qui se retrouve saison après saison, ville après ville." },
-        { title: "Carrière", body: "Une passerelle directe vers les métiers de l'événementiel sportif." },
+        {
+          title: "Communauté",
+          body: "Une équipe qui se retrouve saison après saison, ville après ville.",
+        },
+        {
+          title: "Carrière",
+          body: "Une passerelle directe vers les métiers de l'événementiel sportif.",
+        },
       ],
     },
     events: {
@@ -352,7 +382,12 @@ export const dict: Record<Lang, Dict> = {
       apply: "Postuler",
       items: [
         { tag: "Marathon", title: "Marathon Côtier de Rabat", city: "Rabat", date: "12 Oct" },
-        { tag: "Football", title: "Coupe Universitaire Atlantique", city: "Casablanca", date: "19 Oct" },
+        {
+          tag: "Football",
+          title: "Coupe Universitaire Atlantique",
+          city: "Casablanca",
+          date: "19 Oct",
+        },
         { tag: "Cyclisme", title: "Défi des Crêtes de l'Atlas", city: "Marrakech", date: "26 Oct" },
         { tag: "Basketball", title: "Finales de la Ligue du Nord", city: "Tanger", date: "02 Nov" },
       ],
@@ -374,7 +409,12 @@ export const dict: Record<Lang, Dict> = {
     impact: {
       eyebrow: "Notre impact",
       titleLines: ["L'impact, en chiffres", "qui ne cessent de grimper."],
-      labels: ["Bénévoles actifs", "Événements organisés", "Organisations partenaires", "Heures de bénévolat"],
+      labels: [
+        "Bénévoles actifs",
+        "Événements organisés",
+        "Organisations partenaires",
+        "Heures de bénévolat",
+      ],
       growthEyebrow: "Courbe de croissance",
       growthBody:
         "Il y a quatre saisons, VolunSport encadrait une seule course. Aujourd'hui, des équipes coordonnées dans douze régions, avec plus de 70% de fidélisation d'une année sur l'autre.",
@@ -535,7 +575,12 @@ export const dict: Record<Lang, Dict> = {
       apply: "التقديم",
       items: [
         { tag: "ماراطون", title: "ماراطون الرباط الساحلي", city: "الرباط", date: "12 أكتوبر" },
-        { tag: "كرة القدم", title: "كأس الجامعات الأطلسية", city: "الدار البيضاء", date: "19 أكتوبر" },
+        {
+          tag: "كرة القدم",
+          title: "كأس الجامعات الأطلسية",
+          city: "الدار البيضاء",
+          date: "19 أكتوبر",
+        },
         { tag: "دراجات", title: "تحدي مرتفعات الأطلس", city: "مراكش", date: "26 أكتوبر" },
         { tag: "كرة السلة", title: "نهائيات دوري الشمال", city: "طنجة", date: "02 نونبر" },
       ],
@@ -575,12 +620,14 @@ export const dict: Record<Lang, Dict> = {
           role: "متطوع منذ 2022 · الرباط",
         },
         {
-          quote: "ملفات الإحاطة أفضل من فعاليات اشتغلت فيها بأجر. الجميع يعرف منطقته قبل شروق الشمس.",
+          quote:
+            "ملفات الإحاطة أفضل من فعاليات اشتغلت فيها بأجر. الجميع يعرف منطقته قبل شروق الشمس.",
           name: "سلمى بنعني",
           role: "مسؤولة منطقة · الدار البيضاء",
         },
         {
-          quote: "ساعاتي الموثقة ذهبت مباشرة إلى سيرتي الذاتية. بعد ثلاثة أشهر وظفني منظم سباقات بمراكش.",
+          quote:
+            "ساعاتي الموثقة ذهبت مباشرة إلى سيرتي الذاتية. بعد ثلاثة أشهر وظفني منظم سباقات بمراكش.",
           name: "عمر التازي",
           role: "متطوع منذ 2023 · مراكش",
         },

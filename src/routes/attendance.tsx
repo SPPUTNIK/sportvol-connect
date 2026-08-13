@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { I18nProvider } from "@/lib/i18n";
-import { getAttendance } from "@/services/mockService";
+import { attendanceService } from "@/services/attendanceService";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
 import type { AttendanceRecord } from "@/lib/types";
@@ -19,7 +19,8 @@ function Attendance() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getAttendance()
+    attendanceService
+      .getAttendance()
       .then((data) => setRecords(data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -41,18 +42,32 @@ function Attendance() {
         ) : error ? (
           <EmptyState title="Error" description={error} />
         ) : records.length === 0 ? (
-          <EmptyState title="No attendance data" description="Your attendance history will appear after your first check-in." />
+          <EmptyState
+            title="No attendance data"
+            description="Your attendance history will appear after your first check-in."
+          />
         ) : (
           <div className="space-y-4">
             {records.map((record) => (
-              <div key={record.id} className="rounded-[2rem] border border-hairline-invert bg-card p-6 shadow-[var(--shadow-lift)]">
+              <div
+                key={record.id}
+                className="rounded-[2rem] border border-hairline-invert bg-card p-6 shadow-[var(--shadow-lift)]"
+              >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">{record.event_title}</p>
-                    <h2 className="mt-2 text-xl font-semibold text-foreground">{record.role_name}</h2>
+                    <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                      {record.event_title}
+                    </p>
+                    <h2 className="mt-2 text-xl font-semibold text-foreground">
+                      {record.role_name}
+                    </h2>
                   </div>
                   <div className="rounded-full bg-background px-4 py-2 text-sm text-muted-foreground">
-                    {record.status === "checked-in" ? "Checked in" : record.status === "checked-out" ? "Checked out" : "Pending"}
+                    {record.status === "checked-in"
+                      ? "Checked in"
+                      : record.status === "checked-out"
+                        ? "Checked out"
+                        : "Pending"}
                   </div>
                 </div>
                 <div className="mt-6 grid gap-4 sm:grid-cols-3 text-sm text-muted-foreground">

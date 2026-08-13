@@ -26,7 +26,6 @@ export function Nav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-
   return (
     <motion.header
       initial={{ y: -24, opacity: 0 }}
@@ -84,13 +83,13 @@ export function Nav() {
               {t.nav.join}
             </Link>
             <button
+              type="button"
               onClick={() => setOpen((v) => !v)}
               aria-label={t.nav.menu}
               className="flex size-10 items-center justify-center rounded-full border border-hairline-invert text-ink-foreground lg:hidden"
             >
               {open ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
-
           </div>
         </nav>
       </div>
@@ -118,7 +117,6 @@ export function Nav() {
               </Link>
             </div>
           </div>
-
         </div>
       )}
     </motion.header>

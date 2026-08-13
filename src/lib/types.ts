@@ -1,26 +1,11 @@
 ﻿export type UserRole = "volunteer" | "admin";
 
-export type EventStatus =
-  | "draft"
-  | "published"
-  | "closed"
-  | "completed"
-  | "cancelled";
+export type EventStatus = "draft" | "published" | "closed" | "completed" | "cancelled";
 
-export type ApplicationStatus =
-  | "pending"
-  | "accepted"
-  | "rejected"
-  | "withdrawn"
-  | "waitlisted";
+export type ApplicationStatus = "pending" | "accepted" | "rejected" | "withdrawn" | "waitlisted";
 
 export type NotificationCategory =
-  | "application"
-  | "training"
-  | "accreditation"
-  | "certificate"
-  | "event"
-  | "other";
+  "application" | "training" | "accreditation" | "certificate" | "event" | "other";
 
 export type TrainingResourceType = "video" | "pdf" | "text" | "link";
 

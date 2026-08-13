@@ -28,6 +28,7 @@ export function Stories() {
           <Reveal delay={0.1}>
             <div className="mt-10 flex items-center gap-3">
               <button
+                type="button"
                 onClick={() => go(-1)}
                 aria-label={t.stories.prev}
                 className="flex size-11 items-center justify-center rounded-full border border-border bg-background text-foreground transition-transform duration-500 hover:-translate-y-0.5"
@@ -35,6 +36,7 @@ export function Stories() {
                 <ArrowLeft className="size-4" />
               </button>
               <button
+                type="button"
                 onClick={() => go(1)}
                 aria-label={t.stories.next}
                 className="flex size-11 items-center justify-center rounded-full bg-ink text-ink-foreground transition-transform duration-500 hover:-translate-y-0.5"
@@ -72,9 +74,7 @@ export function Stories() {
                       .join("")}
                   </span>
                   <span>
-                    <span className="block text-sm font-semibold text-foreground">
-                      {s.name}
-                    </span>
+                    <span className="block text-sm font-semibold text-foreground">{s.name}</span>
                     <span className="block text-xs text-muted-foreground">{s.role}</span>
                   </span>
                 </footer>

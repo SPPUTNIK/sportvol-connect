@@ -30,7 +30,8 @@ export const mockEvents: Event[] = [
     status: "published",
     total_volunteers_needed: 120,
     required_languages: ["Arabic", "French", "English"],
-    requirements: "Comfortable standing, able to follow event safety briefings, available on race day.",
+    requirements:
+      "Comfortable standing, able to follow event safety briefings, available on race day.",
     event_type: "Marathon",
     featured: true,
     event_roles: [
@@ -52,7 +53,8 @@ export const mockEvents: Event[] = [
         id: "r2",
         event_id: "e1",
         name: "Finish Line Assistant",
-        description: "Help runners cross safely, hand out medals and collect finish-line belongings.",
+        description:
+          "Help runners cross safely, hand out medals and collect finish-line belongings.",
         responsibilities:
           "Manage finish line flow, support the medical team and help with participant recovery tents.",
         requirements: "Friendly, calm under pressure, experience with crowds is a plus.",
@@ -92,7 +94,8 @@ export const mockEvents: Event[] = [
         event_id: "e2",
         name: "Accreditation Desk Lead",
         description: "Welcome volunteers and visiting staff, issue access badges.",
-        responsibilities: "Verify IDs, manage accreditation queues, escalate issues to the operations manager.",
+        responsibilities:
+          "Verify IDs, manage accreditation queues, escalate issues to the operations manager.",
         requirements: "Excellent organizational skills.",
         skills: ["Organization", "Problem solving"],
         positions: 15,
@@ -265,7 +268,8 @@ export const mockTraining: Training[] = [
   {
     id: "t1",
     title: "Event Safety Briefing",
-    description: "A short module covering crowd control, emergency procedures and volunteer conduct.",
+    description:
+      "A short module covering crowd control, emergency procedures and volunteer conduct.",
     completed: true,
     resources: [
       { type: "video", title: "Safety essentials", url: "https://example.com/safety-video" },
@@ -369,7 +373,8 @@ export const mockVolunteerStats = {
 };
 
 export const eventCoverDefaults: Record<string, string> = {
-  "Running": "https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf?auto=format&fit=crop&w=1200&q=80",
+  Running:
+    "https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf?auto=format&fit=crop&w=1200&q=80",
   Football:
     "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80",
   Cycling:
@@ -378,7 +383,10 @@ export const eventCoverDefaults: Record<string, string> = {
     "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80",
 };
 
-export const mockEventSlugs = mockEvents.reduce<Record<string, Event>>((acc, event) => {
-  acc[event.slug] = event;
-  return acc;
-}, {} as Record<string, Event>);
+export const mockEventSlugs = mockEvents.reduce<Record<string, Event>>(
+  (acc, event) => {
+    acc[event.slug] = event;
+    return acc;
+  },
+  {} as Record<string, Event>,
+);

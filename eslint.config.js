@@ -36,5 +36,12 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  {
+    files: ["src/lib/auth.tsx", "src/services/backendService.ts", "src/services/mockService.ts"],
+    rules: {
+      // These adapters bridge tables that are not fully represented in generated types yet.
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
   eslintPluginPrettier,
 );

@@ -1,0 +1,31 @@
+import {
+  demoAccreditation,
+  demoAchievements,
+  demoApplications,
+  demoAttendance,
+  demoCertificates,
+  demoDashboard,
+  demoHours,
+  demoMyEvents,
+  demoNotifications,
+  demoSchedule,
+  demoTraining,
+  demoUpcomingEvent,
+  demoVolunteerProfile,
+} from "@/mocks/frontendDemo";
+
+export const volunteerContentService = {
+  getDashboard: () => demoDashboard,
+  getUpcomingEvent: () => demoUpcomingEvent,
+  getApplications: () => demoApplications,
+  getMyEvents: () => demoMyEvents,
+  getSchedule: () => demoSchedule,
+  getTraining: () => demoTraining,
+  getAccreditation: () => demoAccreditation,
+  getAttendance: () => demoAttendance,
+  getHours: () => demoHours,
+  getCertificates: () => demoCertificates,
+  getAchievements: () => demoAchievements,
+  getNotifications: () => demoNotifications,
+  getProfile: () => demoVolunteerProfile,
+};

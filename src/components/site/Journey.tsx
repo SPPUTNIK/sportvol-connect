@@ -22,7 +22,7 @@ export function Journey() {
           </Reveal>
           <Reveal delay={0.1}>
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-muted-foreground">
-{t.journey.body}
+              {t.journey.body}
             </p>
           </Reveal>
           <Reveal delay={0.15}>

@@ -23,7 +23,10 @@ export function Events() {
   const scrollBy = (delta: number) => {
     const el = scroller.current;
     if (!el) return;
-    el.scrollBy({ left: (dir === "rtl" ? -delta : delta) * (el.clientWidth * 0.6), behavior: "smooth" });
+    el.scrollBy({
+      left: (dir === "rtl" ? -delta : delta) * (el.clientWidth * 0.6),
+      behavior: "smooth",
+    });
   };
 
   return (
@@ -43,6 +46,7 @@ export function Events() {
           <Reveal delay={0.1}>
             <div className="flex items-center gap-3">
               <button
+                type="button"
                 onClick={() => scrollBy(-1)}
                 aria-label={t.events.prev}
                 className="flex size-11 items-center justify-center rounded-full border border-hairline-invert text-ink-foreground transition-colors duration-500 hover:bg-ink-foreground/10"
@@ -50,6 +54,7 @@ export function Events() {
                 <ArrowLeft className="size-4" />
               </button>
               <button
+                type="button"
                 onClick={() => scrollBy(1)}
                 aria-label={t.events.next}
                 className="flex size-11 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform duration-500 hover:-translate-y-0.5"
@@ -115,8 +120,8 @@ export function Events() {
 
                   <div className="mt-4 flex items-center justify-between">
                     <p className="text-xs text-muted-foreground">
-                      <span className="font-semibold text-foreground">{e.filled}</span> /{" "}
-                      {e.needed} {t.events.registered}
+                      <span className="font-semibold text-foreground">{e.filled}</span> / {e.needed}{" "}
+                      {t.events.registered}
                     </p>
                     <Link
                       to="/register"

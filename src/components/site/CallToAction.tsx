@@ -41,7 +41,7 @@ export function CallToAction() {
           </h2>
         </Reveal>
         <Reveal delay={0.1}>
-            <div className="mt-10 flex flex-wrap gap-3">
+          <div className="mt-10 flex flex-wrap gap-3">
             <Link
               to="/register"
               className="group inline-flex items-center gap-2 rounded-full bg-primary px-7 py-4 text-sm font-semibold text-primary-foreground transition-transform duration-500 hover:-translate-y-0.5"
@@ -114,9 +114,7 @@ export function Footer() {
                 <ArrowRight className="size-4" />
               </button>
             </div>
-            {sent && (
-              <p className="mt-3 text-xs text-primary">{t.footer.sent}</p>
-            )}
+            {sent && <p className="mt-3 text-xs text-primary">{t.footer.sent}</p>}
           </form>
         </div>
 

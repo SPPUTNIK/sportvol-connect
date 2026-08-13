@@ -28,7 +28,7 @@ export function Mission() {
           </Reveal>
           <Reveal delay={0.1}>
             <p className="mt-7 max-w-md text-base leading-relaxed text-muted-foreground">
-{t.mission.body}
+              {t.mission.body}
             </p>
           </Reveal>
 

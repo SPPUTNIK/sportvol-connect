@@ -47,7 +47,7 @@ export function Impact() {
           </Reveal>
           <Reveal delay={0.05}>
             <p className="mt-6 max-w-md text-lg leading-relaxed text-ink-foreground/70">
-{t.impact.growthBody}
+              {t.impact.growthBody}
             </p>
           </Reveal>
 

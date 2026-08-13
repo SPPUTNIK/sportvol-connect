@@ -7,11 +7,31 @@ import g4 from "@/assets/gal-4.jpg";
 import g5 from "@/assets/event-cycling.jpg";
 
 const items = [
-  { src: g1, alt: "Volunteer smiling at a stadium", span: "sm:col-span-4 sm:row-span-2", ratio: "aspect-[4/5]" },
-  { src: g2, alt: "Volunteers preparing a finish line at dawn", span: "sm:col-span-8", ratio: "aspect-[16/9]" },
+  {
+    src: g1,
+    alt: "Volunteer smiling at a stadium",
+    span: "sm:col-span-4 sm:row-span-2",
+    ratio: "aspect-[4/5]",
+  },
+  {
+    src: g2,
+    alt: "Volunteers preparing a finish line at dawn",
+    span: "sm:col-span-8",
+    ratio: "aspect-[16/9]",
+  },
   { src: g4, alt: "Hands stacked in a team huddle", span: "sm:col-span-4", ratio: "aspect-[4/3]" },
-  { src: g5, alt: "Cyclists on an Atlas mountain road", span: "sm:col-span-4", ratio: "aspect-[4/3]" },
-  { src: g3, alt: "Swimmer diving into a competition pool", span: "sm:col-span-8", ratio: "aspect-[16/9]" },
+  {
+    src: g5,
+    alt: "Cyclists on an Atlas mountain road",
+    span: "sm:col-span-4",
+    ratio: "aspect-[4/3]",
+  },
+  {
+    src: g3,
+    alt: "Swimmer diving into a competition pool",
+    span: "sm:col-span-8",
+    ratio: "aspect-[16/9]",
+  },
 ];
 
 export function Gallery() {
@@ -32,7 +52,7 @@ export function Gallery() {
           </Reveal>
           <Reveal delay={0.08}>
             <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
-{t.gallery.body}
+              {t.gallery.body}
             </p>
           </Reveal>
         </div>
@@ -43,12 +63,7 @@ export function Gallery() {
               <figure
                 className={`media-zoom group relative h-full overflow-hidden rounded-2xl bg-muted ${it.ratio}`}
               >
-                <img
-                  src={it.src}
-                  alt={it.alt}
-                  loading="lazy"
-                  className="size-full object-cover"
-                />
+                <img src={it.src} alt={it.alt} loading="lazy" className="size-full object-cover" />
                 <span className="pointer-events-none absolute inset-0 bg-ink/0 transition-colors duration-700 group-hover:bg-ink/20" />
               </figure>
             </Reveal>
@@ -74,7 +89,6 @@ export function Gallery() {
             </div>
           </Reveal>
         </div>
-
       </div>
     </section>
   );

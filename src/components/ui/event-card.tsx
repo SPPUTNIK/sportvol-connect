@@ -22,7 +22,9 @@ export function EventCard({ event }: { event: Event }) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <CardTitle>{event.title}</CardTitle>
-            <CardDescription>{event.city} · {event.venue}</CardDescription>
+            <CardDescription>
+              {event.city} · {event.venue}
+            </CardDescription>
           </div>
           <div className="rounded-full bg-muted px-3 py-1 text-[0.7rem] uppercase tracking-[0.24em] text-muted-foreground">
             {event.sport}
@@ -39,7 +41,9 @@ export function EventCard({ event }: { event: Event }) {
           </div>
         </div>
         <div className="flex items-center justify-between gap-4">
-          <p className="text-sm text-muted-foreground">{filled} / {event.total_volunteers_needed} filled</p>
+          <p className="text-sm text-muted-foreground">
+            {filled} / {event.total_volunteers_needed} filled
+          </p>
           <Link
             to="/events/$slug"
             params={{ slug: event.slug }}

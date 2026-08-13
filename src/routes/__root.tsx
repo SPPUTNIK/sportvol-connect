@@ -53,6 +53,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
+            type="button"
             onClick={() => {
               router.invalidate();
               reset();
@@ -79,7 +80,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "SportVol Morocco" },
-      { name: "description", content: "Connecting volunteers with sporting events across Morocco." },
+      {
+        name: "description",
+        content: "Connecting volunteers with sporting events across Morocco.",
+      },
       { property: "og:site_name", content: "SportVol Morocco" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

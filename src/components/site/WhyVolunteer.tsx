@@ -1,11 +1,4 @@
-import {
-  Award,
-  Compass,
-  HeartHandshake,
-  Sparkles,
-  TrendingUp,
-  Users,
-} from "lucide-react";
+import { Award, Compass, HeartHandshake, Sparkles, TrendingUp, Users } from "lucide-react";
 import { Reveal, Stagger, StaggerItem } from "./motion";
 import { useI18n } from "@/lib/i18n";
 

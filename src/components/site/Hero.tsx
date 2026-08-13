@@ -6,7 +6,6 @@ import { useI18n } from "@/lib/i18n";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Link } from "@tanstack/react-router";
 
-
 export function Hero() {
   const ref = useRef<HTMLDivElement>(null);
   const { t, dir } = useI18n();
@@ -15,7 +14,6 @@ export function Hero() {
   const scale = useTransform(scrollYProgress, [0, 1], [1.05, 1.18]);
   const fade = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
   const stats = t.hero.stats;
-
 
   return (
     <section ref={ref} id="top" className="relative min-h-svh overflow-hidden bg-ink">
@@ -33,10 +31,9 @@ export function Hero() {
         style={{ backgroundImage: "var(--gradient-veil)" }}
         aria-hidden
       />
-      
+
       <div className="absolute inset-0 zellij-tile opacity-[7%] mix-blend-screen" aria-hidden />
       <div className="absolute inset-0 hairline-grid opacity-25" aria-hidden />
-
 
       <motion.div
         style={{ opacity: fade }}
@@ -143,12 +140,9 @@ export function Hero() {
                 <span className="block text-sm font-semibold text-ink-foreground">
                   {t.hero.watchTitle}
                 </span>
-                <span className="block text-xs text-ink-foreground/50">
-                  {t.hero.watchSub}
-                </span>
+                <span className="block text-xs text-ink-foreground/50">{t.hero.watchSub}</span>
               </span>
             </a>
-
           </motion.div>
         </div>
       </motion.div>

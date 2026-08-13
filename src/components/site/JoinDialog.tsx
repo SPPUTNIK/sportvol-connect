@@ -55,6 +55,7 @@ export function JoinDialog() {
             className="relative w-full max-w-lg rounded-[1.5rem] bg-card p-8 shadow-[var(--shadow-lift)]"
           >
             <button
+              type="button"
               onClick={() => setOpen(false)}
               aria-label={t.join.close}
               className="absolute end-5 top-5 flex size-9 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-muted"

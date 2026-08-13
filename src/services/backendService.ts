@@ -87,7 +87,8 @@ export async function getApplications(): Promise<Application[]> {
     role_name: row.role?.name ?? "",
     submitted_at: formatDate(row.applied_at),
     status: row.status,
-    message: [row.motivation, row.experience, row.availability].filter(Boolean).join("\n\n") || null,
+    message:
+      [row.motivation, row.experience, row.availability].filter(Boolean).join("\n\n") || null,
   }));
 }
 
@@ -108,9 +109,7 @@ export async function getAcceptedEvents(): Promise<Event[]> {
     throw error;
   }
 
-  return (data ?? [])
-    .map((row: any) => row.event as Event)
-    .filter(Boolean);
+  return (data ?? []).map((row: any) => row.event as Event).filter(Boolean);
 }
 
 export async function getShifts(): Promise<Shift[]> {
@@ -148,12 +147,12 @@ export async function getTraining(): Promise<Training[]> {
   const userId = await getCurrentUserId();
   const [{ data: modules, error: moduleError }, { data: progress, error: progressError }] =
     await Promise.all([
-      db.from("training_modules").select("id, title, description, resources").order("title", { ascending: true }),
+      db
+        .from("training_modules")
+        .select("id, title, description, resources")
+        .order("title", { ascending: true }),
       userId
-        ? db
-            .from("training_progress")
-            .select("training_id, completed")
-            .eq("profile_id", userId)
+        ? db.from("training_progress").select("training_id, completed").eq("profile_id", userId)
         : Promise.resolve({ data: [], error: null }),
     ] as const);
 
@@ -366,7 +365,15 @@ export async function applyForRole(
     throw new Error("You have already applied for this role.");
   }
 
-  const payload = { profile_id: userId, event_id: eventId, role_id: roleId, status: "pending" as const, availability, experience, motivation };
+  const payload = {
+    profile_id: userId,
+    event_id: eventId,
+    role_id: roleId,
+    status: "pending" as const,
+    availability,
+    experience,
+    motivation,
+  };
   const { error: insertError } = await db.from("applications").insert(payload);
   if (insertError) {
     throw insertError;
@@ -377,6 +384,3 @@ export async function getVolunteerStats() {
   const hours = await getVolunteerHours();
   return { totalHours: hours.total, currentYearHours: hours.current_year };
 }
-
-
-
