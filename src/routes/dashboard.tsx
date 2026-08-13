@@ -51,7 +51,8 @@ function Dashboard() {
 
   return (
     <I18nProvider>
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
+        <div className="pointer-events-none fixed inset-0 z-0 bg-[url('/moroccan-pattern.png')] bg-[length:520px] opacity-[0.025]" />
         {/* ============================================================ */}
         {/* MOBILE SIDEBAR OVERLAY                                       */}
         {/* ============================================================ */}
@@ -249,7 +250,7 @@ function Dashboard() {
         {/* MAIN                                                         */}
         {/* ============================================================ */}
 
-        <div className="lg:pl-[280px]">
+        <div className="relative z-10 lg:pl-[280px]">
           {/* ---------------------------------------------------------- */}
           {/* TOP BAR                                                    */}
           {/* ---------------------------------------------------------- */}
@@ -348,7 +349,7 @@ function Dashboard() {
               {/* HERO                                                    */}
               {/* ====================================================== */}
 
-              <section className="relative overflow-hidden rounded-[2rem] bg-primary p-7 text-primary-foreground shadow-[var(--shadow-lift)] sm:p-10">
+              <section className="relative overflow-hidden rounded-[2rem] bg-[linear-gradient(118deg,#07152e_0%,#10264a_58%,#0f5b49_135%)] p-7 text-primary-foreground shadow-[var(--shadow-lift)] sm:p-10">
                 <div
                   className="pointer-events-none absolute inset-0 opacity-[0.07]"
                   style={{
@@ -433,7 +434,7 @@ function Dashboard() {
 
               <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
                 {/* Upcoming event */}
-                <section className="rounded-[2rem] border border-hairline-invert bg-card p-6 shadow-[var(--shadow-lift)] sm:p-8">
+                <section className="rounded-[2rem] border border-hairline-invert/80 bg-card/95 p-6 shadow-[var(--shadow-lift)] backdrop-blur-sm sm:p-8">
                   <SectionHeading
                     eyebrow="Your schedule"
                     title="Upcoming event"
@@ -489,7 +490,7 @@ function Dashboard() {
                 </section>
 
                 {/* Quick access */}
-                <section className="rounded-[2rem] border border-hairline-invert bg-card p-6 shadow-[var(--shadow-lift)] sm:p-8">
+                <section className="rounded-[2rem] border border-hairline-invert/80 bg-card/95 p-6 shadow-[var(--shadow-lift)] backdrop-blur-sm sm:p-8">
                   <SectionHeading eyebrow="Quick access" title="Your journey" />
 
                   <div className="mt-7 space-y-3">
@@ -529,7 +530,7 @@ function Dashboard() {
               {/* ====================================================== */}
 
               <div className="mt-6 grid gap-6 md:grid-cols-2">
-                <section className="rounded-[2rem] border border-hairline-invert bg-card p-6 shadow-[var(--shadow-lift)] sm:p-8">
+                <section className="rounded-[2rem] border border-hairline-invert/80 bg-card/95 p-6 shadow-[var(--shadow-lift)] backdrop-blur-sm sm:p-8">
                   <SectionHeading eyebrow="Applications" title="Recent applications" />
 
                   <EmptyState
@@ -541,7 +542,7 @@ function Dashboard() {
                   />
                 </section>
 
-                <section className="rounded-[2rem] border border-hairline-invert bg-card p-6 shadow-[var(--shadow-lift)] sm:p-8">
+                <section className="rounded-[2rem] border border-hairline-invert/80 bg-card/95 p-6 shadow-[var(--shadow-lift)] backdrop-blur-sm sm:p-8">
                   <SectionHeading eyebrow="Your impact" title="Achievements" />
 
                   <EmptyState
