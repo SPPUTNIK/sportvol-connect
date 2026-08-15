@@ -15,6 +15,7 @@ export function CallToAction() {
 
   return (
     <section id="cta" ref={ref} className="relative overflow-hidden bg-ink">
+      <div className="pointer-events-none absolute inset-0 z-[1] zellij-tile opacity-[9%] mix-blend-screen" aria-hidden />
       <motion.img
         style={{ y }}
         src={ctaImg}
