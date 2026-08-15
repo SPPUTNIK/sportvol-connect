@@ -1,4 +1,4 @@
-﻿-- Supabase schema for SportVol Morocco
+-- Supabase schema for SportVol Morocco
 
 create extension if not exists "pgcrypto";
 

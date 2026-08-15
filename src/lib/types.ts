@@ -1,4 +1,4 @@
-﻿export type UserRole = "volunteer" | "admin";
+export type UserRole = "volunteer" | "admin";
 
 export type EventStatus = "draft" | "published" | "closed" | "completed" | "cancelled";
 

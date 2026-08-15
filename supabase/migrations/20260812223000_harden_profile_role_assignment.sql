@@ -1,4 +1,4 @@
-﻿drop policy if exists profiles_insert on public.profiles;
+drop policy if exists profiles_insert on public.profiles;
 create policy profiles_insert on public.profiles for insert with check (auth.uid() = id and role = 'volunteer');
 drop policy if exists profiles_self_insert on public.profiles;
 create policy profiles_self_insert on public.profiles for insert with check (auth.uid() = id and role = 'volunteer');
