@@ -6,7 +6,7 @@ import { Footer } from "@/components/site/CallToAction";
 export function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <I18nProvider>
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="min-h-screen bg-background/70 text-foreground">
         <Nav />
         <main>{children}</main>
         <Footer />
