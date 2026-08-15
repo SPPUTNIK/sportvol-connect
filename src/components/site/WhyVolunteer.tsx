@@ -8,7 +8,7 @@ export function WhyVolunteer() {
   const { t } = useI18n();
   const benefits = t.why.items.map((b, i) => ({ ...b, icon: icons[i] }));
   return (
-    <section className="relative bg-sand/70 py-24 lg:py-32">
+    <section className="relative bg-sand/60 py-24 lg:py-32">
       <div className="shell">
         <div className="max-w-3xl">
           <Reveal>
@@ -27,7 +27,7 @@ export function WhyVolunteer() {
           {benefits.map((b, i) => (
             <StaggerItem
               key={b.title}
-              className="group relative bg-background p-8 transition-colors duration-500 hover:bg-card lg:p-10"
+              className="group relative bg-background/70 p-8 transition-colors duration-500 hover:bg-card/80 lg:p-10"
             >
               <span className="absolute right-8 top-8 font-mono text-[0.65rem] text-muted-foreground/50">
                 0{i + 1}

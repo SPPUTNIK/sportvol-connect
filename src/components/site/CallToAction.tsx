@@ -15,6 +15,7 @@ export function CallToAction() {
 
   return (
     <section id="cta" ref={ref} className="relative overflow-hidden bg-ink">
+      <div className="pointer-events-none absolute inset-0 z-[1] zellij-tile opacity-[9%] mix-blend-screen" aria-hidden />
       <motion.img
         style={{ y }}
         src={ctaImg}
@@ -64,7 +65,8 @@ export function Footer() {
   const columns = t.footer.columns;
 
   return (
-    <footer className="border-t border-hairline-invert bg-ink text-ink-foreground">
+    <footer className="relative overflow-hidden border-t border-hairline-invert bg-ink text-ink-foreground">
+      <div className="pointer-events-none absolute inset-0 zellij-tile opacity-[9%] mix-blend-screen" aria-hidden />
       <div className="shell grid gap-14 py-20 lg:grid-cols-[1.2fr_2fr] lg:py-24">
         <div>
           <img

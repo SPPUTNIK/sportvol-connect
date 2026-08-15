@@ -14,7 +14,8 @@ const partners = [
 export function TrustedBy() {
   const { t } = useI18n();
   return (
-    <section className="border-b border-border bg-ink py-10">
+    <section className="relative overflow-hidden border-b border-border bg-ink py-10">
+      <div className="pointer-events-none absolute inset-0 zellij-tile opacity-[9%] mix-blend-screen" aria-hidden />
       <div className="shell flex items-center gap-10">
         <p className="hidden shrink-0 font-mono text-[0.62rem] uppercase tracking-[0.22em] text-ink-foreground/40 md:block">
           {t.trusted.label}

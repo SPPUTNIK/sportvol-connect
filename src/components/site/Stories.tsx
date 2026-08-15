@@ -12,7 +12,7 @@ export function Stories() {
   const s = stories[i];
 
   return (
-    <section id="stories" className="bg-sand/70 py-24 lg:py-32">
+    <section id="stories" className="bg-sand/60 py-24 lg:py-32">
       <div className="shell grid gap-14 lg:grid-cols-[0.6fr_1.4fr] lg:gap-20">
         <div>
           <Reveal>

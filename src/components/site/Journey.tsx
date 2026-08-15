@@ -7,7 +7,7 @@ export function Journey() {
   const { t } = useI18n();
   const steps = t.journey.steps.map((s2, i) => ({ ...s2, n: `0${i + 1}` }));
   return (
-    <section id="journey" className="bg-background/70 py-24 lg:py-32">
+    <section id="journey" className="bg-background/60 py-24 lg:py-32">
       <div className="shell grid gap-16 lg:grid-cols-[0.7fr_1.3fr]">
         <div className="lg:sticky lg:top-32 lg:self-start">
           <Reveal>
@@ -40,7 +40,7 @@ export function Journey() {
           {steps.map((s) => (
             <StaggerItem
               key={s.n}
-              className="group bg-background p-8 transition-colors duration-500 hover:bg-sand"
+              className="group bg-background/70 p-8 transition-colors duration-500 hover:bg-sand/70"
             >
               <span className="font-mono text-xs tracking-[0.2em] text-primary">{s.n}</span>
               <h3 className="mt-6 font-display text-lg font-semibold tracking-tight text-foreground">

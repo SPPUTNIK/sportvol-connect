@@ -86,7 +86,7 @@ function AdminNavigation({ onNavigate }: { onNavigate: () => void }) {
 
   return (
     <div className="relative flex min-h-full flex-col overflow-hidden px-4 py-6">
-      <div className="pointer-events-none absolute inset-0 bg-[url('/moroccan-pattern.png')] bg-[length:420px] opacity-[0.045]" />
+      <div className="pointer-events-none absolute inset-0 zellij-tile opacity-[0.09]" />
       <div className="relative flex min-h-full flex-col">
         <div className="mb-8 flex items-center justify-between px-3">
           <Link to="/" className="flex items-center gap-3" onClick={onNavigate}>
@@ -169,8 +169,8 @@ export function AdminLayout({ children, title, eyebrow = "Platform control" }: A
   const name = profile?.first_name || "Administrator";
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[272px] border-r border-border bg-card lg:block">
+    <div className="min-h-screen bg-background/70 text-foreground">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[272px] border-r border-border bg-card/80 lg:block">
         <AdminNavigation onNavigate={() => setOpen(false)} />
       </aside>
       {open && (
@@ -181,13 +181,13 @@ export function AdminLayout({ children, title, eyebrow = "Platform control" }: A
             onClick={() => setOpen(false)}
             aria-label="Close navigation overlay"
           />
-          <aside className="fixed inset-y-0 left-0 z-50 w-[min(86vw,320px)] border-r border-border bg-card lg:hidden">
+          <aside className="fixed inset-y-0 left-0 z-50 w-[min(86vw,320px)] border-r border-border bg-card/80 lg:hidden">
             <AdminNavigation onNavigate={() => setOpen(false)} />
           </aside>
         </>
       )}
       <div className="lg:pl-[272px]">
-        <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 border-b border-border bg-background/60 backdrop-blur-xl">
           <div className="flex h-[72px] items-center justify-between gap-4 px-5 sm:px-8">
             <div className="flex items-center gap-3">
               <button
