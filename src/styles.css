@@ -135,6 +135,18 @@
   --hairline: oklch(1 0 0 / 12%);
 }
 
+/* Hide scrollbar but keep scrolling */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+
+
 @layer base {
   * {
     border-color: var(--color-border);
@@ -286,6 +298,13 @@
   background-size: 520px auto;
   background-repeat: repeat;
   opacity: 7%;
+}
+
+@utility zellij-sidebar-bg {
+  background-image: url("./assets/zellij-pattern.jpg");
+  background-size: 520px auto;
+  background-repeat: repeat;
+  background-position: top center;
 }
 
 /* Arabic typography + RTL adjustments */

@@ -74,12 +74,12 @@ function VolunteerNavigation({ onNavigate }: { onNavigate: () => void }) {
   const currentPath = typeof window === "undefined" ? "" : window.location.pathname;
 
   return (
-    <div className="relative flex min-h-full flex-col overflow-hidden px-4 py-6">
-      <div className="pointer-events-none absolute inset-0 zellij-tile opacity-[0.09]" />
-      <div className="relative flex min-h-full flex-col">
+    <div className="relative flex h-full flex-col overflow-y-auto overflow-x-hidden scrollbar-hide px-4 py-6 ">
+      <div className="pointer-events-none absolute inset-0 zellij-sidebar-bg opacity-[0.01]" />
+      <div className="relative flex min-h-max flex-col">
         <div className="mb-8 flex items-center justify-between px-3">
           <Link to="/" className="flex items-center gap-3" onClick={onNavigate}>
-            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-background">
+            <div className="flex h-13 w-13 items-center justify-center overflow-hidden rounded-2xl">
               <img
                 src="/logo.png"
                 alt="VolunSport Morocco"
@@ -87,7 +87,7 @@ function VolunteerNavigation({ onNavigate }: { onNavigate: () => void }) {
               />
             </div>
             <div>
-              <p className="font-display text-lg font-semibold text-ink-foreground">VOLUNSPORT</p>
+              <p className="font-display text-lg font-semibold">VOLUNSPORT</p>
               <p className="text-[0.58rem] uppercase tracking-[0.3em] text-primary">Morocco</p>
             </div>
           </Link>
@@ -134,7 +134,7 @@ function VolunteerNavigation({ onNavigate }: { onNavigate: () => void }) {
         <Link
           to="/profile"
           onClick={onNavigate}
-          className="mt-auto rounded-3xl border border-border bg-background p-4 transition hover:border-primary/40"
+          className="mt-8 rounded-3xl border border-border bg-background p-4 transition hover:border-primary/40"
         >
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white">
@@ -163,8 +163,22 @@ export function VolunteerLayout({
 
   return (
     <div className="min-h-screen bg-background/70 text-foreground">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[272px] border-r border-border bg-card/80 lg:block">
-        <VolunteerNavigation onNavigate={() => setOpen(false)} />
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[272px] border-r border-border bg-card/80 lg:block overflow-hidden">
+        <div
+          aria-hidden="true"
+          className="
+            pointer-events-none absolute inset-0
+            bg-[url('./assets/zellij-pattern.jpg')]
+            bg-[length:520px_auto]
+            bg-repeat
+            bg-top
+            opacity-[0.07]
+          "
+        />
+
+        <div className="relative z-10 h-full">
+          <VolunteerNavigation onNavigate={() => setOpen(false)} />
+        </div>
       </aside>
       {open && (
         <>
