@@ -1,25 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  ArrowRight,
-  BarChart3,
-  Bell,
-  CalendarDays,
-  CheckCircle2,
-  ClipboardList,
-  Download,
-  FileBarChart,
-  GraduationCap,
-  Mail,
-  Plus,
-  Save,
-  Search,
-  Settings,
-  ShieldCheck,
-  UserRound,
-  Users,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, ChartBar as BarChart3, Bell, CalendarDays, CircleCheck as CheckCircle2, ClipboardList, Download, ChartBar as FileBarChart, GraduationCap, Mail, Plus, Save, Search, Settings, ShieldCheck, UserRound, Users } from "lucide-react";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import {
   VSBadge,
@@ -999,6 +980,28 @@ function AdminForm({
   submitLabel: string;
 }) {
   const [saved, setSaved] = useState(false);
+  const [form, setForm] = useState({
+    title: "",
+    slug: "",
+    sport: "Running",
+    city: "",
+    country: "Morocco",
+    venue: "",
+    start_date: "",
+    end_date: "",
+    start_time: "",
+    end_time: "",
+    application_deadline: "",
+    total_volunteers_needed: "0",
+    description: "",
+  });
+
+  const set = (key: keyof typeof form, value: string) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
+
+  const autoSlug = (value: string) =>
+    set("slug", value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""));
+
   return (
     <div className="mx-auto max-w-3xl">
       <VSPageHeader eyebrow={eyebrow} title={title} description={description} />
@@ -1006,30 +1009,134 @@ function AdminForm({
         <VSCardContent className="space-y-5 p-6 sm:p-8">
           <label className="block text-sm font-medium">
             Event title
-            <VSInput className="mt-2" placeholder="Name the event" />
+            <VSInput
+              className="mt-2"
+              placeholder="Name the event"
+              value={form.title}
+              onChange={(e) => {
+                set("title", e.target.value);
+                autoSlug(e.target.value);
+              }}
+            />
+          </label>
+          <label className="block text-sm font-medium">
+            Slug
+            <VSInput
+              className="mt-2"
+              placeholder="rabat-coastal-marathon"
+              value={form.slug}
+              onChange={(e) => set("slug", e.target.value)}
+            />
           </label>
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="block text-sm font-medium">
               Sport
-              <select className="mt-2 h-11 w-full rounded-2xl border border-border bg-background px-3 text-sm">
-                <option>Running</option>
+              <select
+                className="mt-2 h-11 w-full rounded-2xl border border-border bg-background px-3 text-sm"
+                value={form.sport}
+                onChange={(e) => set("sport", e.target.value)}
+              >
                 <option>Football</option>
-                <option>Beach sports</option>
+                <option>Basketball</option>
+                <option>Tennis</option>
+                <option>Athletics</option>
+                <option>Marathon</option>
+                <option>Cycling</option>
+                <option>Swimming</option>
+                <option>Motorsport</option>
+                <option>Other</option>
               </select>
             </label>
             <label className="block text-sm font-medium">
               City
-              <VSInput className="mt-2" placeholder="Marrakech" />
+              <VSInput
+                className="mt-2"
+                placeholder="Marrakech"
+                value={form.city}
+                onChange={(e) => set("city", e.target.value)}
+              />
+            </label>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <label className="block text-sm font-medium">
+              Country
+              <VSInput
+                className="mt-2"
+                placeholder="Morocco"
+                value={form.country}
+                onChange={(e) => set("country", e.target.value)}
+              />
+            </label>
+            <label className="block text-sm font-medium">
+              Venue
+              <VSInput
+                className="mt-2"
+                placeholder="Mohammed V Stadium"
+                value={form.venue}
+                onChange={(e) => set("venue", e.target.value)}
+              />
             </label>
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="block text-sm font-medium">
               Start date
-              <VSInput className="mt-2" type="date" />
+              <VSInput
+                className="mt-2"
+                type="date"
+                value={form.start_date}
+                onChange={(e) => set("start_date", e.target.value)}
+              />
             </label>
             <label className="block text-sm font-medium">
+              End date
+              <VSInput
+                className="mt-2"
+                type="date"
+                value={form.end_date}
+                onChange={(e) => set("end_date", e.target.value)}
+              />
+            </label>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <label className="block text-sm font-medium">
+              Start time
+              <VSInput
+                className="mt-2"
+                type="time"
+                value={form.start_time}
+                onChange={(e) => set("start_time", e.target.value)}
+              />
+            </label>
+            <label className="block text-sm font-medium">
+              End time
+              <VSInput
+                className="mt-2"
+                type="time"
+                value={form.end_time}
+                onChange={(e) => set("end_time", e.target.value)}
+              />
+            </label>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <label className="block text-sm font-medium">
               Application deadline
-              <VSInput className="mt-2" type="date" />
+              <VSInput
+                className="mt-2"
+                type="date"
+                value={form.application_deadline}
+                onChange={(e) => set("application_deadline", e.target.value)}
+              />
+            </label>
+            <label className="block text-sm font-medium">
+              Total volunteers needed
+              <VSInput
+                className="mt-2"
+                type="number"
+                min="0"
+                placeholder="120"
+                value={form.total_volunteers_needed}
+                onChange={(e) => set("total_volunteers_needed", e.target.value)}
+              />
             </label>
           </div>
           <label className="block text-sm font-medium">
@@ -1038,6 +1145,8 @@ function AdminForm({
               className="mt-2"
               rows={6}
               placeholder="Describe the event and the volunteer experience"
+              value={form.description}
+              onChange={(e) => set("description", e.target.value)}
             />
           </label>
           <div className="flex flex-wrap gap-3">

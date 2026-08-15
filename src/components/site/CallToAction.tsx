@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import ctaImg from "@/assets/cta.jpg";
 import { Reveal } from "./motion";
@@ -61,6 +61,11 @@ export function Footer() {
   const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [year, setYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
 
   const columns = t.footer.columns;
 
@@ -146,7 +151,7 @@ export function Footer() {
       <div className="border-t border-hairline-invert">
         <div className="shell flex flex-wrap items-center justify-between gap-3 py-6 text-xs text-ink-foreground/45">
           <p>
-            © {new Date().getFullYear()} VolunSport Morocco. {t.footer.rights}
+            © {year ?? ""} VolunSport Morocco. {t.footer.rights}
           </p>
           <p>{t.footer.built}</p>
         </div>

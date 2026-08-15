@@ -9,6 +9,14 @@ const supabase = typedSupabase as unknown as {
 };
 import type { Profile } from "./types";
 
+interface SignUpOptions {
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  city?: string;
+  country?: string;
+}
+
 interface AuthContextValue {
   session: Session | null;
   user: User | null;
@@ -16,7 +24,7 @@ interface AuthContextValue {
   loading: boolean;
   isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, options?: SignUpOptions) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   sendResetPasswordEmail: (email: string) => Promise<{ error: Error | null }>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: Error | null }>;
@@ -106,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error ?? null };
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, options?: SignUpOptions) => {
     const { error, data } = await supabase.auth.signUp({
       email,
       password,
@@ -118,6 +126,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: data.user.id,
         email,
         role: "volunteer",
+        first_name: options?.first_name ?? null,
+        last_name: options?.last_name ?? null,
+        phone: options?.phone ?? null,
+        city: options?.city ?? null,
+        country: options?.country ?? "Morocco",
       });
     }
     return { error: error ?? null };

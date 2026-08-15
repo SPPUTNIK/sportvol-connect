@@ -23,6 +23,8 @@ function Profile() {
     city: "",
     country: "",
     bio: "",
+    date_of_birth: "",
+    experience: "",
     interests: "",
     skills: "",
     languages: "",
@@ -38,6 +40,8 @@ function Profile() {
         city: profile.city ?? "",
         country: profile.country ?? "",
         bio: profile.bio ?? "",
+        date_of_birth: (profile as any).date_of_birth ?? "",
+        experience: profile.experience ?? "",
         interests: profile.interests.join(", "),
         skills: profile.skills.join(", "),
         languages: profile.languages.join(", "),
@@ -68,6 +72,8 @@ function Profile() {
       city: formState.city,
       country: formState.country,
       bio: formState.bio,
+      date_of_birth: formState.date_of_birth || null,
+      experience: formState.experience || null,
       interests: formState.interests
         .split(",")
         .map((value) => value.trim())
@@ -168,6 +174,26 @@ function Profile() {
                   />
                 </label>
               </div>
+              <label className="block text-sm font-medium text-foreground">
+                Date of birth
+                <Input
+                  type="date"
+                  value={formState.date_of_birth}
+                  onChange={(event) =>
+                    setFormState((prev) => ({ ...prev, date_of_birth: event.target.value }))
+                  }
+                />
+              </label>
+              <label className="block text-sm font-medium text-foreground">
+                Experience
+                <Input
+                  value={formState.experience}
+                  onChange={(event) =>
+                    setFormState((prev) => ({ ...prev, experience: event.target.value }))
+                  }
+                  placeholder="Previous volunteer or event experience"
+                />
+              </label>
               <label className="block text-sm font-medium text-foreground">
                 Bio
                 <textarea
