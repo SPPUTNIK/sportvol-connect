@@ -32,6 +32,7 @@ export function Events() {
   return (
     <section id="events" className="ink-panel relative overflow-hidden py-24 lg:py-32">
       <div className="absolute inset-0 hairline-grid opacity-30" aria-hidden />
+      <div className="pointer-events-none absolute inset-0 zellij-tile opacity-[9%] mix-blend-screen" aria-hidden />
       <div className="relative">
         <div className="shell flex flex-wrap items-end justify-between gap-8">
           <div>
