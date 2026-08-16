@@ -37,11 +37,11 @@ export function Nav() {
         className={`transition-all duration-700 ${
           scrolled
             ? "border-b border-hairline-invert bg-ink/80 backdrop-blur-xl"
-            : "border-b border-transparent"
+            : "border-b bg-ink/80 border-transparent"
         }`}
       >
         <nav className="shell flex h-20 items-center justify-between">
-          <a href="#top" className="flex items-center gap-3 text-ink-foreground">
+          <a href="#top" className="flex items-center gap-3">
             <img
               src={logoAsset}
               alt="VolunSport Morocco logo"
@@ -50,7 +50,7 @@ export function Nav() {
               className="h-16 w-auto"
             />
             <span className="leading-none">
-              <span className="block font-display text-[1.05rem] font-semibold tracking-tight">
+              <span className="block text-primary font-display text-[1.05rem] font-semibold tracking-tight">
                 VolunSport
               </span>
               <span className="block font-mono text-[0.6rem] uppercase tracking-[0.28em] text-ink-foreground/55">
