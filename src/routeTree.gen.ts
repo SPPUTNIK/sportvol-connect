@@ -40,7 +40,6 @@ import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as AdminApplicationsRouteImport } from './routes/admin/applications'
 import { Route as AdminAttendanceRouteImport } from './routes/admin/attendance'
 import { Route as AdminCertificatesRouteImport } from './routes/admin/certificates'
-import { Route as AdminEventsRouteImport } from './routes/admin/events'
 import { Route as AdminHoursRouteImport } from './routes/admin/hours'
 import { Route as AdminNotificationsRouteImport } from './routes/admin/notifications'
 import { Route as AdminProfileRouteImport } from './routes/admin/profile'
@@ -54,6 +53,7 @@ import { Route as EventsSlugRouteImport } from './routes/events/$slug'
 import { Route as TrainingTrainingIdRouteImport } from './routes/training/$trainingId'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as AdminEventsIndexRouteImport } from './routes/admin/events/index'
 import { Route as AdminEventsEventIdRouteImport } from './routes/admin/events/$eventId'
 import { Route as AdminEventsCreateRouteImport } from './routes/admin/events/create'
 import { Route as AdminVolunteersIndexRouteImport } from './routes/admin/volunteers/index'
@@ -216,11 +216,6 @@ const AdminCertificatesRoute = AdminCertificatesRouteImport.update({
   path: '/certificates',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminEventsRoute = AdminEventsRouteImport.update({
-  id: '/events',
-  path: '/events',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminHoursRoute = AdminHoursRouteImport.update({
   id: '/hours',
   path: '/hours',
@@ -288,15 +283,20 @@ const Char91DotmcpChar93InvokeToolToolRoute =
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminEventsIndexRoute = AdminEventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminEventsEventIdRoute = AdminEventsEventIdRouteImport.update({
-  id: '/$eventId',
-  path: '/$eventId',
-  getParentRoute: () => AdminEventsRoute,
+  id: '/events/$eventId',
+  path: '/events/$eventId',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminEventsCreateRoute = AdminEventsCreateRouteImport.update({
-  id: '/create',
-  path: '/create',
-  getParentRoute: () => AdminEventsRoute,
+  id: '/events/create',
+  path: '/events/create',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminVolunteersIndexRoute = AdminVolunteersIndexRouteImport.update({
   id: '/volunteers/',
@@ -341,7 +341,6 @@ export interface FileRoutesByFullPath {
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
   '/admin/certificates': typeof AdminCertificatesRoute
-  '/admin/events': typeof AdminEventsRouteWithChildren
   '/admin/hours': typeof AdminHoursRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/profile': typeof AdminProfileRoute
@@ -359,6 +358,7 @@ export interface FileRoutesByFullPath {
   '/admin/events/$eventId': typeof AdminEventsEventIdRoute
   '/admin/events/create': typeof AdminEventsCreateRoute
   '/admin/volunteers/$volunteerId': typeof AdminVolunteersVolunteerIdRoute
+  '/admin/events/': typeof AdminEventsIndexRoute
   '/admin/volunteers/': typeof AdminVolunteersIndexRoute
 }
 export interface FileRoutesByTo {
@@ -391,7 +391,6 @@ export interface FileRoutesByTo {
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
   '/admin/certificates': typeof AdminCertificatesRoute
-  '/admin/events': typeof AdminEventsRouteWithChildren
   '/admin/hours': typeof AdminHoursRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/profile': typeof AdminProfileRoute
@@ -409,6 +408,7 @@ export interface FileRoutesByTo {
   '/admin/events/$eventId': typeof AdminEventsEventIdRoute
   '/admin/events/create': typeof AdminEventsCreateRoute
   '/admin/volunteers/$volunteerId': typeof AdminVolunteersVolunteerIdRoute
+  '/admin/events': typeof AdminEventsIndexRoute
   '/admin/volunteers': typeof AdminVolunteersIndexRoute
 }
 export interface FileRoutesById {
@@ -443,7 +443,6 @@ export interface FileRoutesById {
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
   '/admin/certificates': typeof AdminCertificatesRoute
-  '/admin/events': typeof AdminEventsRouteWithChildren
   '/admin/hours': typeof AdminHoursRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/profile': typeof AdminProfileRoute
@@ -461,6 +460,7 @@ export interface FileRoutesById {
   '/admin/events/$eventId': typeof AdminEventsEventIdRoute
   '/admin/events/create': typeof AdminEventsCreateRoute
   '/admin/volunteers/$volunteerId': typeof AdminVolunteersVolunteerIdRoute
+  '/admin/events/': typeof AdminEventsIndexRoute
   '/admin/volunteers/': typeof AdminVolunteersIndexRoute
 }
 export interface FileRouteTypes {
@@ -496,7 +496,6 @@ export interface FileRouteTypes {
     | '/admin/applications'
     | '/admin/attendance'
     | '/admin/certificates'
-    | '/admin/events'
     | '/admin/hours'
     | '/admin/notifications'
     | '/admin/profile'
@@ -514,6 +513,7 @@ export interface FileRouteTypes {
     | '/admin/events/$eventId'
     | '/admin/events/create'
     | '/admin/volunteers/$volunteerId'
+    | '/admin/events/'
     | '/admin/volunteers/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -546,7 +546,6 @@ export interface FileRouteTypes {
     | '/admin/applications'
     | '/admin/attendance'
     | '/admin/certificates'
-    | '/admin/events'
     | '/admin/hours'
     | '/admin/notifications'
     | '/admin/profile'
@@ -564,6 +563,7 @@ export interface FileRouteTypes {
     | '/admin/events/$eventId'
     | '/admin/events/create'
     | '/admin/volunteers/$volunteerId'
+    | '/admin/events'
     | '/admin/volunteers'
   id:
     | '__root__'
@@ -597,7 +597,6 @@ export interface FileRouteTypes {
     | '/admin/applications'
     | '/admin/attendance'
     | '/admin/certificates'
-    | '/admin/events'
     | '/admin/hours'
     | '/admin/notifications'
     | '/admin/profile'
@@ -615,6 +614,7 @@ export interface FileRouteTypes {
     | '/admin/events/$eventId'
     | '/admin/events/create'
     | '/admin/volunteers/$volunteerId'
+    | '/admin/events/'
     | '/admin/volunteers/'
   fileRoutesById: FileRoutesById
 }
@@ -867,13 +867,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCertificatesRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/events': {
-      id: '/admin/events'
-      path: '/events'
-      fullPath: '/admin/events'
-      preLoaderRoute: typeof AdminEventsRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/hours': {
       id: '/admin/hours'
       path: '/hours'
@@ -965,19 +958,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/events/': {
+      id: '/admin/events/'
+      path: '/events'
+      fullPath: '/admin/events/'
+      preLoaderRoute: typeof AdminEventsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/events/$eventId': {
       id: '/admin/events/$eventId'
-      path: '/$eventId'
+      path: '/events/$eventId'
       fullPath: '/admin/events/$eventId'
       preLoaderRoute: typeof AdminEventsEventIdRouteImport
-      parentRoute: typeof AdminEventsRoute
+      parentRoute: typeof AdminRoute
     }
     '/admin/events/create': {
       id: '/admin/events/create'
-      path: '/create'
+      path: '/events/create'
       fullPath: '/admin/events/create'
       preLoaderRoute: typeof AdminEventsCreateRouteImport
-      parentRoute: typeof AdminEventsRoute
+      parentRoute: typeof AdminRoute
     }
     '/admin/volunteers/': {
       id: '/admin/volunteers/'
@@ -996,27 +996,12 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AdminEventsRouteChildren {
-  AdminEventsEventIdRoute: typeof AdminEventsEventIdRoute
-  AdminEventsCreateRoute: typeof AdminEventsCreateRoute
-}
-
-const AdminEventsRouteChildren: AdminEventsRouteChildren = {
-  AdminEventsEventIdRoute: AdminEventsEventIdRoute,
-  AdminEventsCreateRoute: AdminEventsCreateRoute,
-}
-
-const AdminEventsRouteWithChildren = AdminEventsRoute._addFileChildren(
-  AdminEventsRouteChildren,
-)
-
 interface AdminRouteChildren {
   AdminAccreditationRoute: typeof AdminAccreditationRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminApplicationsRoute: typeof AdminApplicationsRoute
   AdminAttendanceRoute: typeof AdminAttendanceRoute
   AdminCertificatesRoute: typeof AdminCertificatesRoute
-  AdminEventsRoute: typeof AdminEventsRouteWithChildren
   AdminHoursRoute: typeof AdminHoursRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
   AdminProfileRoute: typeof AdminProfileRoute
@@ -1026,7 +1011,10 @@ interface AdminRouteChildren {
   AdminShiftsRoute: typeof AdminShiftsRoute
   AdminTrainingRoute: typeof AdminTrainingRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminEventsEventIdRoute: typeof AdminEventsEventIdRoute
+  AdminEventsCreateRoute: typeof AdminEventsCreateRoute
   AdminVolunteersVolunteerIdRoute: typeof AdminVolunteersVolunteerIdRoute
+  AdminEventsIndexRoute: typeof AdminEventsIndexRoute
   AdminVolunteersIndexRoute: typeof AdminVolunteersIndexRoute
 }
 
@@ -1036,7 +1024,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminApplicationsRoute: AdminApplicationsRoute,
   AdminAttendanceRoute: AdminAttendanceRoute,
   AdminCertificatesRoute: AdminCertificatesRoute,
-  AdminEventsRoute: AdminEventsRouteWithChildren,
   AdminHoursRoute: AdminHoursRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
   AdminProfileRoute: AdminProfileRoute,
@@ -1046,7 +1033,10 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminShiftsRoute: AdminShiftsRoute,
   AdminTrainingRoute: AdminTrainingRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminEventsEventIdRoute: AdminEventsEventIdRoute,
+  AdminEventsCreateRoute: AdminEventsCreateRoute,
   AdminVolunteersVolunteerIdRoute: AdminVolunteersVolunteerIdRoute,
+  AdminEventsIndexRoute: AdminEventsIndexRoute,
   AdminVolunteersIndexRoute: AdminVolunteersIndexRoute,
 }
 

@@ -40,14 +40,6 @@ export function AdminDashboardPage() {
           eyebrow="Platform control"
           title="Keep the movement moving."
           description="A clear view of volunteers, events, applications, attendance, and impact."
-          action={
-            <VSButton asChild variant="outline">
-              <Link to="/events">
-                View public events
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </VSButton>
-          }
         />
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-6">

@@ -1,5 +1,5 @@
-import { AdminGate } from "./components/AdminGate";
-import { AdminForm } from "./components/AdminForm";
+import { AdminGate } from "../components/AdminGate";
+import { AdminForm } from "../components/AdminForm";
 
 export function AdminEventCreatePage() {
   return (

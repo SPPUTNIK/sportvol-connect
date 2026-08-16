@@ -1,7 +1,5 @@
+import { Image, Save } from "lucide-react";
 import { useState } from "react";
-import {
-  Save,
-} from "lucide-react";
 
 import {
   VSButton,
@@ -12,13 +10,12 @@ import {
   VSTextarea,
 } from "@/components/design-system";
 
-import {
-  createSlug,
-} from "./adminHelpers";
+import { createSlug } from "./adminHelpers";
 
 type EventFormState = {
   title: string;
   slug: string;
+  imageUrl: string;
   sport: string;
   city: string;
   country: string;
@@ -47,22 +44,22 @@ export function AdminForm({
 }: AdminFormProps) {
   const [saved, setSaved] = useState(false);
 
-  const [form, setForm] =
-    useState<EventFormState>({
-      title: "",
-      slug: "",
-      sport: "Running",
-      city: "",
-      country: "Morocco",
-      venue: "",
-      startDate: "",
-      endDate: "",
-      startTime: "",
-      endTime: "",
-      applicationDeadline: "",
-      totalVolunteersNeeded: "0",
-      description: "",
-    });
+  const [form, setForm] = useState<EventFormState>({
+    title: "",
+    slug: "",
+    imageUrl: "",
+    sport: "Running",
+    city: "",
+    country: "Morocco",
+    venue: "",
+    startDate: "",
+    endDate: "",
+    startTime: "",
+    endTime: "",
+    applicationDeadline: "",
+    totalVolunteersNeeded: "0",
+    description: "",
+  });
 
   const set = <K extends keyof EventFormState>(
     key: K,
@@ -72,6 +69,8 @@ export function AdminForm({
       ...previous,
       [key]: value,
     }));
+
+    setSaved(false);
   };
 
   const handleTitleChange = (value: string) => {
@@ -80,6 +79,8 @@ export function AdminForm({
       title: value,
       slug: createSlug(value),
     }));
+
+    setSaved(false);
   };
 
   const handleSubmit = () => {
@@ -103,6 +104,7 @@ export function AdminForm({
 
       <VSCard className="mt-8 rounded-[2rem] border-border">
         <VSCardContent className="space-y-5 p-6 sm:p-8">
+          {/* Event title */}
           <label className="block text-sm font-medium">
             Event title
 
@@ -116,6 +118,7 @@ export function AdminForm({
             />
           </label>
 
+          {/* Slug */}
           <label className="block text-sm font-medium">
             Slug
 
@@ -129,6 +132,70 @@ export function AdminForm({
             />
           </label>
 
+          {/* Event image */}
+          <div>
+            <label className="block text-sm font-medium">
+              Event image
+            </label>
+
+            <div className="mt-2 overflow-hidden rounded-[1.5rem] border border-border bg-muted/30">
+              {form.imageUrl ? (
+                <div className="relative">
+                  <img
+                    src={form.imageUrl}
+                    alt={
+                      form.title || "Event preview"
+                    }
+                    className="h-64 w-full object-cover"
+                    onError={(event) => {
+                      event.currentTarget.style.display =
+                        "none";
+                    }}
+                  />
+
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 pt-12">
+                    <p className="text-sm font-medium text-white">
+                      {form.title ||
+                        "Event image preview"}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex h-48 flex-col items-center justify-center gap-3 text-muted-foreground">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                    <Image className="h-6 w-6" />
+                  </div>
+
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-foreground">
+                      No event image
+                    </p>
+
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Add an image URL for the event
+                      cover.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <VSInput
+              className="mt-3"
+              type="url"
+              placeholder="https://example.com/event-image.jpg"
+              value={form.imageUrl}
+              onChange={(event) =>
+                set("imageUrl", event.target.value)
+              }
+            />
+
+            <p className="mt-2 text-xs text-muted-foreground">
+              Recommended: landscape image, 16:9 ratio.
+            </p>
+          </div>
+
+          {/* Sport + City */}
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="block text-sm font-medium">
               Sport
@@ -167,6 +234,7 @@ export function AdminForm({
             </label>
           </div>
 
+          {/* Country + Venue */}
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="block text-sm font-medium">
               Country
@@ -194,6 +262,7 @@ export function AdminForm({
             </label>
           </div>
 
+          {/* Dates */}
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="block text-sm font-medium">
               Start date
@@ -228,6 +297,7 @@ export function AdminForm({
             </label>
           </div>
 
+          {/* Times */}
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="block text-sm font-medium">
               Start time
@@ -258,10 +328,11 @@ export function AdminForm({
                     event.target.value,
                   )
                 }
-            />
+              />
             </label>
           </div>
 
+          {/* Deadline + Volunteers */}
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="block text-sm font-medium">
               Application deadline
@@ -297,6 +368,7 @@ export function AdminForm({
             </label>
           </div>
 
+          {/* Description */}
           <label className="block text-sm font-medium">
             Description
 
@@ -314,6 +386,7 @@ export function AdminForm({
             />
           </label>
 
+          {/* Actions */}
           <div className="flex flex-wrap gap-3">
             <VSButton onClick={handleSubmit}>
               <Save className="h-4 w-4" />
