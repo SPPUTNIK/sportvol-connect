@@ -1,7 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AdminDashboardPage } from "@/components/admin/AdminPages";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin")({
-  component: AdminDashboardPage,
-  head: () => ({ meta: [{ title: "Admin Dashboard | VolunSport Morocco" }] }),
+  component: AdminRoute,
 });
+
+function AdminRoute() {
+  return (
+      <Outlet />
+  );
+}

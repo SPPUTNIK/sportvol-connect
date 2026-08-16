@@ -158,12 +158,12 @@ export const adminNavigation: AdminNavGroup[] = [
     items: [
       {
         label: "Profile",
-        href: "/profile",
+        href: "/admin/profile",
         icon: UserRound,
       },
       {
         label: "Settings",
-        href: "/settings",
+        href: "/admin/settings",
         icon: Settings,
       },
     ],
@@ -276,7 +276,7 @@ function AdminNavigation({
         {/* Admin profile */}
         <div className="shrink-0 border-t border-border p-4">
           <Link
-            to="/profile"
+            to="/admin/profile"
             onClick={onNavigate}
             className="block rounded-3xl border border-border bg-background p-4 transition hover:border-primary/40"
           >
@@ -394,7 +394,7 @@ export function AdminLayout({
               </Link>
 
               <Link
-                to="/profile"
+                to="/admin/profile"
                 className="flex items-center gap-2 rounded-full border border-border bg-card py-1.5 pl-1.5 pr-3"
               >
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-ink text-[0.65rem] font-semibold text-white">
@@ -417,3 +417,4 @@ export function AdminLayout({
     </div>
   );
 }
+
