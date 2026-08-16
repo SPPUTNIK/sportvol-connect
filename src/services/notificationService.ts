@@ -30,7 +30,7 @@ export const notificationService = {
             body: notification.body,
             date: notification.date,
             read: notification.read,
-          }) as Notification,
+          }) as unknown as Notification,
       );
     }
 

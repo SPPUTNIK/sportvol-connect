@@ -741,7 +741,7 @@ export function AttendancePage() {
 }
 
 export function NotificationsPage() {
-  const unread = volunteerContentService.getNotifications().filter((item) => item.unread).length;
+  const unread = volunteerContentService.getNotifications().filter((item) => !item.read).length;
   return (
     <AppShell title="Notifications">
       <div className="mx-auto max-w-3xl">
@@ -760,9 +760,9 @@ export function NotificationsPage() {
             <VSNotificationItem
               key={item.id}
               title={item.title}
-              description={item.description}
-              timestamp={item.timestamp}
-              unread={item.unread}
+              description={item.body}
+              timestamp={item.date}
+              unread={!item.read}
               href="/notifications"
             />
           ))}

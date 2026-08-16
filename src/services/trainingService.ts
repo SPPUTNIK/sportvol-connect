@@ -28,7 +28,7 @@ export const trainingService = {
             description: module.description,
             completed: module.complete,
             resources: module.resources,
-          }) as Training,
+          }) as unknown as Training,
       );
     }
 

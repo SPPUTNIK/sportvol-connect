@@ -25,7 +25,7 @@ export const applicationService = {
           status: application.status,
 
           submitted_at: application.appliedAt,
-        }) as Application,
+        }) as unknown as Application,
     );
   },
 };

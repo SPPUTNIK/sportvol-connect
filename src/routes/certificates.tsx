@@ -178,7 +178,7 @@ function Certificates() {
                         </div>
 
                         <p className="mt-2 text-sm font-semibold text-foreground">
-                          {certificate.date}
+                          {String(certificate.date)}
                         </p>
 
                       </div>
@@ -212,7 +212,7 @@ function Certificates() {
                           </p>
 
                           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                            {certificate.description}
+                            {String(certificate.description)}
                           </p>
 
                         </div>
