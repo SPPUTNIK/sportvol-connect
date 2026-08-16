@@ -166,12 +166,44 @@ function Certificates() {
                     {/* INFO */}
 
                     <div className="grid gap-3 sm:grid-cols-2">
+
+                      <div className="rounded-2xl border border-border bg-background p-4">
+
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <CalendarDays className="h-4 w-4" />
+
+                          <p className="text-xs font-medium">
+                            Date
+                          </p>
+                        </div>
+
+                        <p className="mt-2 text-sm font-semibold text-foreground">
+                          {String(certificate.date)}
+                        </p>
+
+                      </div>
+
+                      <div className="rounded-2xl border border-border bg-background p-4">
+
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Clock3 className="h-4 w-4" />
+
+                          <p className="text-xs font-medium">
+                            Volunteer hours
+                          </p>
+                        </div>
+
+                        <p className="mt-2 text-sm font-semibold text-foreground">
+                          {String(certificate.hours)} hours
+                        </p>
+
+                      </div>
+
                     </div>
 
                     {/* DESCRIPTION */}
 
-                    {"description" in certificate &&
-                      certificate.description && (
+                    {Boolean((certificate as { description?: string }).description) && (
                         <div className="rounded-2xl bg-muted/30 p-5">
 
                           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -179,7 +211,7 @@ function Certificates() {
                           </p>
 
                           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                            {String(certificate.description)}
+                            {(certificate as { description?: string }).description}
                           </p>
 
                         </div>
