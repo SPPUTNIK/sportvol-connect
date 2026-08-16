@@ -166,39 +166,6 @@ function Certificates() {
                     {/* INFO */}
 
                     <div className="grid gap-3 sm:grid-cols-2">
-
-                      <div className="rounded-2xl border border-border bg-background p-4">
-
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <CalendarDays className="h-4 w-4" />
-
-                          <p className="text-xs font-medium">
-                            Date
-                          </p>
-                        </div>
-
-                        <p className="mt-2 text-sm font-semibold text-foreground">
-                          {String(certificate.date)}
-                        </p>
-
-                      </div>
-
-                      <div className="rounded-2xl border border-border bg-background p-4">
-
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Clock3 className="h-4 w-4" />
-
-                          <p className="text-xs font-medium">
-                            Volunteer hours
-                          </p>
-                        </div>
-
-                        <p className="mt-2 text-sm font-semibold text-foreground">
-                          {String(certificate.hours)} hours
-                        </p>
-
-                      </div>
-
                     </div>
 
                     {/* DESCRIPTION */}
