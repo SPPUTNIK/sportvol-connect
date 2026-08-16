@@ -19,8 +19,6 @@ export const demoUpcomingEvent = {
   accreditation: "Issued",
 };
 
-
-
 export const demoMyEvents = [
   {
     id: "event-001",
@@ -43,6 +41,158 @@ export const demoMyEvents = [
     training: "In progress",
     accreditation: "Pending",
     attendance: "Not started",
+  },
+] as const;
+
+export const demoEvents = [
+  {
+    id: "event-001",
+    slug: "marrakech-international-marathon",
+    title: "Marrakech International Marathon",
+    sport: "Running",
+    city: "Marrakech",
+    venue: "Menara Gardens",
+    start_date: "2026-10-18T06:00:00",
+    end_date: "2026-10-18T12:30:00",
+    cover_url: "/events/marrakech-marathon.jpg",
+    total_volunteers_needed: 120,
+    event_roles: [
+      {
+        id: "role-001",
+        name: "Route support volunteer",
+        filled_positions: 72,
+      },
+      {
+        id: "role-002",
+        name: "Hydration station",
+        filled_positions: 25,
+      },
+    ],
+  },
+
+  {
+    id: "event-002",
+    slug: "rabat-beach-games",
+    title: "Rabat Beach Games",
+    sport: "Beach Games",
+    city: "Rabat",
+    venue: "Rabat Corniche",
+    start_date: "2026-11-02T08:00:00",
+    end_date: "2026-11-02T14:00:00",
+    cover_url: "/events/rabat-beach-games.jpg",
+    total_volunteers_needed: 80,
+    event_roles: [
+      {
+        id: "role-003",
+        name: "Athlete welcome desk",
+        filled_positions: 42,
+      },
+      {
+        id: "role-004",
+        name: "Registration support",
+        filled_positions: 18,
+      },
+    ],
+  },
+
+  {
+    id: "event-003",
+    slug: "atlas-trail-challenge",
+    title: "Atlas Trail Challenge",
+    sport: "Trail Running",
+    city: "Ifrane",
+    venue: "Atlas Trail Base",
+    start_date: "2026-11-22T07:00:00",
+    end_date: "2026-11-22T15:00:00",
+    cover_url: "/events/atlas-trail.jpg",
+    total_volunteers_needed: 60,
+    event_roles: [
+      {
+        id: "role-005",
+        name: "Hydration station lead",
+        filled_positions: 22,
+      },
+      {
+        id: "role-006",
+        name: "Route support",
+        filled_positions: 14,
+      },
+    ],
+  },
+
+  {
+    id: "event-004",
+    slug: "casablanca-youth-cup",
+    title: "Casablanca Youth Cup",
+    sport: "Football",
+    city: "Casablanca",
+    venue: "Mohammed V Sports Complex",
+    start_date: "2026-12-05T09:00:00",
+    end_date: "2026-12-05T17:00:00",
+    cover_url: "/events/casablanca-youth-cup.jpg",
+    total_volunteers_needed: 100,
+    event_roles: [
+      {
+        id: "role-007",
+        name: "Team liaison",
+        filled_positions: 31,
+      },
+      {
+        id: "role-008",
+        name: "Event support",
+        filled_positions: 21,
+      },
+    ],
+  },
+
+  {
+    id: "event-005",
+    slug: "rabat-10k",
+    title: "Rabat 10K City Run",
+    sport: "Running",
+    city: "Rabat",
+    venue: "Agdal",
+    start_date: "2026-12-19T06:30:00",
+    end_date: "2026-12-19T12:00:00",
+    cover_url: "/events/rabat-10k.jpg",
+    total_volunteers_needed: 90,
+    event_roles: [
+      {
+        id: "role-009",
+        name: "Route marshal",
+        filled_positions: 20,
+      },
+      {
+        id: "role-010",
+        name: "Registration support",
+        filled_positions: 15,
+      },
+    ],
+  },
+
+  {
+    id: "event-006",
+    slug: "fes-sports-festival",
+    title: "Fes Sports Festival",
+    sport: "Multi-sport",
+    city: "Fes",
+    venue: "Sports City Fes",
+    start_date: "2027-01-10T08:00:00",
+    end_date: "2027-01-10T16:00:00",
+    cover_url: "/events/fes-sports-festival.jpg",
+    total_volunteers_needed: 150,
+    event_roles: [
+      {
+        id: "role-011",
+        name: "Event operations",
+        filled_positions: 35,
+      },
+      {
+        id: "role-012",
+        name: "Athlete support",
+        filled_positions: 27,
+      },
+    ],
   },
 ] as const;
 
@@ -135,7 +285,6 @@ export const demoAccreditation = {
   zone: "North route · Zone B",
   status: "Issued",
 } as const;
-
 
 export const demoApplications = [
   {
@@ -291,28 +440,43 @@ export const demoAchievements = [
 export const demoNotifications = [
   {
     id: "notification-001",
-    title: "Your application was accepted",
-    description:
-      "Your Route support volunteer application for Marrakech International Marathon is confirmed.",
-    timestamp: "2 hours ago",
-    category: "application",
-    unread: true,
+    title: "Application approved",
+    category: "Applications",
+    body: "Your application for Marrakech International Marathon has been approved.",
+    date: "12 Aug 2026",
+    read: false,
   },
   {
     id: "notification-002",
-    title: "New training available",
-    description: "Event-day communication is ready before your next assignment.",
-    timestamp: "Yesterday",
-    category: "training",
-    unread: true,
+    title: "Training reminder",
+    category: "Training",
+    body: "Your volunteer training is still in progress. Complete the remaining modules before your next assignment.",
+    date: "10 Aug 2026",
+    read: false,
   },
   {
     id: "notification-003",
-    title: "Certificate issued",
-    description: "Your Rabat Beach Games certificate is ready to preview.",
-    timestamp: "12 Jul 2026",
-    category: "certificate",
-    unread: false,
+    title: "New event available",
+    category: "Events",
+    body: "Rabat Beach Games is now accepting volunteer applications.",
+    date: "08 Aug 2026",
+    read: true,
+  },
+  {
+    id: "notification-004",
+    title: "Schedule updated",
+    category: "Schedule",
+    body: "Your volunteer shift schedule has been updated. Check your schedule for the latest information.",
+    date: "05 Aug 2026",
+    read: true,
+  },
+  {
+    id: "notification-005",
+    title: "Welcome to VolunSport",
+    category: "Platform",
+    body: "Welcome to VolunSport Morocco. Complete your profile to discover volunteer opportunities that match your skills.",
+    date: "01 Aug 2026",
+    read: true,
   },
 ] as const;
 

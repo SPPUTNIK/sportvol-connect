@@ -48,7 +48,7 @@ export function DashboardPage() {
           }
         />
         <section className="relative overflow-hidden rounded-[2rem] bg-ink p-7 text-white shadow-[var(--shadow-lift)] sm:p-10">
-          <div className="pointer-events-none absolute inset-0 bg-[url('/moroccan-pattern.png')] bg-cover opacity-[0.09]" />
+          <div className="pointer-events-none absolute inset-0 zellij-tile" />
           <div className="relative max-w-2xl">
             <VSBadge variant="dark">Your next impact</VSBadge>
             <h2 className="mt-5 text-3xl font-semibold tracking-tight sm:text-5xl">

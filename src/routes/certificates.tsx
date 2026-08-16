@@ -1,16 +1,32 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { I18nProvider } from "@/lib/i18n";
+import { Download, Award, CalendarDays, Clock3 } from "lucide-react";
+
+import { AppShell } from "@/components/app/AppShell";
 import { certificateService } from "@/services/certificateService";
+
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
 import type { Certificate } from "@/lib/types";
 
 export const Route = createFileRoute("/certificates")({
   component: Certificates,
+
   head: () => ({
-    meta: [{ title: "Certificates | VolunSport Morocco" }],
+    meta: [
+      {
+        title: "Certificates | VolunSport Morocco",
+      },
+    ],
   }),
 });
 
@@ -22,67 +38,232 @@ function Certificates() {
   useEffect(() => {
     certificateService
       .getCertificates()
-      .then((data) => setCertificates(data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+      .then((data) => {
+        setCertificates(data);
+      })
+      .catch((err: unknown) => {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load certificates.",
+        );
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   return (
-    <I18nProvider>
-      <div className="shell min-h-screen py-24">
-        <div className="mb-8 space-y-3">
-          <p className="eyebrow">Certificates</p>
-          <h1 className="display-md text-ink-foreground">Your volunteer certificates</h1>
-          <p className="max-w-2xl text-sm text-muted-foreground">
-            Download or preview certificates earned from completed volunteer events.
-          </p>
-        </div>
+    <AppShell title="Certificates">
+      <main className="mx-auto max-w-7xl space-y-8">
 
-        {loading ? (
-          <LoadingState message="Loading certificates…" />
-        ) : error ? (
-          <EmptyState title="Error" description={error} />
-        ) : certificates.length === 0 ? (
-          <EmptyState
-            title="No certificates yet"
-            description="Complete a volunteer event to earn your first certificate."
+        {/* =====================================================
+            HEADER
+        ===================================================== */}
+
+        <header className="space-y-3">
+          <p className="eyebrow">
+            Certificates
+          </p>
+
+          <h1 className="display-md">
+            Your volunteer certificates
+          </h1>
+
+          <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+            Download or preview certificates earned from
+            your completed volunteer events.
+          </p>
+        </header>
+
+        {/* =====================================================
+            LOADING
+        ===================================================== */}
+
+        {loading && (
+          <LoadingState
+            message="Loading your certificates…"
           />
-        ) : (
-          <div className="grid gap-6 lg:grid-cols-2">
-            {certificates.map((certificate) => (
-              <Card key={certificate.id} className="rounded-[2rem] border border-hairline-invert">
-                <CardHeader>
-                  <CardTitle>{certificate.event_title}</CardTitle>
-                  <CardDescription>{certificate.role_name}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 pt-0">
-                  <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
-                    <div>
-                      <p className="text-foreground font-semibold">Date</p>
-                      <p className="mt-1">{certificate.date}</p>
-                    </div>
-                    <div>
-                      <p className="text-foreground font-semibold">Hours</p>
-                      <p className="mt-1">{certificate.hours}</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                      ID: {certificate.certificate_id}
-                    </p>
-                    <button
-                      type="button"
-                      className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
-                    >
-                      Download
-                    </button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
         )}
-      </div>
-    </I18nProvider>
+
+        {/* =====================================================
+            ERROR
+        ===================================================== */}
+
+        {!loading && error && (
+          <EmptyState
+            title="Unable to load certificates"
+            description={error}
+          />
+        )}
+
+        {/* =====================================================
+            EMPTY
+        ===================================================== */}
+
+        {!loading &&
+          !error &&
+          certificates.length === 0 && (
+            <EmptyState
+              title="No certificates yet"
+              description="Complete a volunteer event to earn your first certificate."
+            />
+          )}
+
+        {/* =====================================================
+            CERTIFICATES
+        ===================================================== */}
+
+        {!loading &&
+          !error &&
+          certificates.length > 0 && (
+            <div className="grid gap-6 lg:grid-cols-2">
+
+              {certificates.map((certificate) => (
+                <Card
+                  key={certificate.id}
+                  className="overflow-hidden rounded-[2rem] border-border bg-card shadow-[var(--shadow-lift)]"
+                >
+
+                  {/* ===========================================
+                      CARD HEADER
+                  =========================================== */}
+
+                  <CardHeader className="p-6 sm:p-7">
+
+                    <div className="flex items-start justify-between gap-4">
+
+                      <div className="min-w-0">
+
+                        <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                          <Award className="h-5 w-5" />
+                        </div>
+
+                        <CardTitle className="text-xl">
+                          {certificate.event_title}
+                        </CardTitle>
+
+                        <CardDescription className="mt-2">
+                          {certificate.role_name}
+                        </CardDescription>
+
+                      </div>
+
+                      <div className="shrink-0 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-600">
+                        Earned
+                      </div>
+
+                    </div>
+
+                  </CardHeader>
+
+                  {/* ===========================================
+                      CONTENT
+                  =========================================== */}
+
+                  <CardContent className="space-y-6 px-6 pb-6 sm:px-7 sm:pb-7">
+
+                    {/* INFO */}
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+
+                      <div className="rounded-2xl border border-border bg-background p-4">
+
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <CalendarDays className="h-4 w-4" />
+
+                          <p className="text-xs font-medium">
+                            Date
+                          </p>
+                        </div>
+
+                        <p className="mt-2 text-sm font-semibold text-foreground">
+                          {certificate.date}
+                        </p>
+
+                      </div>
+
+                      <div className="rounded-2xl border border-border bg-background p-4">
+
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Clock3 className="h-4 w-4" />
+
+                          <p className="text-xs font-medium">
+                            Volunteer hours
+                          </p>
+                        </div>
+
+                        <p className="mt-2 text-sm font-semibold text-foreground">
+                          {certificate.hours} hours
+                        </p>
+
+                      </div>
+
+                    </div>
+
+                    {/* DESCRIPTION */}
+
+                    {"description" in certificate &&
+                      certificate.description && (
+                        <div className="rounded-2xl bg-muted/30 p-5">
+
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                            Certificate recognition
+                          </p>
+
+                          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                            {certificate.description}
+                          </p>
+
+                        </div>
+                      )}
+
+                    {/* FOOTER */}
+
+                    <div className="flex flex-col gap-4 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+
+                      <div>
+                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                          Certificate ID
+                        </p>
+
+                        <p className="mt-1 font-mono text-sm font-semibold text-foreground">
+                          {certificate.certificate_id}
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="
+                          inline-flex
+                          items-center
+                          justify-center
+                          gap-2
+                          rounded-full
+                          bg-primary
+                          px-5
+                          py-2.5
+                          text-sm
+                          font-semibold
+                          text-primary-foreground
+                          transition
+                          hover:bg-primary/90
+                        "
+                      >
+                        <Download className="h-4 w-4" />
+                        Download
+                      </button>
+
+                    </div>
+
+                  </CardContent>
+                </Card>
+              ))}
+
+            </div>
+          )}
+
+      </main>
+    </AppShell>
   );
 }
