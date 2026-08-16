@@ -194,7 +194,7 @@ function Certificates() {
                         </div>
 
                         <p className="mt-2 text-sm font-semibold text-foreground">
-                          {certificate.hours} hours
+                          {String(certificate.hours)} hours
                         </p>
 
                       </div>
