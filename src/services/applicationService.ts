@@ -25,7 +25,19 @@ export const applicationService = {
           status: application.status,
 
           submitted_at: application.appliedAt,
-        }) as Application,
+        }) as unknown as Application,
     );
+  },
+
+  async applyForRole(input: {
+    eventId: string;
+    roleId: string;
+    availability?: string;
+    experience?: string;
+    motivation?: string;
+  }): Promise<{ ok: true }> {
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    console.info("Application submitted", input);
+    return { ok: true };
   },
 };

@@ -15,7 +15,7 @@ function Info({
   value,
 }: {
   label: string;
-  value: string | number;
+  value: string | number | null;
 }) {
   return (
     <div>
@@ -24,7 +24,7 @@ function Info({
       </p>
 
       <p className="mt-1 text-sm font-semibold text-foreground">
-        {value}
+        {value ?? "—"}
       </p>
     </div>
   );

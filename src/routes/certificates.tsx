@@ -178,7 +178,7 @@ function Certificates() {
                         </div>
 
                         <p className="mt-2 text-sm font-semibold text-foreground">
-                          {certificate.date}
+                          {String(certificate.date)}
                         </p>
 
                       </div>
@@ -194,7 +194,7 @@ function Certificates() {
                         </div>
 
                         <p className="mt-2 text-sm font-semibold text-foreground">
-                          {certificate.hours} hours
+                          {String(certificate.hours)} hours
                         </p>
 
                       </div>
@@ -203,8 +203,7 @@ function Certificates() {
 
                     {/* DESCRIPTION */}
 
-                    {"description" in certificate &&
-                      certificate.description && (
+                    {Boolean((certificate as { description?: string }).description) && (
                         <div className="rounded-2xl bg-muted/30 p-5">
 
                           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -212,7 +211,7 @@ function Certificates() {
                           </p>
 
                           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                            {certificate.description}
+                            {(certificate as { description?: string }).description}
                           </p>
 
                         </div>
