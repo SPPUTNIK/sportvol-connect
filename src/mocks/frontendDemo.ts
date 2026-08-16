@@ -19,48 +19,7 @@ export const demoUpcomingEvent = {
   accreditation: "Issued",
 };
 
-export const demoApplications = [
-  {
-    id: "app-001",
-    event: "Marrakech International Marathon",
-    role: "Route support volunteer",
-    date: "18 Oct 2026",
-    appliedAt: "22 Aug 2026",
-    status: "accepted",
-  },
-  {
-    id: "app-002",
-    event: "Rabat Beach Games",
-    role: "Athlete welcome desk",
-    date: "02 Nov 2026",
-    appliedAt: "26 Aug 2026",
-    status: "pending",
-  },
-  {
-    id: "app-003",
-    event: "Atlas Trail Challenge",
-    role: "Hydration station lead",
-    date: "22 Nov 2026",
-    appliedAt: "28 Aug 2026",
-    status: "waitlisted",
-  },
-  {
-    id: "app-004",
-    event: "Casablanca Youth Cup",
-    role: "Team liaison",
-    date: "05 Dec 2026",
-    appliedAt: "12 Aug 2026",
-    status: "rejected",
-  },
-  {
-    id: "app-005",
-    event: "Rabat Beach Games",
-    role: "Registration support",
-    date: "02 Nov 2026",
-    appliedAt: "18 Aug 2026",
-    status: "withdrawn",
-  },
-] as const;
+
 
 export const demoMyEvents = [
   {
@@ -175,7 +134,61 @@ export const demoAccreditation = {
   role: "Route support volunteer",
   zone: "North route · Zone B",
   status: "Issued",
-};
+} as const;
+
+
+export const demoApplications = [
+  {
+    id: "2026-0148",
+    event: "Marrakech International Marathon",
+    event_title: "Marrakech International Marathon",
+    role: "Route support volunteer",
+    role_name: "Route support volunteer",
+    date: "18 Oct 2026",
+    appliedAt: "22 Aug 2026",
+    status: "accepted",
+  },
+  {
+    id: "app-002",
+    event: "Rabat Beach Games",
+    event_title: "Rabat Beach Games",
+    role: "Athlete welcome desk",
+    role_name: "Athlete welcome desk",
+    date: "02 Nov 2026",
+    appliedAt: "26 Aug 2026",
+    status: "pending",
+  },
+  {
+    id: "app-003",
+    event: "Atlas Trail Challenge",
+    event_title: "Atlas Trail Challenge",
+    role: "Hydration station lead",
+    role_name: "Hydration station lead",
+    date: "22 Nov 2026",
+    appliedAt: "28 Aug 2026",
+    status: "waitlisted",
+  },
+  {
+    id: "app-004",
+    event: "Casablanca Youth Cup",
+    event_title: "Casablanca Youth Cup",
+    role: "Team liaison",
+    role_name: "Team liaison",
+    date: "05 Dec 2026",
+    appliedAt: "12 Aug 2026",
+    status: "rejected",
+  },
+  {
+    id: "app-005",
+    event: "Rabat Beach Games",
+    event_title: "Rabat Beach Games",
+    role: "Registration support",
+    role_name: "Registration support",
+    date: "02 Nov 2026",
+    appliedAt: "18 Aug 2026",
+    status: "withdrawn",
+  },
+] as const;
 
 export const demoAttendance = [
   {
