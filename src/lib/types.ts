@@ -140,3 +140,24 @@ export interface VolunteerHours {
   by_sport: LabelledValue[];
   by_event: LabelledValue[];
 }
+
+export interface VolunteerProfile {
+  id: string;
+  volunteer_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  city: string;
+  country: string;
+  bio: string;
+  date_of_birth: string;
+  experience: string;
+  interests: string[];
+  skills: string[];
+  languages: string[];
+  volunteer_hours: number;
+  attendance_rate: number;
+}
+
+export type Volunteer = VolunteerProfile;
