@@ -106,8 +106,8 @@ export {
   Progress as VSProgress,
 };
 
-export function VSStatusBadge({ status, className }: { status: string; className?: string }) {
-  const normalized = status.toLowerCase().replace(/\s+/g, "-");
+export function VSStatusBadge({ status, className }: { status?: string | null; className?: string }) {
+  const normalized = String(status ?? "unknown").toLowerCase().replace(/\s+/g, "-");
   const tone =
     {
       accepted: "border-emerald-200 bg-emerald-50 text-emerald-800",

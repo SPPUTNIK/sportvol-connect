@@ -45,8 +45,8 @@ export function EventCard({ event }: { event: Event }) {
             {filled} / {event.total_volunteers_needed} filled
           </p>
           <Link
-            to="/events/$slug"
-            params={{ slug: event.slug }}
+            to="/events/$eventId"
+            params={{ eventId: event.id }}
             className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
           >
             View role

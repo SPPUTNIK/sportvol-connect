@@ -26,7 +26,7 @@ import {
 import { eventService } from "@/services/eventService";
 import type { Event } from "@/lib/types";
 
-export const Route = createFileRoute("/events")({
+export const Route = createFileRoute("/events/")({
   component: Events,
   head: () => ({
     meta: [
@@ -136,10 +136,10 @@ function Events() {
           event.city,
           event.venue,
         ].some((value) =>
-          value
-            .toLowerCase()
-            .includes(query),
-        );
+            String(value ?? "")
+              .toLowerCase()
+              .includes(query),
+          );
 
       const matchesSport =
         !sport ||
@@ -572,7 +572,7 @@ function Events() {
                   capacity={
                     event.total_volunteers_needed
                   }
-                  href={`/events/${event.slug}`}
+                  href={`/events/${event.id}`}
                 />
               );
             })}

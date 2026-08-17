@@ -19,7 +19,6 @@ import { Route as ApplicationsRouteImport } from './routes/applications'
 import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as CertificatesRouteImport } from './routes/certificates'
 import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as EventsRouteImport } from './routes/events'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as HoursRouteImport } from './routes/hours'
 import { Route as LoginRouteImport } from './routes/login'
@@ -50,7 +49,8 @@ import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminShiftsRouteImport } from './routes/admin/shifts'
 import { Route as AdminTrainingRouteImport } from './routes/admin/training'
 import { Route as CertificatesCertificateIdRouteImport } from './routes/certificates/$certificateId'
-import { Route as EventsSlugRouteImport } from './routes/events/$slug'
+import { Route as EventsIndexRouteImport } from './routes/events/index'
+import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
 import { Route as TrainingTrainingIdRouteImport } from './routes/training/$trainingId'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
@@ -108,11 +108,6 @@ const CertificatesRoute = CertificatesRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EventsRoute = EventsRouteImport.update({
-  id: '/events',
-  path: '/events',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -268,10 +263,15 @@ const CertificatesCertificateIdRoute =
     path: '/$certificateId',
     getParentRoute: () => CertificatesRoute,
   } as any)
-const EventsSlugRoute = EventsSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => EventsRoute,
+const EventsIndexRoute = EventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsEventIdRoute = EventsEventIdRouteImport.update({
+  id: '/events/$eventId',
+  path: '/events/$eventId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const TrainingTrainingIdRoute = TrainingTrainingIdRouteImport.update({
   id: '/$trainingId',
@@ -327,7 +327,6 @@ export interface FileRoutesByFullPath {
   '/attendance': typeof AttendanceRoute
   '/certificates': typeof CertificatesRouteWithChildren
   '/dashboard': typeof DashboardRoute
-  '/events': typeof EventsRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/hours': typeof HoursRoute
   '/login': typeof LoginRoute
@@ -357,9 +356,10 @@ export interface FileRoutesByFullPath {
   '/admin/shifts': typeof AdminShiftsRoute
   '/admin/training': typeof AdminTrainingRoute
   '/certificates/$certificateId': typeof CertificatesCertificateIdRoute
-  '/events/$slug': typeof EventsSlugRoute
+  '/events/$eventId': typeof EventsEventIdRoute
   '/training/$trainingId': typeof TrainingTrainingIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/events/': typeof EventsIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/events/$eventId': typeof AdminEventsEventIdRoute
@@ -378,7 +378,6 @@ export interface FileRoutesByTo {
   '/attendance': typeof AttendanceRoute
   '/certificates': typeof CertificatesRouteWithChildren
   '/dashboard': typeof DashboardRoute
-  '/events': typeof EventsRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/hours': typeof HoursRoute
   '/login': typeof LoginRoute
@@ -408,9 +407,10 @@ export interface FileRoutesByTo {
   '/admin/shifts': typeof AdminShiftsRoute
   '/admin/training': typeof AdminTrainingRoute
   '/certificates/$certificateId': typeof CertificatesCertificateIdRoute
-  '/events/$slug': typeof EventsSlugRoute
+  '/events/$eventId': typeof EventsEventIdRoute
   '/training/$trainingId': typeof TrainingTrainingIdRoute
   '/admin': typeof AdminIndexRoute
+  '/events': typeof EventsIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/events/$eventId': typeof AdminEventsEventIdRoute
@@ -431,7 +431,6 @@ export interface FileRoutesById {
   '/attendance': typeof AttendanceRoute
   '/certificates': typeof CertificatesRouteWithChildren
   '/dashboard': typeof DashboardRoute
-  '/events': typeof EventsRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/hours': typeof HoursRoute
   '/login': typeof LoginRoute
@@ -461,9 +460,10 @@ export interface FileRoutesById {
   '/admin/shifts': typeof AdminShiftsRoute
   '/admin/training': typeof AdminTrainingRoute
   '/certificates/$certificateId': typeof CertificatesCertificateIdRoute
-  '/events/$slug': typeof EventsSlugRoute
+  '/events/$eventId': typeof EventsEventIdRoute
   '/training/$trainingId': typeof TrainingTrainingIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/events/': typeof EventsIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/events/$eventId': typeof AdminEventsEventIdRoute
@@ -485,7 +485,6 @@ export interface FileRouteTypes {
     | '/attendance'
     | '/certificates'
     | '/dashboard'
-    | '/events'
     | '/forgot-password'
     | '/hours'
     | '/login'
@@ -515,9 +514,10 @@ export interface FileRouteTypes {
     | '/admin/shifts'
     | '/admin/training'
     | '/certificates/$certificateId'
-    | '/events/$slug'
+    | '/events/$eventId'
     | '/training/$trainingId'
     | '/admin/'
+    | '/events/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/events/$eventId'
@@ -536,7 +536,6 @@ export interface FileRouteTypes {
     | '/attendance'
     | '/certificates'
     | '/dashboard'
-    | '/events'
     | '/forgot-password'
     | '/hours'
     | '/login'
@@ -566,9 +565,10 @@ export interface FileRouteTypes {
     | '/admin/shifts'
     | '/admin/training'
     | '/certificates/$certificateId'
-    | '/events/$slug'
+    | '/events/$eventId'
     | '/training/$trainingId'
     | '/admin'
+    | '/events'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/events/$eventId'
@@ -588,7 +588,6 @@ export interface FileRouteTypes {
     | '/attendance'
     | '/certificates'
     | '/dashboard'
-    | '/events'
     | '/forgot-password'
     | '/hours'
     | '/login'
@@ -618,9 +617,10 @@ export interface FileRouteTypes {
     | '/admin/shifts'
     | '/admin/training'
     | '/certificates/$certificateId'
-    | '/events/$slug'
+    | '/events/$eventId'
     | '/training/$trainingId'
     | '/admin/'
+    | '/events/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/events/$eventId'
@@ -641,7 +641,6 @@ export interface RootRouteChildren {
   AttendanceRoute: typeof AttendanceRoute
   CertificatesRoute: typeof CertificatesRouteWithChildren
   DashboardRoute: typeof DashboardRoute
-  EventsRoute: typeof EventsRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HoursRoute: typeof HoursRoute
   LoginRoute: typeof LoginRoute
@@ -656,6 +655,8 @@ export interface RootRouteChildren {
   TrainingRoute: typeof TrainingRouteWithChildren
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  EventsEventIdRoute: typeof EventsEventIdRoute
+  EventsIndexRoute: typeof EventsIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -730,13 +731,6 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/events': {
-      id: '/events'
-      path: '/events'
-      fullPath: '/events'
-      preLoaderRoute: typeof EventsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -949,12 +943,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CertificatesCertificateIdRouteImport
       parentRoute: typeof CertificatesRoute
     }
-    '/events/$slug': {
-      id: '/events/$slug'
-      path: '/$slug'
-      fullPath: '/events/$slug'
-      preLoaderRoute: typeof EventsSlugRouteImport
-      parentRoute: typeof EventsRoute
+    '/events/': {
+      id: '/events/'
+      path: '/events'
+      fullPath: '/events/'
+      preLoaderRoute: typeof EventsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events/$eventId': {
+      id: '/events/$eventId'
+      path: '/events/$eventId'
+      fullPath: '/events/$eventId'
+      preLoaderRoute: typeof EventsEventIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/training/$trainingId': {
       id: '/training/$trainingId'
@@ -1075,17 +1076,6 @@ const CertificatesRouteWithChildren = CertificatesRoute._addFileChildren(
   CertificatesRouteChildren,
 )
 
-interface EventsRouteChildren {
-  EventsSlugRoute: typeof EventsSlugRoute
-}
-
-const EventsRouteChildren: EventsRouteChildren = {
-  EventsSlugRoute: EventsSlugRoute,
-}
-
-const EventsRouteWithChildren =
-  EventsRoute._addFileChildren(EventsRouteChildren)
-
 interface TrainingRouteChildren {
   TrainingTrainingIdRoute: typeof TrainingTrainingIdRoute
 }
@@ -1109,7 +1099,6 @@ const rootRouteChildren: RootRouteChildren = {
   AttendanceRoute: AttendanceRoute,
   CertificatesRoute: CertificatesRouteWithChildren,
   DashboardRoute: DashboardRoute,
-  EventsRoute: EventsRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HoursRoute: HoursRoute,
   LoginRoute: LoginRoute,
@@ -1125,6 +1114,8 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  EventsEventIdRoute: EventsEventIdRoute,
+  EventsIndexRoute: EventsIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
 }

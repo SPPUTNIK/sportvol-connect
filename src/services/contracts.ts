@@ -42,6 +42,7 @@ export interface ApplicationInput {
 export interface EventService {
   getEvents(filters?: EventFilters): Promise<Event[]>;
   getEventBySlug(slug: string): Promise<Event | null>;
+  getEventById(id: string): Promise<Event | null>;
   getSports(): Promise<Sport[]>;
 }
 

@@ -20,7 +20,7 @@ export default defineTool({
       .filter((event) => !city || event.city.toLowerCase() === city.toLowerCase())
       .filter((event) => !sport || event.sport.toLowerCase() === sport.toLowerCase())
       .map((event) => ({
-        slug: event.slug,
+        id: event.id,
         title: event.title,
         sport: event.sport,
         city: event.city,

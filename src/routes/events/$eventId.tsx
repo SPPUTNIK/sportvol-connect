@@ -24,10 +24,11 @@ import { eventCoverDefaults } from "@/lib/mock-data";
 import type { Event } from "@/lib/types";
 import { applicationService } from "@/services/applicationService";
 import { eventService } from "@/services/eventService";
+import { AppShell } from "@/components/app/AppShell";
 
-export const Route = createFileRoute("/events/$slug")({
+export const Route = createFileRoute("/events/$eventId")({
   component: EventDetails,
-  head: ({ params }) => ({ meta: [{ title: `Event · ${params.slug}` }] }),
+  head: ({ params }) => ({ meta: [{ title: `Event · ${params.eventId}` }] }),
 });
 
 function EventDetails() {
@@ -46,13 +47,13 @@ function EventDetails() {
 
   useEffect(() => {
     eventService
-      .getEventBySlug(params.slug)
+      .getEventById(params.eventId)
       .then(setEvent)
       .catch((err: unknown) =>
         setError(err instanceof Error ? err.message : "Unable to load this event."),
       )
       .finally(() => setLoading(false));
-  }, [params.slug]);
+  }, [params.eventId]);
 
   const selectedRole = useMemo(
     () => event?.event_roles?.find((role) => role.id === selectedRoleId) ?? null,
@@ -126,8 +127,8 @@ function EventDetails() {
   };
 
   return (
-    <PublicLayout>
-      <div className="shell min-h-screen py-24">
+    <AppShell title="Event Details">
+      <div className="shell min-h-screen">
         <div className="mx-auto max-w-7xl">
           <div className="mb-6 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             <Link to="/events" className="transition hover:text-primary">
@@ -148,7 +149,7 @@ function EventDetails() {
                       {event.title}
                     </h1>
                   </div>
-                  <VSStatusBadge status={event.status} />
+                  <VSStatusBadge status={event.status ?? "draft"} />
                 </div>
               </div>
               <div className="space-y-8 p-6 sm:p-9">
@@ -189,7 +190,11 @@ function EventDetails() {
                   <Info
                     icon={<Languages className="h-4 w-4" />}
                     label="Languages"
-                    value={event.required_languages.join(", ") || "Flexible"}
+                    value={
+                      Array.isArray(event.required_languages)
+                        ? event.required_languages.join(", ") || "Flexible"
+                        : "Flexible"
+                    }
                   />
                 </div>
                 {event.requirements && (
@@ -226,7 +231,7 @@ function EventDetails() {
                           available={role.positions - role.filled_positions}
                           capacity={role.positions}
                           requirements={[
-                            ...role.skills,
+                            ...(Array.isArray(role.skills) ? role.skills : []),
                             ...(role.mandatory_training ? ["Training required"] : []),
                           ]}
                           action={
@@ -257,7 +262,7 @@ function EventDetails() {
                 {!profile && (
                   <Link
                     to="/login"
-                    search={{ next: `/events/${event.slug}` }}
+                    search={{ next: `/events/${event.id}` }}
                     className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
                   >
                     Sign in to apply <ArrowRight className="h-4 w-4" />
@@ -330,7 +335,7 @@ function EventDetails() {
           </div>
         </div>
       </div>
-    </PublicLayout>
+    </AppShell>
   );
 }
 

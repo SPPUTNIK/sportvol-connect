@@ -385,7 +385,7 @@ export const eventCoverDefaults: Record<string, string> = {
 
 export const mockEventSlugs = mockEvents.reduce<Record<string, Event>>(
   (acc, event) => {
-    acc[event.slug] = event;
+    acc[event.id] = event;
     return acc;
   },
   {} as Record<string, Event>,
