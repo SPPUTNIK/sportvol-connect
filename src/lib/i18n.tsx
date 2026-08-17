@@ -243,7 +243,7 @@ export const dict: Record<Lang, Dict> = {
     gallery: {
       eyebrow: "Field notes",
       titleLines: ["Race days, from", "the inside."],
-      body: "Twelve regions. Nine disciplines. One crew that shows up before sunrise and leaves after the last athlete.",
+      body: "Volunteers across Morocco coming together to support sporting events, empower communities, and create better experiences for athletes and fans.",
       nextSeason: "Next season",
       nextSeasonBody: "events already open for volunteer applications across twelve regions.",
       browse: "Browse events",
@@ -261,12 +261,12 @@ export const dict: Record<Lang, Dict> = {
           a: "Between four and ten hours, usually across a single day. You choose the shifts that match your availability when you apply.",
         },
         {
-          q: "Is volunteering paid?",
-          a: "Roles are unpaid, but organizers cover meals, transport in most cities and full kit. Your hours are certified and count toward the VolunSport credential.",
+          q: "What do volunteers receive after an event?",
+          a: "After completing your role, you can receive confirmation of your participation and certified volunteer hours that you can add to your CV or professional profile.",
         },
         {
-          q: "Can my club or federation list an event?",
-          a: "Yes. Organizers get a scheduling workspace, accreditation tools and access to the volunteer pool filtered by skill, language and city.",
+          q: "How do I find the right volunteer opportunity?",
+          a: "Browse events by sport, city, date and availability. Each opportunity shows the available roles, requirements and schedule so you can choose what fits you best.",
         },
         {
           q: "What languages are supported?",
@@ -448,7 +448,7 @@ export const dict: Record<Lang, Dict> = {
     gallery: {
       eyebrow: "Carnet de terrain",
       titleLines: ["Les jours de course,", "vus de l'intérieur."],
-      body: "Douze régions. Neuf disciplines. Une équipe présente avant le lever du soleil et partie après le dernier athlète.",
+      body: "Des bénévoles de tout le Maroc se mobilisent pour soutenir des événements sportifs, autonomiser les communautés et créer de meilleures expériences pour les athlètes et les supporters.",
       nextSeason: "Saison prochaine",
       nextSeasonBody: "événements déjà ouverts aux candidatures dans douze régions.",
       browse: "Voir les événements",
@@ -466,12 +466,16 @@ export const dict: Record<Lang, Dict> = {
           a: "Entre quatre et dix heures, généralement sur une seule journée. Vous choisissez les créneaux selon vos disponibilités.",
         },
         {
-          q: "Le bénévolat est-il rémunéré ?",
-          a: "Les missions ne sont pas rémunérées, mais les organisateurs couvrent les repas, le transport dans la plupart des villes et la tenue complète. Vos heures sont certifiées.",
-        },
-        {
-          q: "Mon club ou ma fédération peut-il publier un événement ?",
-          a: "Oui. Les organisateurs disposent d'un espace de planification, d'outils d'accréditation et du vivier de bénévoles filtré par compétence, langue et ville.",
+          q:"Que reçoivent les bénévoles après un événement?",
+
+          a:" Une fois votre mission accomplie, vous recevrez une confirmation de votre participation et un certificat d’heures de bénévolat à ajouter à votre CV ou à votre profil professionnel. ",
+          },
+
+          {
+
+          q:" Comment trouver la mission de bénévolat qui me convient ? ",
+
+          a:" Parcourez les événements par sport, ville, date et disponibilités. Chaque offre présente les rôles disponibles, les conditions requises et le calendrier afin que vous puissiez choisir ce qui vous correspond le mieux. ",
         },
         {
           q: "Quelles langues sont prises en charge ?",
@@ -636,7 +640,7 @@ export const dict: Record<Lang, Dict> = {
     gallery: {
       eyebrow: "من الميدان",
       titleLines: ["أيام السباق", "من الداخل."],
-      body: "اثنتا عشرة جهة. تسعة تخصصات. فريق واحد يحضر قبل الشروق ويغادر بعد آخر رياضي.",
+      body: "يتطوع متطوعون من مختلف أنحاء المغرب لدعم الأحداث الرياضية، وتمكين المجتمعات، وخلق تجارب أفضل للرياضيين والمشجعين.",
       nextSeason: "الموسم القادم",
       nextSeasonBody: "فعالية مفتوحة بالفعل لترشيحات المتطوعين في اثنتي عشرة جهة.",
       browse: "تصفح الفعاليات",
@@ -654,12 +658,12 @@ export const dict: Record<Lang, Dict> = {
           a: "بين أربع وعشر ساعات، غالبًا في يوم واحد. تختار الفترات التي تناسبك عند الترشيح.",
         },
         {
-          q: "هل التطوع مدفوع الأجر؟",
-          a: "الأدوار غير مدفوعة، لكن المنظمين يوفرون الوجبات والتنقل في أغلب المدن والزي الكامل. ساعاتك موثقة وتحتسب ضمن شهادة فولنسبورت.",
+          q: "ماذا يحصل المتطوعون بعد انتهاء الفعالية؟",
+          a: "بعد إتمام دورك، يمكنك الحصول على تأكيد لمشاركتك وساعات تطوع معتمدة يمكنك إضافتها إلى سيرتك الذاتية أو ملفك المهني.",
         },
         {
-          q: "هل يمكن لناديي أو جامعتي نشر فعالية؟",
-          a: "نعم. يحصل المنظمون على مساحة جدولة وأدوات اعتماد وولوج إلى قاعدة المتطوعين حسب المهارة واللغة والمدينة.",
+          q: "كيف أجد فرصة التطوع المناسبة؟",
+          a: "تصفح الفعاليات حسب الرياضة والمدينة والتاريخ والتوافر. تعرض كل فرصة الأدوار المتاحة والمتطلبات والجدول الزمني لتتمكن من اختيار ما يناسبك.",
         },
         {
           q: "ما هي اللغات المدعومة؟",

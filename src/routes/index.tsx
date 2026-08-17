@@ -4,10 +4,8 @@ import { Hero } from "@/components/site/Hero";
 import { TrustedBy } from "@/components/site/TrustedBy";
 import { Mission } from "@/components/site/Mission";
 import { WhyVolunteer } from "@/components/site/WhyVolunteer";
-import { Events } from "@/components/site/Events";
 import { Journey } from "@/components/site/Journey";
 import { Impact } from "@/components/site/Impact";
-import { Stories } from "@/components/site/Stories";
 import { Gallery } from "@/components/site/Gallery";
 import { Faq } from "@/components/site/Faq";
 import { CallToAction } from "@/components/site/CallToAction";
@@ -73,23 +71,51 @@ function Index() {
   }, []);
 
   return (
-    <I18nProvider>
-      <PublicLayout>
-        <div>
+  <I18nProvider>
+    <PublicLayout>
+      <div className="relative overflow-hidden bg-background">
+        {/* Global Zellij Texture */}
+        <div
+          aria-hidden="true"
+          className="
+            pointer-events-none
+            absolute
+            inset-0
+            zellij-tile
+            opacity-[10%]
+            mix-blend-multiply
+          "
+        />
+
+        {/* Soft paper-like overlay */}
+        <div
+          aria-hidden="true"
+          className="
+            pointer-events-none
+            absolute
+            inset-0
+            bg-gradient-to-b
+            from-background/10
+            via-background/30
+            to-background/10
+          "
+        />
+
+        {/* Landing page content */}
+        <div className="relative z-10">
           <Hero />
           <TrustedBy />
           <Mission />
           <WhyVolunteer />
-          <Events />
           <Journey />
           <Impact />
-          <Stories />
           <Gallery />
           <Faq />
           <CallToAction />
           <JoinDialog />
         </div>
-      </PublicLayout>
-    </I18nProvider>
-  );
+      </div>
+    </PublicLayout>
+  </I18nProvider>
+);
 }

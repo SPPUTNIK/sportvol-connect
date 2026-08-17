@@ -1,10 +1,10 @@
 import { Reveal } from "./motion";
 import { useI18n } from "@/lib/i18n";
-import g1 from "@/assets/gal-1.jpg";
-import g2 from "@/assets/gal-2.jpg";
-import g3 from "@/assets/gal-3.jpg";
-import g4 from "@/assets/gal-4.jpg";
-import g5 from "@/assets/event-cycling.jpg";
+import g1 from "@/assets/1.jpg";
+import g2 from "@/assets/2.jpg";
+import g3 from "@/assets/3.jpg";
+import g4 from "@/assets/4.jpg";
+import g5 from "@/assets/5.jpg";
 
 const items = [
   {
@@ -69,25 +69,6 @@ export function Gallery() {
             </Reveal>
           ))}
 
-          <Reveal delay={0.3} className="sm:col-span-4">
-            <div className="ink-panel flex h-full flex-col justify-between rounded-2xl p-8">
-              <p className="eyebrow">{t.gallery.nextSeason}</p>
-              <div className="mt-10">
-                <p className="font-display text-5xl font-semibold tracking-tight text-ink-foreground">
-                  42
-                </p>
-                <p className="mt-3 max-w-[14rem] text-sm leading-relaxed text-ink-foreground/60">
-                  {t.gallery.nextSeasonBody}
-                </p>
-              </div>
-              <a
-                href="#events"
-                className="mt-10 inline-flex w-fit items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-transform duration-500 hover:-translate-y-0.5"
-              >
-                {t.gallery.browse}
-              </a>
-            </div>
-          </Reveal>
         </div>
       </div>
     </section>
