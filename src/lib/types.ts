@@ -150,9 +150,9 @@ export interface VolunteerProfile {
   phone: string;
   city: string;
   country: string;
-  bio: string;
-  date_of_birth: string;
-  experience: string;
+  bio: string | null;
+  date_of_birth: string | null;
+  experience: string | null;
   interests: string[];
   skills: string[];
   languages: string[];
