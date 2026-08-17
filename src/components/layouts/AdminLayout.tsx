@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Award,
   BarChart3,
@@ -11,6 +11,7 @@ import {
   FileBarChart,
   GraduationCap,
   LayoutDashboard,
+  LogOut,
   Menu,
   Settings,
   ShieldCheck,
@@ -172,8 +173,10 @@ export const adminNavigation: AdminNavGroup[] = [
 
 function AdminNavigation({
   onNavigate,
+  onSignOut,
 }: {
   onNavigate: () => void;
+  onSignOut: () => void;
 }) {
   const { profile } = useAuth();
 
@@ -273,7 +276,7 @@ function AdminNavigation({
           </div>
         </nav>
 
-        {/* Admin profile */}
+        {/* Admin profile + Logout */}
         <div className="shrink-0 border-t border-border p-4">
           <Link
             to="/admin/profile"
@@ -300,6 +303,17 @@ function AdminNavigation({
               View profile
             </p>
           </Link>
+
+          {/* Sidebar logout */}
+          <button
+            type="button"
+            onClick={onSignOut}
+            className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-border px-4 py-3 text-sm font-medium text-muted-foreground transition hover:border-destructive/30 hover:bg-destructive/5 hover:text-destructive"
+          >
+            <LogOut className="h-4 w-4" />
+
+            <span>Sign out</span>
+          </button>
         </div>
       </div>
     </div>
@@ -313,10 +327,23 @@ export function AdminLayout({
 }: AdminLayoutProps) {
   const [open, setOpen] = useState(false);
 
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
+
+  const navigate = useNavigate();
 
   const name =
     profile?.first_name || "Administrator";
+
+  async function handleSignOut() {
+    setOpen(false);
+
+    await signOut();
+
+    navigate({
+      to: "/admin/login",
+      replace: true,
+    });
+  }
 
   return (
     <div className="min-h-screen bg-background/70 text-foreground">
@@ -327,6 +354,7 @@ export function AdminLayout({
       <aside className="fixed inset-y-0 left-0 z-40 hidden h-screen w-[272px] border-r border-border bg-card/95 lg:block">
         <AdminNavigation
           onNavigate={() => setOpen(false)}
+          onSignOut={handleSignOut}
         />
       </aside>
 
@@ -346,6 +374,7 @@ export function AdminLayout({
           <aside className="fixed inset-y-0 left-0 z-50 h-screen w-[min(86vw,320px)] border-r border-border bg-card">
             <AdminNavigation
               onNavigate={() => setOpen(false)}
+              onSignOut={handleSignOut}
             />
           </aside>
         </>
@@ -384,7 +413,7 @@ export function AdminLayout({
             {/* Header actions */}
             <div className="flex items-center gap-2">
               <Link
-                to="/notifications"
+                to="/admin/notifications"
                 className="relative rounded-xl border border-border p-2.5 text-muted-foreground transition hover:text-foreground"
                 aria-label="Notifications"
               >
@@ -405,6 +434,17 @@ export function AdminLayout({
                   {name}
                 </span>
               </Link>
+
+              {/* Header logout */}
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-border text-muted-foreground transition hover:border-destructive/30 hover:bg-destructive/5 hover:text-destructive"
+                aria-label="Sign out"
+                title="Sign out"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </header>
@@ -417,4 +457,3 @@ export function AdminLayout({
     </div>
   );
 }
-

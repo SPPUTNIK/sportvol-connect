@@ -41,7 +41,7 @@ export function Nav() {
         }`}
       >
         <nav className="shell flex h-20 items-center justify-between">
-          <a href="#top" className="flex items-center gap-3">
+          <a href="/" className="flex items-center gap-3">
             <img
               src={logoAsset}
               alt="VolunSport Morocco logo"

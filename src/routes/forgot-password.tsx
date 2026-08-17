@@ -33,7 +33,7 @@ function ForgotPassword() {
                 event.preventDefault();
                 setError(null);
                 setMessage(null);
-                const { error } = await sendResetPasswordEmail(email);
+                const { error } = await sendResetPasswordEmail(email, "/login");
                 if (error) {
                   setError(error.message);
                   return;

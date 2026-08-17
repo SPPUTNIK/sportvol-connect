@@ -26,7 +26,10 @@ interface AuthContextValue {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, options?: SignUpOptions) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
-  sendResetPasswordEmail: (email: string) => Promise<{ error: Error | null }>;
+  sendResetPasswordEmail: (
+    email: string,
+    next?: string,
+  ) => Promise<{ error: Error | null }>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: Error | null }>;
 }
 
@@ -143,10 +146,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
   };
 
-  const sendResetPasswordEmail = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
+  const sendResetPasswordEmail = async (
+    email: string,
+    next = "/login",
+  ) => {
+    const safeNext =
+      next.startsWith("/") && !next.startsWith("//")
+        ? next
+        : "/login";
+
+    const redirectTo =
+      `${window.location.origin}/reset-password?next=${encodeURIComponent(
+        safeNext,
+      )}`;
+
+    const { error } =
+      await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo,
+      });
+
     return { error: error ?? null };
   };
 

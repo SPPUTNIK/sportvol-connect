@@ -7,9 +7,9 @@ import {
   CheckCircle2,
   ChevronRight,
   Clock3,
-  Dumbbell,
   GraduationCap,
   LayoutDashboard,
+  LogOut,
   Menu,
   Search,
   Settings,
@@ -69,9 +69,15 @@ export const volunteerNavigation: NavGroup[] = [
 ];
 
 function VolunteerNavigation({ onNavigate }: { onNavigate: () => void }) {
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
   const firstName = profile?.first_name || "Volunteer";
   const currentPath = typeof window === "undefined" ? "" : window.location.pathname;
+
+  async function handleSignOut() {
+    await signOut();
+    onNavigate();
+    window.location.href = "/login";
+  }
 
   return (
     <div className="relative flex h-full flex-col overflow-y-auto overflow-x-hidden scrollbar-hide px-4 py-6 ">
@@ -147,6 +153,15 @@ function VolunteerNavigation({ onNavigate }: { onNavigate: () => void }) {
           </div>
           <p className="mt-3 text-xs font-semibold text-primary">View profile</p>
         </Link>
+
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="mt-3 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
+        >
+          <LogOut className="h-4 w-4" />
+          <span>Sign out</span>
+        </button>
       </div>
     </div>
   );
@@ -158,8 +173,14 @@ export function VolunteerLayout({
   eyebrow = "Volunteer workspace",
 }: VolunteerLayoutProps) {
   const [open, setOpen] = useState(false);
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
   const firstName = profile?.first_name || "Volunteer";
+
+  async function handleSignOut() {
+    await signOut();
+
+    window.location.href = "/login";
+  }
 
   return (
     <div className="min-h-screen bg-background/70 text-foreground">
@@ -232,6 +253,15 @@ export function VolunteerLayout({
                   {firstName}
                 </span>
               </Link>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="rounded-xl border border-border p-2.5 text-muted-foreground transition hover:border-destructive/30 hover:bg-destructive/5 hover:text-destructive"
+                aria-label="Sign out"
+                title="Sign out"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </header>
