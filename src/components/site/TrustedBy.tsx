@@ -57,6 +57,7 @@ export function TrustedBy() {
         {/* Logo marquee */}
         <div
           className="relative overflow-hidden"
+          dir="ltr"
           style={{
             maskImage:
               "linear-gradient(to right, transparent, black 5%, black 95%, transparent)",
@@ -65,12 +66,11 @@ export function TrustedBy() {
           }}
         >
           <div className="marquee-track flex w-max items-center">
-            {marqueePartners.map((partner, index) => (
+            {[...partners, ...partners].map((partner, index) => (
               <div
                 key={`${partner.name}-${index}`}
                 className="flex w-[120px] shrink-0 justify-center px-2 sm:w-[160px] sm:px-3 md:w-[190px] md:px-4 lg:w-[220px]"
               >
-                {/* Circle */}
                 <div
                   className="
                     group
@@ -98,7 +98,6 @@ export function TrustedBy() {
                     lg:p-6
                   "
                 >
-                  {/* subtle inner ring */}
                   <div
                     className="
                       pointer-events-none

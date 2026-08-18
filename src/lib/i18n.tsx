@@ -276,7 +276,7 @@ export const dict: Record<Lang, Dict> = {
     },
     cta: {
       eyebrow: "Ready when you are",
-      titleLines: ["Be part of something", "bigger than the score."],
+      titleLines: ["Show up. Get involved.", "Make an impact."],
       primary: "Become a volunteer",
     },
     join: {
@@ -485,7 +485,7 @@ export const dict: Record<Lang, Dict> = {
     },
     cta: {
       eyebrow: "Quand vous voulez",
-      titleLines: ["Faites partie de plus grand", "que le score final."],
+      titleLines: ["Présentez-vous. Impliquez-vous.", " Ayez un impact."],
       primary: "Devenir bénévole",
     },
     join: {
@@ -673,7 +673,7 @@ export const dict: Record<Lang, Dict> = {
     },
     cta: {
       eyebrow: "جاهزون متى شئت",
-      titleLines: ["كن جزءًا من شيء", "أكبر من النتيجة."],
+      titleLines: ["احضر. شارك.", "أحدث فرقاً."],
       primary: "كن متطوعًا",
     },
     join: {

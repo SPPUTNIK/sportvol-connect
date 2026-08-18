@@ -30,7 +30,7 @@ export function CallToAction() {
         style={{ backgroundImage: "var(--gradient-veil)" }}
         aria-hidden
       />
-      <div className="shell relative py-28 lg:py-40">
+      <div className="shell relative py-20 lg:py-25">
         <Reveal>
           <p className="eyebrow">{t.cta.eyebrow}</p>
         </Reveal>
