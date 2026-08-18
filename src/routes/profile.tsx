@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { QRCodeSVG } from "qrcode.react";
+import { QrCode, Download } from "lucide-react";
 
 import { AppShell } from "@/components/app/AppShell";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -520,6 +522,59 @@ function Profile() {
                   </p>
                 </div>
 
+              </div>
+            </div>
+
+            {/* QR CODE */}
+
+            <div className="rounded-[2rem] border border-hairline-invert bg-card p-8 shadow-[var(--shadow-lift)]">
+              <div className="flex items-center gap-2">
+                <QrCode className="h-4 w-4 text-primary" />
+                <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                  Volunteer QR code
+                </p>
+              </div>
+
+              <p className="mt-4 text-sm text-muted-foreground">
+                Show this code to event staff so they can quickly access your volunteer profile.
+              </p>
+
+              <div className="mt-6 flex flex-col items-center gap-4">
+                <div
+                  id="volunteer-qr"
+                  className="rounded-2xl border border-border bg-white p-6"
+                >
+                  <QRCodeSVG
+                    value={`${typeof window !== "undefined" ? window.location.origin : ""}/admin/volunteers/${profile.id}`}
+                    size={180}
+                    level="M"
+                    includeMargin={false}
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const svg = document.getElementById("volunteer-qr")?.querySelector("svg");
+                    if (!svg) return;
+
+                    const serializer = new XMLSerializer();
+                    const source = serializer.serializeToString(svg);
+                    const blob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.download = `volunteer-qr-${profile.volunteer_id}.svg`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted"
+                >
+                  <Download className="h-4 w-4" />
+                  Download QR
+                </button>
               </div>
             </div>
 
