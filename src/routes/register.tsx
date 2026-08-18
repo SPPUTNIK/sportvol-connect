@@ -1,8 +1,16 @@
-import { useState } from "react";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { CircleCheck as CheckCircle2, LoaderCircle, ArrowRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { I18nProvider, useI18n } from "@/lib/i18n";
 import { PublicLayout } from "@/components/layouts/PublicLayout";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 function safeNext(value: unknown): string | null {
   return typeof value === "string" && value.startsWith("/") && !value.startsWith("//")
@@ -21,9 +29,12 @@ export const Route = createFileRoute("/register")({
   }),
 });
 
+type AccountType = "volunteer" | "admin";
+
 function Register() {
   const { t } = useI18n();
   const { signUp } = useAuth();
+  const navigate = useNavigate();
   const { next } = Route.useSearch();
   const [form, setForm] = useState({
     email: "",
@@ -35,7 +46,27 @@ function Register() {
     country: "Morocco",
   });
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [accountType, setAccountType] = useState<AccountType>("volunteer");
+  const [countdown, setCountdown] = useState(3);
+
+  const loginPath = accountType === "admin" ? "/admin/login" : "/login";
+
+  useEffect(() => {
+    if (!success) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          navigate({ to: loginPath, search: next ? { next } : undefined });
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [success, loginPath, navigate, next]);
 
   return (
     <I18nProvider>
@@ -53,6 +84,7 @@ function Register() {
               onSubmit={async (event) => {
                 event.preventDefault();
                 setError(null);
+                setSubmitting(true);
                 const { error } = await signUp(form.email, form.password, {
                   first_name: form.firstName,
                   last_name: form.lastName,
@@ -60,6 +92,7 @@ function Register() {
                   city: form.city,
                   country: form.country,
                 });
+                setSubmitting(false);
                 if (error) {
                   setError(error.message);
                   return;
@@ -140,20 +173,45 @@ function Register() {
                 </label>
               </div>
 
+              {/* Account type selector */}
+              <div>
+                <p className="mb-2 text-sm font-medium text-foreground">Account type</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setAccountType("volunteer")}
+                    className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+                      accountType === "volunteer"
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-background text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Volunteer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAccountType("admin")}
+                    className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+                      accountType === "admin"
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-background text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Admin
+                  </button>
+                </div>
+              </div>
+
               {error && <p className="text-sm text-destructive">{error}</p>}
-              {success ? (
-                <p className="text-sm text-success">
-                  Registration successful. Check your inbox for the verification email and then sign
-                  in.
-                </p>
-              ) : (
-                <button
-                  type="submit"
-                  className="w-full rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
-                >
-                  Create account
-                </button>
-              )}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
+              >
+                {submitting && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                {submitting ? "Creating account…" : "Create account"}
+              </button>
             </form>
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
@@ -164,6 +222,46 @@ function Register() {
             </p>
           </div>
         </div>
+
+        {/* Success dialog */}
+        <Dialog open={success} onOpenChange={() => {}}>
+          <DialogContent className="max-w-md [&>button]:hidden">
+            <DialogHeader>
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
+                <CheckCircle2 className="h-7 w-7 text-emerald-600" />
+              </div>
+              <DialogTitle className="mt-4 text-center text-2xl font-semibold">
+                Account created successfully
+              </DialogTitle>
+              <DialogDescription className="mt-2 text-center text-sm text-muted-foreground">
+                Your {accountType === "admin" ? "admin" : "volunteer"} account has been created.
+                You will be redirected to the {accountType === "admin" ? "admin" : "volunteer"} sign-in
+                page in {countdown} second{countdown !== 1 ? "s" : ""}.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="mt-6 flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => navigate({ to: loginPath, search: next ? { next } : undefined })}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+              >
+                Continue to sign in
+                <ArrowRight className="h-4 w-4" />
+              </button>
+
+              {accountType === "admin" && (
+                <p className="text-center text-xs text-muted-foreground">
+                  Admin access requires approval. If you are not redirected,
+                  <Link to="/admin/login" className="ml-1 text-primary underline">
+                    go to admin login
+                  </Link>
+                  .
+                </p>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </PublicLayout>
     </I18nProvider>
   );
