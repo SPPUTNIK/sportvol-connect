@@ -18,6 +18,7 @@ export interface Profile {
   avatar_url: string | null;
   phone: string | null;
   city: string | null;
+  date_of_birth: string | null;
   country: string | null;
   bio: string | null;
   interests: string[];
