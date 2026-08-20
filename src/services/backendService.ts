@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 const db = supabase as any;
+
 import type {
   Application,
   AttendanceRecord,
@@ -10,7 +11,15 @@ import type {
   VolunteerHours,
   Notification,
   TrainingResource,
+  DashboardAchievement,
+  DashboardUpcomingEvent,
+  DashboardApplication,
+  VolunteerDashboard,
 } from "@/lib/types";
+
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
 
 async function getCurrentUserId(): Promise<string | null> {
   const {
@@ -30,6 +39,10 @@ function formatDate(value: string | null | undefined): string {
   return value.slice(0, 10);
 }
 
+/* -------------------------------------------------------------------------- */
+/* Events                                                                     */
+/* -------------------------------------------------------------------------- */
+
 export async function getAllEvents(): Promise<Event[]> {
   const { data, error } = await db
     .from("events")
@@ -44,35 +57,48 @@ export async function getAllEvents(): Promise<Event[]> {
   return data ?? [];
 }
 
-export async function getEventBySlug(slug: string): Promise<Event | null> {
+export async function getEventBySlug(
+  slug: string,
+): Promise<Event | null> {
   const { data, error } = await db
     .from("events")
     .select("*, event_roles(*)")
     .eq("slug", slug)
     .eq("status", "published")
-    .single();
+    .maybeSingle();
 
   if (error) {
-    if (error.details?.includes("No rows")) {
-      return null;
-    }
     throw error;
   }
 
-  return data;
+  return data ?? null;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Applications                                                               */
+/* -------------------------------------------------------------------------- */
 
 export async function getApplications(): Promise<Application[]> {
   const userId = await getCurrentUserId();
+
   if (!userId) {
     return [];
   }
 
   const { data, error } = await db
     .from("applications")
-    .select(
-      "id, status, applied_at, experience, availability, motivation, event_id, role_id, event:events(title), role:event_roles(name)",
-    )
+    .select(`
+      id,
+      status,
+      applied_at,
+      experience,
+      availability,
+      motivation,
+      event_id,
+      role_id,
+      event:events(title),
+      role:event_roles(name)
+    `)
     .eq("profile_id", userId)
     .order("applied_at", { ascending: false });
 
@@ -88,19 +114,31 @@ export async function getApplications(): Promise<Application[]> {
     submitted_at: formatDate(row.applied_at),
     status: row.status,
     message:
-      [row.motivation, row.experience, row.availability].filter(Boolean).join("\n\n") || null,
+      [
+        row.motivation,
+        row.experience,
+        row.availability,
+      ]
+        .filter(Boolean)
+        .join("\n\n") || null,
   }));
 }
 
 export async function getAcceptedEvents(): Promise<Event[]> {
   const userId = await getCurrentUserId();
+
   if (!userId) {
     return [];
   }
 
   const { data, error } = await db
     .from("applications")
-    .select("event:events(*, event_roles(*))")
+    .select(`
+      event:events(
+        *,
+        event_roles(*)
+      )
+    `)
     .eq("profile_id", userId)
     .eq("status", "accepted")
     .order("applied_at", { ascending: false });
@@ -109,22 +147,47 @@ export async function getAcceptedEvents(): Promise<Event[]> {
     throw error;
   }
 
-  return (data ?? []).map((row: any) => row.event as Event).filter(Boolean);
+  return (data ?? [])
+    .map((row: any) => row.event as Event)
+    .filter(Boolean);
 }
+
+/* -------------------------------------------------------------------------- */
+/* Shifts                                                                     */
+/* -------------------------------------------------------------------------- */
 
 export async function getShifts(): Promise<Shift[]> {
   const userId = await getCurrentUserId();
+
   if (!userId) {
     return [];
   }
 
   const { data, error } = await db
     .from("shift_assignments")
-    .select(
-      "id, shift:event_shifts(id, event_id, role_id, date, start_time, end_time, location, instructions, event:events(title), role:event_roles(name))",
-    )
+    .select(`
+      id,
+      status,
+      assigned_at,
+      shift:event_shifts(
+        id,
+        event_id,
+        role_id,
+        title,
+        date,
+        start_time,
+        end_time,
+        location,
+        instructions,
+        event:events(title),
+        role:event_roles(name)
+      )
+    `)
     .eq("profile_id", userId)
-    .order("shift.date", { ascending: true });
+    .order("date", {
+      ascending: true,
+      referencedTable: "shift",
+    });
 
   if (error) {
     throw error;
@@ -143,47 +206,87 @@ export async function getShifts(): Promise<Shift[]> {
   }));
 }
 
+/* -------------------------------------------------------------------------- */
+/* Training                                                                   */
+/* -------------------------------------------------------------------------- */
+
 export async function getTraining(): Promise<Training[]> {
   const userId = await getCurrentUserId();
-  const [{ data: modules, error: moduleError }, { data: progress, error: progressError }] =
-    await Promise.all([
-      db
-        .from("training_modules")
-        .select("id, title, description, resources")
-        .order("title", { ascending: true }),
-      userId
-        ? db.from("training_progress").select("training_id, completed").eq("profile_id", userId)
-        : Promise.resolve({ data: [], error: null }),
-    ] as const);
+
+  const [
+    { data: modules, error: moduleError },
+    { data: progress, error: progressError },
+  ] = await Promise.all([
+    db
+      .from("training_modules")
+      .select(`
+        id,
+        title,
+        description,
+        resources,
+        required,
+        event_id,
+        role_id
+      `)
+      .order("title", { ascending: true }),
+
+    userId
+      ? db
+          .from("training_progress")
+          .select(`
+            training_id,
+            completed,
+            completed_at
+          `)
+          .eq("profile_id", userId)
+      : Promise.resolve({
+          data: [],
+          error: null,
+        }),
+  ]);
 
   if (moduleError || progressError) {
     throw moduleError ?? progressError;
   }
 
   const progressMap = new Map(
-    (progress ?? []).map((item: any) => [item.training_id, item.completed]),
+    (progress ?? []).map((item: any) => [
+      item.training_id,
+      Boolean(item.completed),
+    ]),
   );
 
   return (modules ?? []).map((module: any) => ({
     id: module.id,
     title: module.title,
-    description: module.description,
-    resources: module.resources as TrainingResource[],
+    description: module.description ?? "",
+    resources: (module.resources ?? []) as TrainingResource[],
     completed: Boolean(progressMap.get(module.id)),
   }));
 }
 
+/* -------------------------------------------------------------------------- */
+/* Attendance                                                                 */
+/* -------------------------------------------------------------------------- */
+
 export async function getAttendance(): Promise<AttendanceRecord[]> {
   const userId = await getCurrentUserId();
+
   if (!userId) {
     return [];
   }
 
   const { data, error } = await db
     .from("attendance_records")
-    .select(
-      "id, date, status, check_in_time, check_out_time, event:events(title), role:event_roles(name)",
-    )
+    .select(`
+      id,
+      date,
+      status,
+      check_in_time,
+      check_out_time,
+      event:events(title),
+      role:event_roles(name)
+    `)
     .eq("profile_id", userId)
     .order("date", { ascending: false });
 
@@ -202,15 +305,28 @@ export async function getAttendance(): Promise<AttendanceRecord[]> {
   }));
 }
 
+/* -------------------------------------------------------------------------- */
+/* Certificates                                                               */
+/* -------------------------------------------------------------------------- */
+
 export async function getCertificates(): Promise<Certificate[]> {
   const userId = await getCurrentUserId();
+
   if (!userId) {
     return [];
   }
 
   const { data, error } = await db
     .from("certificates")
-    .select("id, hours, date, certificate_id, event:events(title), role:event_roles(name)")
+    .select(`
+      id,
+      hours,
+      date,
+      certificate_id,
+      issued_at,
+      event:events(title),
+      role:event_roles(name)
+    `)
     .eq("profile_id", userId)
     .order("date", { ascending: false });
 
@@ -222,21 +338,35 @@ export async function getCertificates(): Promise<Certificate[]> {
     id: row.id,
     event_title: row.event?.title ?? "",
     role_name: row.role?.name ?? "",
-    hours: row.hours ?? 0,
+    hours: Number(row.hours ?? 0),
     date: formatDate(row.date),
     certificate_id: row.certificate_id ?? "",
   }));
 }
 
+/* -------------------------------------------------------------------------- */
+/* Notifications                                                              */
+/* -------------------------------------------------------------------------- */
+
 export async function getNotifications(): Promise<Notification[]> {
   const userId = await getCurrentUserId();
+
   if (!userId) {
     return [];
   }
 
   const { data, error } = await db
     .from("notifications")
-    .select("id, title, body, read, category, created_at, event_id")
+    .select(`
+      id,
+      title,
+      body,
+      read,
+      category,
+      created_at,
+      event_id,
+      application_id
+    `)
     .eq("profile_id", userId)
     .order("created_at", { ascending: false });
 
@@ -255,8 +385,13 @@ export async function getNotifications(): Promise<Notification[]> {
   }));
 }
 
+/* -------------------------------------------------------------------------- */
+/* Volunteer Hours                                                            */
+/* -------------------------------------------------------------------------- */
+
 export async function getVolunteerHours(): Promise<VolunteerHours> {
   const userId = await getCurrentUserId();
+
   if (!userId) {
     return {
       total: 0,
@@ -266,9 +401,24 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
     };
   }
 
+  /*
+   * IMPORTANT:
+   *
+   * volunteer_hours is the source of truth for volunteer hours.
+   * certificates are certificates, not the complete hours ledger.
+   */
+
   const { data, error } = await db
-    .from("certificates")
-    .select("hours, event:events(title, sport, start_date)")
+    .from("volunteer_hours")
+    .select(`
+      hours,
+      year,
+      event:events(
+        title,
+        sport,
+        start_date
+      )
+    `)
     .eq("profile_id", userId);
 
   if (error) {
@@ -277,22 +427,38 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
 
   const rows = data ?? [];
   const currentYear = new Date().getFullYear();
+
   let total = 0;
   let currentYearTotal = 0;
+
   const bySport = new Map<string, number>();
   const byEvent = new Map<string, number>();
 
   rows.forEach((row: any) => {
     const hours = Number(row.hours ?? 0);
+
     total += hours;
-    const eventTitle = row.event?.title ?? "Unknown event";
-    const sport = row.event?.sport ?? "Unknown sport";
-    const startDate = row.event?.start_date ?? "";
 
-    byEvent.set(eventTitle, (byEvent.get(eventTitle) ?? 0) + hours);
-    bySport.set(sport, (bySport.get(sport) ?? 0) + hours);
+    const eventTitle =
+      row.event?.title ?? "Unknown event";
 
-    if (startDate.startsWith(String(currentYear))) {
+    const sport =
+      row.event?.sport ?? "Unknown sport";
+
+    byEvent.set(
+      eventTitle,
+      (byEvent.get(eventTitle) ?? 0) + hours,
+    );
+
+    bySport.set(
+      sport,
+      (bySport.get(sport) ?? 0) + hours,
+    );
+
+    /*
+     * Prefer the explicit year column from volunteer_hours.
+     */
+    if (Number(row.year) === currentYear) {
       currentYearTotal += hours;
     }
   });
@@ -300,10 +466,26 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
   return {
     total,
     current_year: currentYearTotal,
-    by_sport: Array.from(bySport.entries()).map(([label, value]) => ({ label, value })),
-    by_event: Array.from(byEvent.entries()).map(([label, value]) => ({ label, value })),
+
+    by_sport: Array.from(bySport.entries()).map(
+      ([label, value]) => ({
+        label,
+        value,
+      }),
+    ),
+
+    by_event: Array.from(byEvent.entries()).map(
+      ([label, value]) => ({
+        label,
+        value,
+      }),
+    ),
   };
 }
+
+/* -------------------------------------------------------------------------- */
+/* Apply for Role                                                             */
+/* -------------------------------------------------------------------------- */
 
 export async function applyForRole(
   eventId: string,
@@ -313,15 +495,22 @@ export async function applyForRole(
   motivation: string,
 ): Promise<void> {
   const userId = await getCurrentUserId();
+
   if (!userId) {
     throw new Error("You must be signed in to apply.");
   }
 
+  /* ------------------------------- Event -------------------------------- */
+
   const { data: event, error: eventError } = await db
     .from("events")
-    .select("id, status, application_deadline")
+    .select(`
+      id,
+      status,
+      application_deadline
+    `)
     .eq("id", eventId)
-    .single();
+    .maybeSingle();
 
   if (eventError || !event) {
     throw new Error("Event not found.");
@@ -331,25 +520,42 @@ export async function applyForRole(
     throw new Error("Applications are closed for this event.");
   }
 
-  if (event.application_deadline && new Date(event.application_deadline) < new Date()) {
+  if (
+    event.application_deadline &&
+    new Date(event.application_deadline) < new Date()
+  ) {
     throw new Error("The application deadline has passed.");
   }
 
+  /* -------------------------------- Role --------------------------------- */
+
   const { data: role, error: roleError } = await db
     .from("event_roles")
-    .select("id, positions, filled_positions")
+    .select(`
+      id,
+      positions,
+      filled_positions
+    `)
     .eq("id", roleId)
-    .single();
+    .maybeSingle();
 
   if (roleError || !role) {
     throw new Error("Selected role not found.");
   }
 
-  if (role.filled_positions >= role.positions) {
+  if (
+    Number(role.filled_positions ?? 0) >=
+    Number(role.positions ?? 0)
+  ) {
     throw new Error("This role is already full.");
   }
 
-  const { data: existing, error: existingError } = await db
+  /* -------------------------- Existing application ---------------------- */
+
+  const {
+    data: existing,
+    error: existingError,
+  } = await db
     .from("applications")
     .select("id")
     .eq("profile_id", userId)
@@ -362,8 +568,12 @@ export async function applyForRole(
   }
 
   if (existing) {
-    throw new Error("You have already applied for this role.");
+    throw new Error(
+      "You have already applied for this role.",
+    );
   }
+
+  /* -------------------------------- Insert ------------------------------- */
 
   const payload = {
     profile_id: userId,
@@ -374,13 +584,329 @@ export async function applyForRole(
     experience,
     motivation,
   };
-  const { error: insertError } = await db.from("applications").insert(payload);
+
+  const { error: insertError } = await db
+    .from("applications")
+    .insert(payload);
+
   if (insertError) {
     throw insertError;
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* Dashboard Stats                                                            */
+/* -------------------------------------------------------------------------- */
+
 export async function getVolunteerStats() {
   const hours = await getVolunteerHours();
-  return { totalHours: hours.total, currentYearHours: hours.current_year };
+
+  return {
+    totalHours: hours.total,
+    currentYearHours: hours.current_year,
+  };
+}
+
+export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
+  const userId = await getCurrentUserId();
+
+  if (!userId) {
+    throw new Error("You must be signed in.");
+  }
+
+  const [
+    profileResult,
+    applicationsResult,
+    shiftsResult,
+    certificatesResult,
+    attendanceResult,
+    trainingResult,
+    accreditationResult,
+  ] = await Promise.all([
+    db
+      .from("profiles")
+      .select(`
+        id,
+        first_name,
+        last_name,
+        volunteer_hours,
+        attendance_rate,
+        phone,
+        city,
+        country,
+        bio,
+        interests,
+        skills,
+        languages,
+        experience,
+        avatar_url
+      `)
+      .eq("id", userId)
+      .single(),
+
+    db
+      .from("applications")
+      .select(`
+        id,
+        status,
+        applied_at,
+        experience,
+        availability,
+        motivation,
+        event_id,
+        role_id,
+        event:events(title, start_date, end_date, city, venue),
+        role:event_roles(name)
+      `)
+      .eq("profile_id", userId)
+      .order("applied_at", { ascending: false }),
+
+    db
+      .from("shift_assignments")
+      .select(`
+        id,
+        status,
+        shift:event_shifts(
+          id,
+          event_id,
+          role_id,
+          title,
+          date,
+          start_time,
+          end_time,
+          location,
+          event:events(title),
+          role:event_roles(name)
+        )
+      `)
+      .eq("profile_id", userId)
+      .eq("status", "assigned")
+      .order("assigned_at", { ascending: true }),
+
+    db
+      .from("certificates")
+      .select("id, hours")
+      .eq("profile_id", userId),
+
+    db
+      .from("attendance_records")
+      .select("id, status")
+      .eq("profile_id", userId),
+
+    db
+      .from("training_progress")
+      .select("training_id, completed")
+      .eq("profile_id", userId),
+
+    db
+      .from("accreditations")
+      .select(`
+        id,
+        status,
+        event_id,
+        role_id
+      `)
+      .eq("profile_id", userId),
+  ]);
+
+  const error =
+    profileResult.error ||
+    applicationsResult.error ||
+    shiftsResult.error ||
+    certificatesResult.error ||
+    attendanceResult.error ||
+    trainingResult.error ||
+    accreditationResult.error;
+
+  if (error) {
+    throw error;
+  }
+
+  const profile = profileResult.data;
+  const applications = applicationsResult.data ?? [];
+  const shifts = shiftsResult.data ?? [];
+  const certificates = certificatesResult.data ?? [];
+  const attendance = attendanceResult.data ?? [];
+  const training = trainingResult.data ?? [];
+  const accreditations = accreditationResult.data ?? [];
+
+  // -------------------------
+  // Applications
+  // -------------------------
+
+  const formattedApplications: Application[] = applications.map((row: any) => ({
+    id: row.id,
+    event_id: row.event_id,
+    event_title: row.event?.title ?? "",
+    role_name: row.role?.name ?? "",
+    submitted_at: formatDate(row.applied_at),
+    status: row.status,
+    message:
+      [row.motivation, row.experience, row.availability]
+        .filter(Boolean)
+        .join("\n\n") || null,
+  }));
+
+  // -------------------------
+  // Upcoming event
+  // -------------------------
+
+  const now = new Date();
+
+  const upcomingShift = [...shifts]
+    .filter((row: any) => {
+      const date = row.shift?.date;
+      return date && new Date(`${date}T23:59:59`) >= now;
+    })
+    .sort((a: any, b: any) => {
+      const dateA = new Date(`${a.shift.date}T${a.shift.start_time}`);
+      const dateB = new Date(`${b.shift.date}T${b.shift.start_time}`);
+
+      return dateA.getTime() - dateB.getTime();
+    })[0];
+
+  let upcomingEvent = null;
+
+  if (upcomingShift?.shift) {
+    const shift = upcomingShift.shift;
+
+    const accreditation = accreditations.find(
+      (item: any) =>
+        item.event_id === shift.event_id &&
+        item.role_id === shift.role_id,
+    );
+
+    const trainingRequired = await db
+      .from("training_modules")
+      .select("id, required")
+      .eq("event_id", shift.event_id)
+      .eq("role_id", shift.role_id);
+
+    if (trainingRequired.error) {
+      throw trainingRequired.error;
+    }
+
+    const requiredTraining = trainingRequired.data ?? [];
+
+    const completedTrainingIds = new Set(
+      training
+        .filter((item: any) => item.completed)
+        .map((item: any) => item.training_id),
+    );
+
+    const trainingComplete =
+      requiredTraining.length === 0 ||
+      requiredTraining.every((item: any) =>
+        completedTrainingIds.has(item.id),
+      );
+
+    upcomingEvent = {
+      title: shift.event?.title ?? "",
+      status: "accepted",
+      date: formatDate(shift.date),
+      role: shift.role?.name ?? "",
+      shift: `${shift.start_time?.slice(0, 5) ?? ""} - ${
+        shift.end_time?.slice(0, 5) ?? ""
+      }`,
+      location: shift.location ?? "",
+      training: trainingComplete ? "Complete" : "Required",
+      accreditation: accreditation?.status ?? "Pending",
+    };
+  }
+
+  // -------------------------
+  // Statistics
+  // -------------------------
+
+  const volunteerHours = Number(profile?.volunteer_hours ?? 0);
+
+  const attendanceRate = Number(profile?.attendance_rate ?? 0);
+
+  const certificatesCount = certificates.length;
+
+  const upcomingEvents = shifts.filter((row: any) => {
+    const date = row.shift?.date;
+
+    if (!date) return false;
+
+    return new Date(`${date}T23:59:59`) >= now;
+  }).length;
+
+  // -------------------------
+  // Profile completion
+  // -------------------------
+
+  const profileFields = [
+    profile?.first_name,
+    profile?.last_name,
+    profile?.phone,
+    profile?.city,
+    profile?.country,
+    profile?.bio,
+    profile?.experience,
+    profile?.avatar_url,
+  ];
+
+  const filledFields = profileFields.filter(
+    (value) =>
+      value !== null &&
+      value !== undefined &&
+      String(value).trim() !== "",
+  ).length;
+
+  const interestsCount = Array.isArray(profile?.interests)
+    ? profile.interests.length
+    : 0;
+
+  const skillsCount = Array.isArray(profile?.skills)
+    ? profile.skills.length
+    : 0;
+
+  const languagesCount = Array.isArray(profile?.languages)
+    ? profile.languages.length
+    : 0;
+
+  let profileCompletion = Math.round(
+    (
+      (filledFields / profileFields.length) * 70 +
+      Math.min(interestsCount, 3) / 3 * 10 +
+      Math.min(skillsCount, 3) / 3 * 10 +
+      Math.min(languagesCount, 2) / 2 * 10
+    ),
+  );
+
+  profileCompletion = Math.min(100, Math.max(0, profileCompletion));
+
+  // -------------------------
+  // Achievements
+  // -------------------------
+
+  const achievements = [
+    {
+      title: "First Event",
+      progress: volunteerHours > 0 ? 100 : 0,
+      unlocked: volunteerHours > 0,
+    },
+    {
+      title: "10 Volunteer Hours",
+      progress: Math.min(100, Math.round((volunteerHours / 10) * 100)),
+      unlocked: volunteerHours >= 10,
+    },
+    {
+      title: "Perfect Attendance",
+      progress: Math.min(100, Math.round(attendanceRate)),
+      unlocked: attendanceRate >= 100,
+    },
+  ];
+
+  return {
+    upcomingEvents,
+    volunteerHours,
+    attendanceRate,
+    certificates: certificatesCount,
+    upcomingEvent,
+    applications: formattedApplications,
+    profileCompletion,
+    achievements,
+  };
 }

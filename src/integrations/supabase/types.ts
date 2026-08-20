@@ -16,65 +16,92 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
-          attendance_rate: number
+          id: string
+          email: string | null
+
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+
+          first_name: string | null
+          last_name: string | null
+          date_of_birth: string | null
+
           avatar_url: string | null
           bio: string | null
+          phone: string | null
           city: string | null
           country: string | null
-          created_at: string
-          date_of_birth: string | null
-          email: string | null
+
           experience: string | null
-          first_name: string | null
-          id: string
           interests: string[]
-          languages: string[]
-          last_name: string | null
-          phone: string | null
           skills: string[]
-          updated_at: string
+          languages: string[]
+
           volunteer_hours: number
+          attendance_rate: number
+
+          created_at: string
+          updated_at: string
         }
+
         Insert: {
-          attendance_rate?: number
-          avatar_url?: string | null
-          bio?: string | null
-          city?: string | null
-          country?: string | null
-          created_at?: string
-          date_of_birth?: string | null
-          email?: string | null
-          experience?: string | null
-          first_name?: string | null
           id: string
-          interests?: string[]
-          languages?: string[]
+          email?: string | null
+
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+
+          first_name?: string | null
           last_name?: string | null
-          phone?: string | null
-          skills?: string[]
-          updated_at?: string
-          volunteer_hours?: number
-        }
-        Update: {
-          attendance_rate?: number
+          date_of_birth?: string | null
+
           avatar_url?: string | null
           bio?: string | null
+          phone?: string | null
           city?: string | null
           country?: string | null
-          created_at?: string
-          date_of_birth?: string | null
-          email?: string | null
+
           experience?: string | null
-          first_name?: string | null
-          id?: string
           interests?: string[]
-          languages?: string[]
-          last_name?: string | null
-          phone?: string | null
           skills?: string[]
-          updated_at?: string
+          languages?: string[]
+
           volunteer_hours?: number
+          attendance_rate?: number
+
+          created_at?: string
+          updated_at?: string
         }
+
+        Update: {
+          id?: string
+          email?: string | null
+
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+
+          first_name?: string | null
+          last_name?: string | null
+          date_of_birth?: string | null
+
+          avatar_url?: string | null
+          bio?: string | null
+          phone?: string | null
+          city?: string | null
+          country?: string | null
+
+          experience?: string | null
+          interests?: string[]
+          skills?: string[]
+          languages?: string[]
+
+          volunteer_hours?: number
+          attendance_rate?: number
+
+          created_at?: string
+          updated_at?: string
+        }
+
         Relationships: []
       }
       user_roles: {

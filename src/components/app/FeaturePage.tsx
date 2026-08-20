@@ -1,155 +1,373 @@
+// import { Link } from "@tanstack/react-router";
+// import {
+//   Award,
+//   ArrowRight,
+//   CalendarDays,
+//   CheckCircle2,
+//   Clock3,
+//   Download,
+//   ExternalLink,
+//   FileCheck2,
+//   MapPin,
+//   QrCode,
+//   ShieldCheck,
+//   Trophy,
+//   Users,
+// } from "lucide-react";
+// import { AppShell } from "@/components/app/AppShell";
+// import {
+//   VSAvatar,
+//   VSBadge,
+//   VSButton,
+//   VSCard,
+//   VSCardContent,
+//   VSEmptyState,
+//   VSNotificationItem,
+//   VSPageHeader,
+//   VSSectionHeader,
+//   VSStatCard,
+//   VSStatusBadge,
+//   VSTabs,
+// } from "@/components/design-system";
+// import { volunteerContentService } from "@/services/volunteerContentService";
+// import { useAuth } from "@/lib/auth";
+
+
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
-  Award,
   ArrowRight,
+  Award,
   CalendarDays,
   CheckCircle2,
   Clock3,
-  Download,
-  ExternalLink,
-  FileCheck2,
   MapPin,
-  QrCode,
   ShieldCheck,
   Trophy,
   Users,
 } from "lucide-react";
+
 import { AppShell } from "@/components/app/AppShell";
 import {
-  VSAvatar,
   VSBadge,
   VSButton,
   VSCard,
   VSCardContent,
-  VSEmptyState,
-  VSNotificationItem,
   VSPageHeader,
   VSSectionHeader,
   VSStatCard,
   VSStatusBadge,
-  VSTabs,
 } from "@/components/design-system";
-import { volunteerContentService } from "@/services/volunteerContentService";
+
+import { useAuth } from "@/lib/auth";
+
+import { getVolunteerDashboard } from "@/services/backendService";
+
+import { VolunteerDashboard } from "@/lib/types";
+
+
 
 export function DashboardPage() {
+  const { profile } = useAuth();
+
+  const [dashboard, setDashboard] = useState<VolunteerDashboard | null>(null);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
+  const [dashboardError, setDashboardError] = useState<string | null>(null);
+
+  const firstName = profile?.first_name || "Volunteer";
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadDashboard() {
+      try {
+        setDashboardLoading(true);
+        setDashboardError(null);
+
+        const data = await getVolunteerDashboard();
+
+        if (mounted) {
+          setDashboard(data);
+        }
+      } catch (error) {
+        console.error("Failed to load volunteer dashboard:", error);
+
+        if (mounted) {
+          setDashboardError(
+            error instanceof Error
+              ? error.message
+              : "Failed to load your dashboard.",
+          );
+        }
+      } finally {
+        if (mounted) {
+          setDashboardLoading(false);
+        }
+      }
+    }
+
+    loadDashboard();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (dashboardLoading) {
+    return (
+      <AppShell title="Dashboard">
+        <div className="mx-auto max-w-7xl space-y-8">
+          <VSPageHeader
+            eyebrow="Your volunteer journey"
+            title={`Welcome, ${firstName}.`}
+            description="Everything you need to keep showing up for the moments that matter."
+          />
+
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={index}
+                className="h-32 animate-pulse rounded-[1.5rem] border border-border bg-muted/40"
+              />
+            ))}
+          </div>
+
+          <div className="h-72 animate-pulse rounded-[2rem] border border-border bg-muted/40" />
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="h-64 animate-pulse rounded-[2rem] border border-border bg-muted/40" />
+            <div className="h-64 animate-pulse rounded-[2rem] border border-border bg-muted/40" />
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (dashboardError) {
+    return (
+      <AppShell title="Dashboard">
+        <div className="mx-auto max-w-7xl space-y-8">
+          <VSPageHeader
+            eyebrow="Your volunteer journey"
+            title={`Welcome, ${firstName}.`}
+            description="Everything you need to keep showing up for the moments that matter."
+          />
+
+          <VSCard className="rounded-[2rem] border-border">
+            <VSCardContent className="p-8">
+              <div className="flex items-start gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
+                  <span className="text-sm font-bold text-destructive">!</span>
+                </div>
+
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    Unable to load your dashboard
+                  </p>
+
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {dashboardError}
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => window.location.reload()}
+                    className="mt-4 text-sm font-semibold text-primary hover:underline"
+                  >
+                    Try again
+                  </button>
+                </div>
+              </div>
+            </VSCardContent>
+          </VSCard>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (!dashboard) {
+    return null;
+  }
+
+  const upcomingEvent = dashboard.upcomingEvent;
+  const profileCompletion = dashboard.profileCompletion;
+
   return (
     <AppShell title="Dashboard">
       <div className="mx-auto max-w-7xl space-y-8">
+        {/* Header */}
         <VSPageHeader
           eyebrow="Your volunteer journey"
-          title="Welcome back, Amine."
+          title={`Welcome, ${firstName}.`}
           description="Everything you need to keep showing up for the moments that matter."
           action={
             <VSButton asChild>
               <Link to="/events">
-                Discover events <ArrowRight className="h-4 w-4" />
+                Discover events
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </VSButton>
           }
         />
+
+        {/* Hero */}
         <section className="relative overflow-hidden rounded-[2rem] bg-ink p-7 text-white shadow-[var(--shadow-lift)] sm:p-10">
           <div className="pointer-events-none absolute inset-0 zellij-tile" />
+
           <div className="relative max-w-2xl">
             <VSBadge variant="dark">Your next impact</VSBadge>
+
             <h2 className="mt-5 text-3xl font-semibold tracking-tight sm:text-5xl">
-              Make the next event unforgettable.
+              {upcomingEvent
+                ? "Make the next event unforgettable."
+                : "Your next impact starts here."}
             </h2>
+
             <p className="mt-4 max-w-xl text-sm leading-7 text-white/70">
-              You have one accepted assignment ahead. Finish your preparation, arrive ready, and
-              keep building a track record you can be proud of.
+              {upcomingEvent
+                ? "You have an accepted assignment ahead. Finish your preparation, arrive ready, and keep building a track record you can be proud of."
+                : "Explore upcoming sports events, build your volunteer profile, and find an opportunity where you can make an impact."}
             </p>
+
             <Link
-              to="/my-events"
+              to={upcomingEvent ? "/my-events" : "/events"}
               className="mt-7 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
             >
-              View my event <ArrowRight className="h-4 w-4" />
+              {upcomingEvent ? "View my event" : "Discover events"}
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </section>
+
+        {/* Stats */}
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <VSStatCard
             label="Upcoming events"
-            value={volunteerContentService.getDashboard().upcomingEvents}
-            description="One confirmed assignment"
+            value={dashboard.upcomingEvents}
+            description={
+              dashboard.upcomingEvents === 1
+                ? "One confirmed assignment"
+                : "Confirmed assignments"
+            }
             icon={<CalendarDays className="h-5 w-5" />}
           />
+
           <VSStatCard
             label="Volunteer hours"
-            value={volunteerContentService.getDashboard().volunteerHours}
-            description="Verified this year"
+            value={dashboard.volunteerHours}
+            description="Verified volunteer hours"
             icon={<Clock3 className="h-5 w-5" />}
             accent
           />
+
           <VSStatCard
             label="Attendance"
-            value={volunteerContentService.getDashboard().attendance}
+            value={`${dashboard.attendanceRate}%`}
             description="Across completed events"
             icon={<CheckCircle2 className="h-5 w-5" />}
           />
+
           <VSStatCard
             label="Certificates"
-            value={volunteerContentService.getDashboard().certificates}
+            value={dashboard.certificates}
             description="Ready to share"
             icon={<Award className="h-5 w-5" />}
             accent
           />
         </section>
+
+        {/* Upcoming Event + Quick Actions */}
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <VSCard className="rounded-[2rem] border-border shadow-[var(--shadow-float)]">
             <VSCardContent className="p-6 sm:p-8">
               <VSSectionHeader
                 eyebrow="Upcoming event"
-                title={volunteerContentService.getUpcomingEvent().title}
+                title={upcomingEvent?.title ?? "No upcoming event"}
                 action={
-                  <VSStatusBadge status={volunteerContentService.getUpcomingEvent().status} />
+                  upcomingEvent ? (
+                    <VSStatusBadge status={upcomingEvent.status} />
+                  ) : null
                 }
               />
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <Info
-                  label="Date"
-                  value={volunteerContentService.getUpcomingEvent().date}
-                  icon={<CalendarDays className="h-4 w-4" />}
-                />
-                <Info
-                  label="Role"
-                  value={volunteerContentService.getUpcomingEvent().role}
-                  icon={<Users className="h-4 w-4" />}
-                />
-                <Info
-                  label="Shift"
-                  value={volunteerContentService.getUpcomingEvent().shift}
-                  icon={<Clock3 className="h-4 w-4" />}
-                />
-                <Info
-                  label="Location"
-                  value={volunteerContentService.getUpcomingEvent().location}
-                  icon={<MapPin className="h-4 w-4" />}
-                />
-              </div>
-              <div className="mt-6 flex flex-wrap gap-2">
-                <VSBadge variant="soft">
-                  Training {volunteerContentService.getUpcomingEvent().training}
-                </VSBadge>
-                <VSBadge variant="accent">
-                  Accreditation {volunteerContentService.getUpcomingEvent().accreditation}
-                </VSBadge>
-              </div>
+
+              {upcomingEvent ? (
+                <>
+                  <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                    <Info
+                      label="Date"
+                      value={upcomingEvent.date}
+                      icon={<CalendarDays className="h-4 w-4" />}
+                    />
+
+                    <Info
+                      label="Role"
+                      value={upcomingEvent.role}
+                      icon={<Users className="h-4 w-4" />}
+                    />
+
+                    <Info
+                      label="Shift"
+                      value={upcomingEvent.shift}
+                      icon={<Clock3 className="h-4 w-4" />}
+                    />
+
+                    <Info
+                      label="Location"
+                      value={upcomingEvent.location}
+                      icon={<MapPin className="h-4 w-4" />}
+                    />
+                  </div>
+
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    <VSBadge variant="soft">
+                      Training {upcomingEvent.training}
+                    </VSBadge>
+
+                    <VSBadge variant="accent">
+                      Accreditation {upcomingEvent.accreditation}
+                    </VSBadge>
+                  </div>
+                </>
+              ) : (
+                <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
+                  <CalendarDays className="mx-auto h-8 w-8 text-muted-foreground" />
+
+                  <p className="mt-3 text-sm font-semibold text-foreground">
+                    No upcoming assignment
+                  </p>
+
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Find your next opportunity and start volunteering.
+                  </p>
+
+                  <VSButton asChild className="mt-4">
+                    <Link to="/events">
+                      Browse events
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </VSButton>
+                </div>
+              )}
             </VSCardContent>
           </VSCard>
+
           <VSCard className="rounded-[2rem] border-border shadow-[var(--shadow-float)]">
             <VSCardContent className="p-6 sm:p-8">
               <VSSectionHeader eyebrow="Quick actions" title="Keep moving" />
+
               <div className="mt-6 space-y-3">
                 <QuickAction
                   href="/schedule"
                   icon={<CalendarDays className="h-4 w-4" />}
                   label="View schedule"
                 />
+
                 <QuickAction
                   href="/training"
                   icon={<ShieldCheck className="h-4 w-4" />}
                   label="Continue training"
                 />
+
                 <QuickAction
                   href="/hours"
                   icon={<Clock3 className="h-4 w-4" />}
@@ -159,98 +377,154 @@ export function DashboardPage() {
             </VSCardContent>
           </VSCard>
         </div>
+
+        {/* Applications + Profile */}
         <div className="grid gap-6 lg:grid-cols-2">
+          {/* Applications */}
           <VSCard className="rounded-[2rem] border-border">
             <VSCardContent className="p-6 sm:p-8">
               <VSSectionHeader
                 eyebrow="Applications"
                 title="Recent applications"
                 action={
-                  <Link to="/applications" className="text-sm font-semibold text-primary">
+                  <Link
+                    to="/applications"
+                    className="text-sm font-semibold text-primary"
+                  >
                     View all
                   </Link>
                 }
               />
-              <div className="mt-6 space-y-3">
-                {volunteerContentService
-                  .getApplications()
-                  .slice(0, 3)
-                  .map((item) => (
+
+              {dashboard.applications.length > 0 ? (
+                <div className="mt-6 space-y-3">
+                  {dashboard.applications.slice(0, 3).map((item) => (
                     <div
                       key={item.id}
                       className="flex items-center justify-between gap-4 rounded-2xl border border-border p-4"
                     >
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-foreground">
-                          {item.event}
+                          {item.event_title}
                         </p>
+
                         <p className="mt-1 truncate text-xs text-muted-foreground">
-                          {item.role} · {item.date}
+                          {item.role_name} · {item.submitted_at}
                         </p>
                       </div>
+
                       <VSStatusBadge status={item.status} />
                     </div>
                   ))}
-              </div>
+                </div>
+              ) : (
+                <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
+                  <p className="text-sm font-semibold text-foreground">
+                    No applications yet
+                  </p>
+
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Start exploring events and apply for a volunteer role.
+                  </p>
+
+                  <Link
+                    to="/events"
+                    className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary"
+                  >
+                    Discover events
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              )}
             </VSCardContent>
           </VSCard>
+
+          {/* Profile completion */}
           <VSCard className="rounded-[2rem] border-border">
             <VSCardContent className="p-6 sm:p-8">
-              <VSSectionHeader eyebrow="Profile completion" title="Make your profile work harder" />
+              <VSSectionHeader
+                eyebrow="Profile completion"
+                title="Make your profile work harder"
+              />
+
               <div className="mt-6 flex items-center gap-4">
-                <div className="relative h-20 w-20 rounded-full bg-muted">
+                <div className="relative h-20 w-20 shrink-0 rounded-full bg-muted">
                   <div className="absolute inset-1 rounded-full bg-card" />
+
                   <div
                     className="absolute inset-0 rounded-full border-4 border-primary"
                     style={{
-                      clipPath: `inset(${100 - volunteerContentService.getDashboard().profileCompletion}% 0 0 0)`,
+                      clipPath: `inset(${100 - profileCompletion}% 0 0 0)`,
                     }}
                   />
+
                   <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-foreground">
-                    {volunteerContentService.getDashboard().profileCompletion}%
+                    {profileCompletion}%
                   </span>
                 </div>
+
                 <div>
                   <p className="text-sm font-semibold text-foreground">
-                    Add your skills and languages.
+                    {profileCompletion >= 100
+                      ? "Your profile is complete."
+                      : "Add your skills and languages."}
                   </p>
+
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     A complete profile helps event teams place you in the right role.
                   </p>
+
                   <Link
                     to="/profile"
                     className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary"
                   >
-                    Update profile <ArrowRight className="h-3.5 w-3.5" />
+                    {profileCompletion >= 100
+                      ? "View profile"
+                      : "Update profile"}
+
+                    <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
               </div>
             </VSCardContent>
           </VSCard>
         </div>
+
+        {/* Achievements */}
         <section>
           <VSSectionHeader
             eyebrow="Milestones"
             title="Achievements"
             action={
-              <Link to="/achievements" className="text-sm font-semibold text-primary">
+              <Link
+                to="/achievements"
+                className="text-sm font-semibold text-primary"
+              >
                 See all
               </Link>
             }
           />
-          <div className="mt-5 grid gap-4 md:grid-cols-3">
-            {volunteerContentService
-              .getAchievements()
-              .slice(0, 3)
-              .map((item) => (
-                <VSCard key={item.title} className="rounded-[1.5rem] border-border">
+
+          {dashboard.achievements.length > 0 ? (
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
+              {dashboard.achievements.slice(0, 3).map((item) => (
+                <VSCard
+                  key={item.title}
+                  className="rounded-[1.5rem] border-border"
+                >
                   <VSCardContent className="p-5">
                     <Trophy
                       className={
-                        item.unlocked ? "h-6 w-6 text-primary" : "h-6 w-6 text-muted-foreground"
+                        item.unlocked
+                          ? "h-6 w-6 text-primary"
+                          : "h-6 w-6 text-muted-foreground"
                       }
                     />
-                    <p className="mt-4 text-sm font-semibold text-foreground">{item.title}</p>
+
+                    <p className="mt-4 text-sm font-semibold text-foreground">
+                      {item.title}
+                    </p>
+
                     <div className="mt-4 h-1.5 rounded-full bg-muted">
                       <div
                         className={
@@ -258,14 +532,35 @@ export function DashboardPage() {
                             ? "h-full rounded-full bg-primary"
                             : "h-full rounded-full bg-muted-foreground/40"
                         }
-                        style={{ width: `${item.progress}%` }}
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            Math.max(0, item.progress),
+                          )}%`,
+                        }}
                       />
                     </div>
-                    <p className="mt-2 text-xs text-muted-foreground">{item.progress}% complete</p>
+
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {item.progress}% complete
+                    </p>
                   </VSCardContent>
                 </VSCard>
               ))}
-          </div>
+            </div>
+          ) : (
+            <div className="mt-5 rounded-[1.5rem] border border-dashed border-border p-8 text-center">
+              <Trophy className="mx-auto h-8 w-8 text-muted-foreground" />
+
+              <p className="mt-3 text-sm font-semibold text-foreground">
+                Your achievements will appear here
+              </p>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                Keep volunteering to unlock your first milestones.
+              </p>
+            </div>
+          )}
         </section>
       </div>
     </AppShell>

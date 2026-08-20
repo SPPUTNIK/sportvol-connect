@@ -1,5 +1,70 @@
 export type UserRole = "volunteer" | "admin";
 
+export interface VolunteerDashboardStats {
+  upcomingEvents: number;
+  volunteerHours: number;
+  attendanceRate: number;
+  certificates: number;
+}
+
+export interface DashboardUpcomingEvent {
+  id: string;
+  title: string;
+  status: string;
+  date: string;
+  role: string;
+  shift: string;
+  location: string;
+  training: string;
+  accreditation: string;
+}
+
+export interface DashboardApplication {
+  id: string;
+  event: string;
+  role: string;
+  date: string;
+  status: string;
+}
+
+export interface DashboardAchievement {
+  code: string;
+  title: string;
+  description: string;
+  icon: string | null;
+  progress: number;
+  unlocked: boolean;
+}
+
+export type VolunteerDashboard = {
+  upcomingEvents: number;
+  volunteerHours: number;
+  attendanceRate: number;
+  certificates: number;
+
+  upcomingEvent: {
+    title: string;
+    status: string;
+    date: string;
+    role: string;
+    shift: string;
+    location: string;
+    training: string;
+    accreditation: string;
+  } | null;
+
+  applications: Application[];
+
+  profileCompletion: number;
+
+  achievements: {
+    title: string;
+    progress: number;
+    unlocked: boolean;
+  }[];
+};
+
+
 export type EventStatus = "draft" | "published" | "closed" | "completed" | "cancelled";
 
 export type ApplicationStatus = "pending" | "accepted" | "rejected" | "withdrawn" | "waitlisted";
@@ -88,6 +153,7 @@ export interface Shift {
   location: string;
   instructions: string | null;
 }
+
 export interface TrainingResource {
   type: TrainingResourceType;
   title: string;
@@ -130,6 +196,7 @@ export interface Notification {
   read: boolean;
   category: NotificationCategory;
 }
+
 export interface LabelledValue {
   label: string;
   value: number;
