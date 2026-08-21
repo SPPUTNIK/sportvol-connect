@@ -289,37 +289,77 @@ function EventDetails() {
                   <form onSubmit={handleSubmit} className="mt-6 space-y-4">
                     <label className="block text-sm font-medium text-foreground">
                       Availability
-                      <input
+
+                      <select
                         value={availability}
-                        onChange={(formEvent) => setAvailability(formEvent.target.value)}
-                        placeholder="Days and times available"
+                        onChange={(formEvent) =>
+                          setAvailability(formEvent.target.value)
+                        }
                         required
                         className="mt-2 h-11 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none focus:border-primary"
-                      />
+                      >
+                        <option value="">
+                          Select your availability
+                        </option>
+
+                        <option value="Fully available">
+                          Fully available
+                        </option>
+
+                        <option value="Mornings only">
+                          Mornings only
+                        </option>
+
+                        <option value="Afternoons only">
+                          Afternoons only
+                        </option>
+
+                        <option value="Evenings only">
+                          Evenings only
+                        </option>
+
+                        <option value="Flexible">
+                          Flexible
+                        </option>
+                      </select>
                     </label>
+
                     <label className="block text-sm font-medium text-foreground">
                       Experience
+
                       <textarea
                         value={experience}
-                        onChange={(formEvent) => setExperience(formEvent.target.value)}
+                        onChange={(formEvent) =>
+                          setExperience(formEvent.target.value)
+                        }
                         rows={4}
                         placeholder="What experience would you bring?"
                         required
                         className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
                       />
                     </label>
+
                     <label className="block text-sm font-medium text-foreground">
                       Motivation
+
                       <textarea
                         value={motivation}
-                        onChange={(formEvent) => setMotivation(formEvent.target.value)}
+                        onChange={(formEvent) =>
+                          setMotivation(formEvent.target.value)
+                        }
                         rows={3}
                         placeholder="What excites you about this event?"
                         required
                         className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
                       />
                     </label>
-                    {submitError && <p className="text-sm text-destructive">{submitError}</p>}
+
+                    {submitError && (
+                      <p className="text-sm text-destructive">
+                        {submitError}
+                      </p>
+                    )}
+
                     <VSButton
                       type="submit"
                       disabled={submitting || !selectedRole}

@@ -140,6 +140,7 @@ export interface Event {
   event_type: string | null;
   featured: boolean;
   event_roles?: EventRole[];
+  registered_volunteers?: number;
 }
 
 /*
@@ -150,13 +151,26 @@ export interface Event {
 
 export interface Application {
   id: string;
+
   event_id: string;
+
+  role_id: string;
+
   event_title: string;
+
   role_name: string;
+
   submitted_at: string;
+
   status: ApplicationStatus;
+
   message: string | null;
+
+  availability: string | null;
+
+  experience: string | null;
 }
+
 
 /*
  * ============================================================

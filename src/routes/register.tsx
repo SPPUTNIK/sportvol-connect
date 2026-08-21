@@ -23,6 +23,13 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
+import {
+  Country,
+  City,
+  type ICountry,
+  type ICity,
+} from "country-state-city";
+
 function safeNext(value: unknown): string | null {
   return (
     typeof value === "string" &&
@@ -63,6 +70,7 @@ function Register() {
   const navigate = useNavigate();
   const { next } = Route.useSearch();
 
+
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -71,8 +79,13 @@ function Register() {
     password: "",
     phone: "",
     city: "",
-    country: "Morocco",
+    country: "",
   });
+
+  const [selectedCountry, setSelectedCountry] =
+    useState<ICountry | null>(null);
+
+  const [cities, setCities] = useState<ICity[]>([]);
 
   const [error, setError] =
     useState<string | null>(null);
@@ -358,39 +371,70 @@ function Register() {
 
                 {/* Location */}
                 <div className="grid gap-4 sm:grid-cols-2">
+                  {/* City */}
                   <label className="block text-sm font-medium text-foreground">
                     City
 
-                    <input
-                      type="text"
+                    <select
                       value={form.city}
                       onChange={(event) =>
-                        updateField(
-                          "city",
-                          event.target.value,
-                        )
+                        updateField("city", event.target.value)
                       }
+                      disabled={!selectedCountry}
                       autoComplete="address-level2"
-                      placeholder="Rabat"
-                      className="mt-2 h-12 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                    />
+                      className="mt-2 h-12 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <option value="">Select city</option>
+
+                      {cities.map((city) => (
+                        <option
+                          key={`${city.name}-${city.stateCode ?? ""}`}
+                          value={city.name}
+                        >
+                          {city.name}
+                        </option>
+                      ))}
+                    </select>
                   </label>
 
+                  {/* Country */}
                   <label className="block text-sm font-medium text-foreground">
                     Country
 
-                    <input
-                      type="text"
-                      value={form.country}
-                      onChange={(event) =>
-                        updateField(
-                          "country",
-                          event.target.value,
-                        )
-                      }
+                    <select
+                      value={selectedCountry?.isoCode ?? ""}
+                      onChange={(event) => {
+                        const country =
+                          Country.getCountryByCode(event.target.value);
+
+                        setSelectedCountry(country ?? null);
+
+                        const nextCities = country
+                          ? City.getCitiesOfCountry(country.isoCode) ?? []
+                          : [];
+
+                        setCities(nextCities);
+
+                        setForm((previous) => ({
+                          ...previous,
+                          country: country?.name ?? "",
+                          city: "",
+                        }));
+                      }}
                       autoComplete="country-name"
                       className="mt-2 h-12 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                    />
+                    >
+                      <option value="">Select country</option>
+
+                      {Country.getAllCountries().map((country) => (
+                        <option
+                          key={country.isoCode}
+                          value={country.isoCode}
+                        >
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                 </div>
 

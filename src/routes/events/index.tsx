@@ -548,34 +548,26 @@ function Events() {
           />
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {filteredEvents.map((event) => {
-              const filled =
-                event.event_roles?.reduce(
-                  (sum, role) =>
-                    sum +
-                    role.filled_positions,
-                  0,
-                ) ?? 0;
-
-              return (
-                <VSEventCard
-                  key={event.id}
-                  title={event.title}
-                  sport={event.sport}
-                  date={event.start_date}
-                  location={`${event.city} · ${event.venue}`}
-                  cover={
-                    event.cover_url ??
-                    undefined
-                  }
-                  filled={filled}
-                  capacity={
-                    event.total_volunteers_needed
-                  }
-                  href={`/events/${event.id}`}
-                />
-              );
-            })}
+            {filteredEvents.map((event) => (
+              <VSEventCard
+                key={event.id}
+                title={event.title}
+                sport={event.sport}
+                date={event.start_date}
+                location={`${event.city} · ${event.venue}`}
+                cover={
+                  event.cover_url ??
+                  undefined
+                }
+                filled={
+                  event.registered_volunteers ?? 0
+                }
+                capacity={
+                  event.total_volunteers_needed
+                }
+                href={`/events/${event.id}`}
+              />
+            ))}
           </div>
         )}
       </div>
