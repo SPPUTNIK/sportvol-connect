@@ -29,7 +29,7 @@
 //   VSStatusBadge,
 //   VSTabs,
 // } from "@/components/design-system";
-// import { volunteerContentService } from "@/services/volunteerContentService";
+import { volunteerContentService } from "@/services/volunteerContentService";
 // import { useAuth } from "@/lib/auth";
 
 

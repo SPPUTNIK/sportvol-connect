@@ -1,5 +1,11 @@
 export type UserRole = "volunteer" | "admin";
 
+/*
+ * ============================================================
+ * DASHBOARD
+ * ============================================================
+ */
+
 export interface VolunteerDashboardStats {
   upcomingEvents: number;
   volunteerHours: number;
@@ -64,35 +70,39 @@ export type VolunteerDashboard = {
   }[];
 };
 
+/*
+ * ============================================================
+ * EVENTS
+ * ============================================================
+ */
 
-export type EventStatus = "draft" | "published" | "closed" | "completed" | "cancelled";
+export type EventStatus =
+  | "draft"
+  | "published"
+  | "closed"
+  | "completed"
+  | "cancelled";
 
-export type ApplicationStatus = "pending" | "accepted" | "rejected" | "withdrawn" | "waitlisted";
+export type ApplicationStatus =
+  | "pending"
+  | "accepted"
+  | "rejected"
+  | "withdrawn"
+  | "waitlisted";
 
 export type NotificationCategory =
-  "application" | "training" | "accreditation" | "certificate" | "event" | "other";
+  | "application"
+  | "training"
+  | "accreditation"
+  | "certificate"
+  | "event"
+  | "other";
 
-export type TrainingResourceType = "video" | "pdf" | "text" | "link";
-
-export interface Profile {
-  id: string;
-  email: string | null;
-  role: UserRole;
-  first_name: string | null;
-  last_name: string | null;
-  avatar_url: string | null;
-  phone: string | null;
-  city: string | null;
-  date_of_birth: string | null;
-  country: string | null;
-  bio: string | null;
-  interests: string[];
-  skills: string[];
-  languages: string[];
-  experience: string | null;
-  volunteer_hours: number;
-  attendance_rate: number;
-}
+export type TrainingResourceType =
+  | "video"
+  | "pdf"
+  | "text"
+  | "link";
 
 export interface EventRole {
   id: string;
@@ -132,6 +142,12 @@ export interface Event {
   event_roles?: EventRole[];
 }
 
+/*
+ * ============================================================
+ * APPLICATIONS
+ * ============================================================
+ */
+
 export interface Application {
   id: string;
   event_id: string;
@@ -141,6 +157,12 @@ export interface Application {
   status: ApplicationStatus;
   message: string | null;
 }
+
+/*
+ * ============================================================
+ * SHIFTS
+ * ============================================================
+ */
 
 export interface Shift {
   id: string;
@@ -153,6 +175,12 @@ export interface Shift {
   location: string;
   instructions: string | null;
 }
+
+/*
+ * ============================================================
+ * TRAINING
+ * ============================================================
+ */
 
 export interface TrainingResource {
   type: TrainingResourceType;
@@ -168,6 +196,12 @@ export interface Training {
   resources: TrainingResource[];
 }
 
+/*
+ * ============================================================
+ * ATTENDANCE
+ * ============================================================
+ */
+
 export interface AttendanceRecord {
   id: string;
   event_title: string;
@@ -178,6 +212,12 @@ export interface AttendanceRecord {
   check_out_time: string | null;
 }
 
+/*
+ * ============================================================
+ * CERTIFICATES
+ * ============================================================
+ */
+
 export interface Certificate {
   id: string;
   event_title: string;
@@ -186,6 +226,12 @@ export interface Certificate {
   date: string;
   certificate_id: string;
 }
+
+/*
+ * ============================================================
+ * NOTIFICATIONS
+ * ============================================================
+ */
 
 export interface Notification {
   id: string;
@@ -196,6 +242,154 @@ export interface Notification {
   read: boolean;
   category: NotificationCategory;
 }
+
+/*
+ * ============================================================
+ * PROFILE
+ * ============================================================
+ */
+
+export interface Profile {
+  id: string;
+
+  /*
+   * Authentication
+   */
+  email: string | null;
+  role: UserRole;
+
+  /*
+   * Identity
+   */
+  first_name: string | null;
+  last_name: string | null;
+
+  /*
+   * Profile photo
+   *
+   * Supabase Storage public/signed URL.
+   */
+  avatar_url: string | null;
+
+  /*
+   * Contact
+   */
+  phone: string | null;
+  city: string | null;
+  country: string | null;
+
+  /*
+   * Personal information
+   */
+  nationality: string | null;
+  cin_or_passport: string | null;
+  date_of_birth: string | null;
+
+  /*
+   * About volunteer
+   */
+  bio: string | null;
+  experience: string | null;
+
+  /*
+   * Multi-select profile data
+   */
+  interests: string[];
+  skills: string[];
+  languages: string[];
+
+  /*
+   * Platform-managed statistics
+   *
+   * Volunteers should NOT edit these directly.
+   */
+  volunteer_hours: number;
+  attendance_rate: number;
+}
+
+/*
+ * ============================================================
+ * VOLUNTEER PROFILE
+ * ============================================================
+ *
+ * Used by the volunteer-facing profile service/page.
+ */
+
+export interface VolunteerProfile {
+  id: string;
+
+  /*
+   * Short/display identifier.
+   *
+   * This can be derived from the profile UUID
+   * in the frontend when a dedicated volunteer_id
+   * column does not exist.
+   */
+  volunteer_id: string;
+
+  /*
+   * Authentication
+   */
+  email: string;
+
+  /*
+   * Identity
+   */
+  first_name: string;
+  last_name: string;
+
+  /*
+   * Profile photo
+   */
+  avatar_url: string | null;
+
+  /*
+   * Contact
+   */
+  phone: string;
+  city: string;
+  country: string;
+
+  /*
+   * Personal information
+   */
+  nationality: string | null;
+  cin_or_passport: string | null;
+  date_of_birth: string | null;
+
+  /*
+   * About volunteer
+   */
+  bio: string | null;
+  experience: string | null;
+
+  /*
+   * Multi-select profile data
+   */
+  interests: string[];
+  skills: string[];
+  languages: string[];
+
+  /*
+   * Platform-managed statistics
+   */
+  volunteer_hours: number;
+  attendance_rate: number;
+}
+
+/*
+ * Backwards compatibility.
+ *
+ * Existing pages importing Volunteer will continue
+ * to work without modification.
+ */
+export type Volunteer = VolunteerProfile;
+
+/*
+ * ============================================================
+ * VOLUNTEER HOURS
+ * ============================================================
+ */
 
 export interface LabelledValue {
   label: string;
@@ -209,23 +403,3 @@ export interface VolunteerHours {
   by_event: LabelledValue[];
 }
 
-export interface VolunteerProfile {
-  id: string;
-  volunteer_id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  city: string;
-  country: string;
-  bio: string | null;
-  date_of_birth: string | null;
-  experience: string | null;
-  interests: string[];
-  skills: string[];
-  languages: string[];
-  volunteer_hours: number;
-  attendance_rate: number;
-}
-
-export type Volunteer = VolunteerProfile;
