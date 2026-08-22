@@ -53,6 +53,9 @@ import {
   VSButton,
   VSCard,
   VSCardContent,
+  VSEmptyState,
+  VSErrorState,
+  VSLoadingState,
   VSPageHeader,
   VSSectionHeader,
   VSStatCard,
@@ -65,6 +68,10 @@ import { getVolunteerDashboard } from "@/services/backendService";
 
 import { VolunteerDashboard } from "@/lib/types";
 
+import {
+  eventService,
+  type MyEvent,
+} from "@/services/eventService";
 
 
 export function DashboardPage() {
@@ -568,6 +575,26 @@ export function DashboardPage() {
 }
 
 export function MyEventsPage() {
+  const [events, setEvents] = useState<MyEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    eventService
+      .getMyEvents()
+      .then(setEvents)
+      .catch((err: unknown) => {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load your events.",
+        );
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <AppShell title="My events">
       <div className="mx-auto max-w-7xl">
@@ -576,39 +603,122 @@ export function MyEventsPage() {
           title="The events you are part of"
           description="Everything you need before event day, from your role to accreditation and attendance."
         />
-        <div className="mt-8 grid gap-5 lg:grid-cols-2">
-          {volunteerContentService.getMyEvents().map((item) => (
-            <VSCard key={item.id} className="rounded-[2rem] border-border">
-              <VSCardContent className="p-6 sm:p-8">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <VSStatusBadge status="accepted" />
-                    <h2 className="mt-4 text-2xl font-semibold text-foreground">{item.event}</h2>
-                    <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      {item.location}
-                    </p>
-                  </div>
-                  <CalendarDays className="h-6 w-6 text-primary" />
-                </div>
-                <div className="mt-7 grid gap-4 sm:grid-cols-2">
-                  <Info label="Date" value={item.date} />
-                  <Info label="Role" value={item.role} />
-                  <Info label="Shift" value={item.shift} />
-                  <Info label="Training" value={item.training} />
-                  <Info label="Accreditation" value={item.accreditation} />
-                  <Info label="Attendance" value={item.attendance} />
-                </div>
+
+        {loading && (
+          <div className="mt-8">
+            <VSLoadingState message="Loading your events…" />
+          </div>
+        )}
+
+        {!loading && error && (
+          <div className="mt-8">
+            <VSErrorState
+              title="Unable to load your events"
+              description={error}
+            />
+          </div>
+        )}
+
+        {!loading && !error && events.length === 0 && (
+          <div className="mt-8">
+            <VSEmptyState
+              title="No accepted events yet"
+              description="Once an event team accepts your application, the event will appear here."
+              action={
                 <Link
-                  to="/accreditation"
-                  className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-primary"
+                  to="/events"
+                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
                 >
-                  View accreditation <ArrowRight className="h-4 w-4" />
+                  Browse events
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
-              </VSCardContent>
-            </VSCard>
-          ))}
-        </div>
+              }
+            />
+          </div>
+        )}
+
+        {!loading && !error && events.length > 0 && (
+          <div className="mt-8 grid gap-5 lg:grid-cols-2">
+            {events.map((item) => (
+              <VSCard
+                key={item.id}
+                className="rounded-[2rem] border-border"
+              >
+                <VSCardContent className="p-6 sm:p-8">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <VSStatusBadge status="accepted" />
+
+                      <h2 className="mt-4 text-2xl font-semibold text-foreground">
+                        {item.event}
+                      </h2>
+
+                      <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        {item.location}
+                      </p>
+                    </div>
+
+                    <CalendarDays className="h-6 w-6 text-primary" />
+                  </div>
+
+                  <div className="mt-7 grid gap-4 sm:grid-cols-2">
+                    <Info
+                      label="Date"
+                      value={item.date}
+                    />
+
+                    <Info
+                      label="Role"
+                      value={item.role}
+                    />
+
+                    <Info
+                      label="Shift"
+                      value={item.shift}
+                    />
+
+                    <Info
+                      label="Training"
+                      value={item.training}
+                    />
+
+                    <Info
+                      label="Accreditation"
+                      value={item.accreditation}
+                    />
+
+                    <Info
+                      label="Attendance"
+                      value={item.attendance}
+                    />
+                  </div>
+
+                  <div className="mt-7 flex flex-wrap gap-4">
+                    <Link
+                      to="/accreditation"
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-primary"
+                    >
+                      View accreditation
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+
+                    <Link
+                      to="/events/$eventId"
+                      params={{
+                        eventId: item.eventId,
+                      }}
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-primary"
+                    >
+                      View event
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                </VSCardContent>
+              </VSCard>
+            ))}
+          </div>
+        )}
       </div>
     </AppShell>
   );

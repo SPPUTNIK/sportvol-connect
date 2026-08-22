@@ -143,6 +143,27 @@ export interface Event {
   registered_volunteers?: number;
 }
 
+
+export interface MyEvent {
+  id: string;
+
+  event_id: string;
+  event: string;
+
+  location: string;
+  date: string;
+
+  role: string;
+
+  shift: string;
+  training: string;
+  accreditation: string;
+  attendance: string;
+
+  application_status: ApplicationStatus;
+}
+
+
 /*
  * ============================================================
  * APPLICATIONS
