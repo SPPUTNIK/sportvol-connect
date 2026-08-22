@@ -15,6 +15,7 @@ export interface VolunteerDashboardStats {
 
 export interface DashboardUpcomingEvent {
   id: string;
+  event_id: string;
   title: string;
   status: string;
   date: string;
@@ -23,10 +24,12 @@ export interface DashboardUpcomingEvent {
   location: string;
   training: string;
   accreditation: string;
+  cover_url?: string | null;
 }
 
 export interface DashboardApplication {
   id: string;
+  event_id: string;
   event: string;
   role: string;
   date: string;
@@ -58,6 +61,8 @@ export type VolunteerDashboard = {
     training: string;
     accreditation: string;
   } | null;
+
+  upcomingEventsList: DashboardUpcomingEvent[];
 
   applications: Application[];
 

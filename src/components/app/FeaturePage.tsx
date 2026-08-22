@@ -33,13 +33,15 @@ import { volunteerContentService } from "@/services/volunteerContentService";
 // import { useAuth } from "@/lib/auth";
 
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
   Award,
   CalendarDays,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   MapPin,
   ShieldCheck,
@@ -76,12 +78,43 @@ import {
 
 export function DashboardPage() {
   const { profile } = useAuth();
-
+  
   const [dashboard, setDashboard] = useState<VolunteerDashboard | null>(null);
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
-
+  
+  
   const firstName = profile?.first_name || "Volunteer";
+  const upcomingEventsList = dashboard?.upcomingEventsList ?? [];
+
+  const [currentEventIndex, setCurrentEventIndex] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const dragStartX = useRef<number | null>(null);
+  const dragCurrentX = useRef<number | null>(null);
+
+  const currentDashboardEvent =
+    upcomingEventsList[currentEventIndex] ?? null;
+
+  const goToNextEvent = () => {
+    if (upcomingEventsList.length <= 1) return;
+
+    setCurrentEventIndex((current) =>
+      current >= upcomingEventsList.length - 1
+        ? 0
+        : current + 1,
+    );
+  };
+
+  const goToPreviousEvent = () => {
+    if (upcomingEventsList.length <= 1) return;
+
+    setCurrentEventIndex((current) =>
+      current <= 0
+        ? upcomingEventsList.length - 1
+        : current - 1,
+    );
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -119,6 +152,72 @@ export function DashboardPage() {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (upcomingEventsList.length <= 1) return;
+
+    const interval = window.setInterval(() => {
+      setCurrentEventIndex((current) =>
+        current >= upcomingEventsList.length - 1
+          ? 0
+          : current + 1,
+      );
+    }, 4000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [upcomingEventsList.length]);
+
+  const handlePointerDown = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
+    dragStartX.current = event.clientX;
+    dragCurrentX.current = event.clientX;
+    setIsDragging(true);
+  };
+
+  const handlePointerMove = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
+    if (!isDragging) return;
+
+    dragCurrentX.current = event.clientX;
+  };
+
+  const handlePointerUp = () => {
+    if (
+      dragStartX.current === null ||
+      dragCurrentX.current === null
+    ) {
+      setIsDragging(false);
+      return;
+    }
+
+    const distance =
+      dragStartX.current - dragCurrentX.current;
+
+    const threshold = 60;
+
+    if (Math.abs(distance) >= threshold) {
+      if (distance > 0) {
+        goToNextEvent();
+      } else {
+        goToPreviousEvent();
+      }
+    }
+
+    dragStartX.current = null;
+    dragCurrentX.current = null;
+    setIsDragging(false);
+  };
+
+  const handlePointerCancel = () => {
+    dragStartX.current = null;
+    dragCurrentX.current = null;
+    setIsDragging(false);
+  };
+
 
   if (dashboardLoading) {
     return (
@@ -196,8 +295,8 @@ export function DashboardPage() {
     return null;
   }
 
-  const upcomingEvent = dashboard.upcomingEvent;
-  const profileCompletion = dashboard.profileCompletion;
+  const upcomingEvent = dashboard?.upcomingEvent;
+  const profileCompletion = dashboard?.profileCompletion;
 
   return (
     <AppShell title="Dashboard">
@@ -283,67 +382,194 @@ export function DashboardPage() {
           />
         </section>
 
+        
         {/* Upcoming Event + Quick Actions */}
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <VSCard className="rounded-[2rem] border-border shadow-[var(--shadow-float)]">
             <VSCardContent className="p-6 sm:p-8">
               <VSSectionHeader
-                eyebrow="Upcoming event"
-                title={upcomingEvent?.title ?? "No upcoming event"}
-                action={
-                  upcomingEvent ? (
-                    <VSStatusBadge status={upcomingEvent.status} />
-                  ) : null
-                }
+                eyebrow="Upcoming events"
+                title="Your next opportunities"
               />
 
-              {upcomingEvent ? (
-                <>
-                  <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                    <Info
-                      label="Date"
-                      value={upcomingEvent.date}
-                      icon={<CalendarDays className="h-4 w-4" />}
-                    />
+              {upcomingEventsList.length > 0 && currentDashboardEvent ? (
+                <div className="mt-6">
+                  <div
+                    className={`relative select-none overflow-hidden rounded-[1.5rem] border border-border bg-card ${
+                      isDragging ? "cursor-grabbing" : "cursor-grab"
+                    }`}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    onPointerCancel={handlePointerCancel}
+                    onPointerLeave={() => {
+                      if (isDragging) {
+                        handlePointerUp();
+                      }
+                    }}
+                    style={{
+                      touchAction: "pan-y",
+                    }}
+                  >
+                    {/* Event Image */}
+                    <div className="relative aspect-[16/8] overflow-hidden bg-ink sm:aspect-[16/7]">
+                      {currentDashboardEvent.cover_url ? (
+                        <img
+                          src={currentDashboardEvent.cover_url}
+                          alt={currentDashboardEvent.title}
+                          draggable={false}
+                          className={`h-full w-full object-cover transition-transform duration-500 ${
+                            isDragging ? "scale-[1.02]" : "hover:scale-105"
+                          }`}
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                          <CalendarDays className="h-10 w-10 text-white/40" />
+                        </div>
+                      )}
 
-                    <Info
-                      label="Role"
-                      value={upcomingEvent.role}
-                      icon={<Users className="h-4 w-4" />}
-                    />
+                      {/* Overlay */}
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-5">
+                        <span className="inline-flex rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-black">
+                          Upcoming
+                        </span>
+                      </div>
 
-                    <Info
-                      label="Shift"
-                      value={upcomingEvent.shift}
-                      icon={<Clock3 className="h-4 w-4" />}
-                    />
+                      {/* Previous */}
+                      {upcomingEventsList.length > 1 && (
+                        <button
+                          type="button"
+                          aria-label="Previous event"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            goToPreviousEvent();
+                          }}
+                          className="absolute left-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-md transition hover:bg-black/65"
+                        >
+                          <ChevronLeft className="h-5 w-5" />
+                        </button>
+                      )}
 
-                    <Info
-                      label="Location"
-                      value={upcomingEvent.location}
-                      icon={<MapPin className="h-4 w-4" />}
-                    />
+                      {/* Next */}
+                      {upcomingEventsList.length > 1 && (
+                        <button
+                          type="button"
+                          aria-label="Next event"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            goToNextEvent();
+                          }}
+                          className="absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-md transition hover:bg-black/65"
+                        >
+                          <ChevronRight className="h-5 w-5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-5 sm:p-6">
+                      <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+                            {currentDashboardEvent.title}
+                          </h3>
+
+                          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                            <div className="flex items-center gap-3">
+                              <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
+
+                              <span className="text-sm text-muted-foreground">
+                                {currentDashboardEvent.date}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                              <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
+
+                              <span className="text-sm text-muted-foreground">
+                                {currentDashboardEvent.role}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                              <Clock3 className="h-4 w-4 shrink-0 text-muted-foreground" />
+
+                              <span className="text-sm text-muted-foreground">
+                                {currentDashboardEvent.shift}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                              <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
+
+                              <span className="line-clamp-1 text-sm text-muted-foreground">
+                                {currentDashboardEvent.location}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <VSButton
+                          asChild
+                          variant="outline"
+                          className="w-full shrink-0 rounded-xl sm:w-auto"
+                        >
+                          <Link
+                            to="/events/$eventId"
+                            params={{
+                              eventId: currentDashboardEvent.id,
+                            }}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                            }}
+                          >
+                            View event details
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
+                        </VSButton>
+                      </div>
+
+                      {/* Carousel indicators */}
+                      {upcomingEventsList.length > 1 && (
+                        <div className="mt-6 flex items-center justify-between gap-4 border-t border-border pt-5">
+                          <p className="text-xs text-muted-foreground">
+                            {currentEventIndex + 1} of{" "}
+                            {upcomingEventsList.length}
+                          </p>
+
+                          <div className="flex items-center gap-1.5">
+                            {upcomingEventsList.map((event, index) => (
+                              <button
+                                key={event.id}
+                                type="button"
+                                aria-label={`Go to event ${index + 1}`}
+                                onClick={() => setCurrentEventIndex(index)}
+                                className={`h-1.5 rounded-full transition-all duration-300 ${
+                                  index === currentEventIndex
+                                    ? "w-7 bg-primary"
+                                    : "w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                                }`}
+                              />
+                            ))}
+                          </div>
+
+                          <p className="hidden text-xs text-muted-foreground sm:block">
+                            
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-
-                  <div className="mt-6 flex flex-wrap gap-2">
-                    <VSBadge variant="soft">
-                      Training {upcomingEvent.training}
-                    </VSBadge>
-
-                    <VSBadge variant="accent">
-                      Accreditation {upcomingEvent.accreditation}
-                    </VSBadge>
-                  </div>
-                </>
+                </div>
               ) : (
                 <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
                   <CalendarDays className="mx-auto h-8 w-8 text-muted-foreground" />
 
                   <p className="mt-3 text-sm font-semibold text-foreground">
-                    No upcoming assignment
+                    No upcoming events
                   </p>
 
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     Find your next opportunity and start volunteering.
                   </p>
 
@@ -360,7 +586,10 @@ export function DashboardPage() {
 
           <VSCard className="rounded-[2rem] border-border shadow-[var(--shadow-float)]">
             <VSCardContent className="p-6 sm:p-8">
-              <VSSectionHeader eyebrow="Quick actions" title="Keep moving" />
+              <VSSectionHeader
+                eyebrow="Quick actions"
+                title="Keep moving"
+              />
 
               <div className="mt-6 space-y-3">
                 <QuickAction
@@ -385,18 +614,20 @@ export function DashboardPage() {
           </VSCard>
         </div>
 
+
         {/* Applications + Profile */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid min-w-0 gap-5 sm:gap-6 lg:grid-cols-2">
+
           {/* Applications */}
-          <VSCard className="rounded-[2rem] border-border">
-            <VSCardContent className="p-6 sm:p-8">
+          <VSCard className="min-w-0 overflow-hidden rounded-[1.5rem] border-border sm:rounded-[2rem]">
+            <VSCardContent className="p-4 sm:p-6 lg:p-8">
               <VSSectionHeader
                 eyebrow="Applications"
                 title="Recent applications"
                 action={
                   <Link
                     to="/applications"
-                    className="text-sm font-semibold text-primary"
+                    className="shrink-0 text-xs font-semibold text-primary sm:text-sm"
                   >
                     View all
                   </Link>
@@ -404,33 +635,70 @@ export function DashboardPage() {
               />
 
               {dashboard.applications.length > 0 ? (
-                <div className="mt-6 space-y-3">
+                <div className="mt-5 space-y-3 sm:mt-6">
                   {dashboard.applications.slice(0, 3).map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between gap-4 rounded-2xl border border-border p-4"
+                      className="
+                        flex
+                        min-w-0
+                        flex-col
+                        gap-3
+                        rounded-2xl
+                        border
+                        border-border
+                        p-3.5
+                        transition-colors
+                        hover:bg-muted/30
+                        sm:flex-row
+                        sm:items-center
+                        sm:justify-between
+                        sm:gap-4
+                        sm:p-4
+                      "
                     >
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-foreground">
+                      {/* Application information */}
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className="
+                            overflow-hidden
+                            text-sm
+                            font-semibold
+                            leading-5
+                            text-foreground
+                            [display:-webkit-box]
+                            [-webkit-box-orient:vertical]
+                            [-webkit-line-clamp:2]
+                          "
+                        >
                           {item.event_title}
                         </p>
 
-                        <p className="mt-1 truncate text-xs text-muted-foreground">
-                          {item.role_name} · {item.submitted_at}
+                        <p className="mt-1.5 overflow-hidden text-xs leading-5 text-muted-foreground">
+                          <span className="break-words">
+                            {item.role_name}
+                          </span>
+
+                          <span className="mx-1">·</span>
+
+                          <span>{item.submitted_at}</span>
                         </p>
                       </div>
 
-                      <VSStatusBadge status={item.status} />
+                      {/* Status */}
+                      <div className="flex shrink-0 items-center sm:self-center">
+                        <VSStatusBadge status={item.status} />
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
+                <div className="mt-5 rounded-2xl border border-dashed border-border p-5 text-center sm:mt-6 sm:p-6">
                   <p className="text-sm font-semibold text-foreground">
                     No applications yet
                   </p>
 
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mx-auto mt-1 max-w-xs text-xs leading-5 text-muted-foreground">
                     Start exploring events and apply for a volunteer role.
                   </p>
 
@@ -446,16 +714,19 @@ export function DashboardPage() {
             </VSCardContent>
           </VSCard>
 
+
           {/* Profile completion */}
-          <VSCard className="rounded-[2rem] border-border">
-            <VSCardContent className="p-6 sm:p-8">
+          <VSCard className="min-w-0 overflow-hidden rounded-[1.5rem] border-border sm:rounded-[2rem]">
+            <VSCardContent className="p-4 sm:p-6 lg:p-8">
               <VSSectionHeader
                 eyebrow="Profile completion"
                 title="Make your profile work harder"
               />
 
-              <div className="mt-6 flex items-center gap-4">
-                <div className="relative h-20 w-20 shrink-0 rounded-full bg-muted">
+              <div className="mt-5 flex min-w-0 flex-col gap-5 sm:mt-6 sm:flex-row sm:items-center sm:gap-5">
+
+                {/* Progress circle */}
+                <div className="relative mx-auto h-20 w-20 shrink-0 rounded-full bg-muted sm:mx-0">
                   <div className="absolute inset-1 rounded-full bg-card" />
 
                   <div
@@ -470,14 +741,15 @@ export function DashboardPage() {
                   </span>
                 </div>
 
-                <div>
-                  <p className="text-sm font-semibold text-foreground">
+                {/* Profile text */}
+                <div className="min-w-0 flex-1 text-center sm:text-left">
+                  <p className="text-sm font-semibold leading-5 text-foreground">
                     {profileCompletion >= 100
                       ? "Your profile is complete."
                       : "Add your skills and languages."}
                   </p>
 
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  <p className="mx-auto mt-1 max-w-md text-xs leading-5 text-muted-foreground sm:mx-0">
                     A complete profile helps event teams place you in the right role.
                   </p>
 
@@ -495,6 +767,7 @@ export function DashboardPage() {
               </div>
             </VSCardContent>
           </VSCard>
+
         </div>
 
         {/* Achievements */}

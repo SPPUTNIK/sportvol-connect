@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import {
   Award,
   Bell,
@@ -71,7 +71,8 @@ export const volunteerNavigation: NavGroup[] = [
 function VolunteerNavigation({ onNavigate }: { onNavigate: () => void }) {
   const { profile, signOut } = useAuth();
   const firstName = profile?.first_name || "Volunteer";
-  const currentPath = typeof window === "undefined" ? "" : window.location.pathname;
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   async function handleSignOut() {
     await signOut();

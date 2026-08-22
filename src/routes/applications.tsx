@@ -39,6 +39,22 @@ export const Route = createFileRoute("/applications")({
   }),
 });
 
+function formatApplicationDate(value: string | null | undefined) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+}
+
 function MyApplications() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,23 +72,13 @@ function MyApplications() {
   const [roles, setRoles] = useState<EventRole[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(false);
 
-  const [selectedRoleId, setSelectedRoleId] =
-    useState("");
+  const [selectedRoleId, setSelectedRoleId] = useState("");
+  const [availability, setAvailability] = useState("");
+  const [experience, setExperience] = useState("");
+  const [motivation, setMotivation] = useState("");
 
-  const [availability, setAvailability] =
-    useState("");
-
-  const [experience, setExperience] =
-    useState("");
-
-  const [motivation, setMotivation] =
-    useState("");
-
-  const [saving, setSaving] =
-    useState(false);
-
-  const [editError, setEditError] =
-    useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   /*
    * ============================================================
@@ -85,8 +91,7 @@ function MyApplications() {
       setLoading(true);
       setError(null);
 
-      const data =
-        await applicationService.getApplications();
+      const data = await applicationService.getApplications();
 
       setApplications(data);
     } catch (err: unknown) {
@@ -110,36 +115,22 @@ function MyApplications() {
    * ============================================================
    */
 
-  const openEditModal = async (
-    application: Application,
-  ) => {
+  const openEditModal = async (application: Application) => {
     setEditingApplication(application);
 
-    setSelectedRoleId(
-      application.role_id ?? "",
-    );
-
-    setAvailability(
-      application.availability ?? "",
-    );
-
-    setExperience(
-      application.experience ?? "",
-    );
-
-    setMotivation(
-      application.message ?? "",
-    );
+    setSelectedRoleId(application.role_id ?? "");
+    setAvailability(application.availability ?? "");
+    setExperience(application.experience ?? "");
+    setMotivation(application.message ?? "");
 
     setEditError(null);
 
     try {
       setLoadingRoles(true);
 
-      const eventRoles =
-        await applicationService.getEventRoles(
-          application.event_id,
-        );
+      const eventRoles = await applicationService.getEventRoles(
+        application.event_id,
+      );
 
       setRoles(eventRoles);
     } catch (err: unknown) {
@@ -181,9 +172,7 @@ function MyApplications() {
     if (!editingApplication) return;
 
     if (!selectedRoleId) {
-      setEditError(
-        "Please select a volunteer role.",
-      );
+      setEditError("Please select a volunteer role.");
       return;
     }
 
@@ -192,19 +181,11 @@ function MyApplications() {
       setEditError(null);
 
       await applicationService.updateApplication({
-        applicationId:
-          editingApplication.id,
-
+        applicationId: editingApplication.id,
         roleId: selectedRoleId,
-
-        availability:
-          availability.trim(),
-
-        experience:
-          experience.trim(),
-
-        motivation:
-          motivation.trim(),
+        availability: availability.trim(),
+        experience: experience.trim(),
+        motivation: motivation.trim(),
       });
 
       await loadApplications();
@@ -229,16 +210,28 @@ function MyApplications() {
 
   return (
     <AppShell title="My Applications">
-      <div className="mx-auto max-w-7xl space-y-8">
+      <div className="mx-auto w-full max-w-7xl space-y-6 px-1 sm:space-y-8 sm:px-0">
+        {/* =====================================================
+            PAGE HEADER
+        ====================================================== */}
+
         <VSPageHeader
           eyebrow="Applications"
           title="Track your volunteer applications"
           description="See the current status of each application and review your submitted role requests."
         />
 
+        {/* =====================================================
+            LOADING
+        ====================================================== */}
+
         {loading && (
           <VSLoadingState message="Loading your applications…" />
         )}
+
+        {/* =====================================================
+            ERROR
+        ====================================================== */}
 
         {!loading && error && (
           <VSErrorState
@@ -247,6 +240,10 @@ function MyApplications() {
             action={undefined}
           />
         )}
+
+        {/* =====================================================
+            EMPTY
+        ====================================================== */}
 
         {!loading &&
           !error &&
@@ -257,45 +254,51 @@ function MyApplications() {
             />
           )}
 
+        {/* =====================================================
+            APPLICATIONS
+        ====================================================== */}
+
         {!loading &&
           !error &&
           applications.length > 0 && (
-            <VSCard className="overflow-hidden rounded-[2rem] border-border">
-              <VSCardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[850px]">
-                    <thead>
-                      <tr className="border-b border-border bg-muted/40">
-                        <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          Event
-                        </th>
+            <>
+              {/* -------------------------------------------------
+                  DESKTOP TABLE
+              -------------------------------------------------- */}
 
-                        <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          Role
-                        </th>
+              <VSCard className="hidden overflow-hidden rounded-[2rem] border-border md:block">
+                <VSCardContent className="p-0">
+                  <div className="w-full overflow-x-auto">
+                    <table className="w-full min-w-[800px]">
+                      <thead>
+                        <tr className="border-b border-border bg-muted/40">
+                          <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:px-6">
+                            Event
+                          </th>
 
-                        <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          Status
-                        </th>
+                          <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:px-6">
+                            Role
+                          </th>
 
-                        <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          Applied
-                        </th>
+                          <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:px-6">
+                            Status
+                          </th>
 
-                        <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          Action
-                        </th>
-                      </tr>
-                    </thead>
+                          <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:px-6">
+                            Applied
+                          </th>
 
-                    <tbody>
-                      {applications.map(
-                        (application) => {
+                          <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:px-6">
+                            Action
+                          </th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {applications.map((application) => {
                           const editable =
-                            application.status ===
-                              "pending" ||
-                            application.status ===
-                              "waitlisted";
+                            application.status === "pending" ||
+                            application.status === "waitlisted";
 
                           return (
                             <tr
@@ -304,66 +307,51 @@ function MyApplications() {
                             >
                               {/* EVENT */}
 
-                              <td className="px-6 py-5">
-                                <div>
-                                  <p className="font-semibold text-foreground">
-                                    {
-                                      application.event_title
-                                    }
+                              <td className="px-5 py-5 lg:px-6">
+                                <div className="min-w-0">
+                                  <p className="max-w-[260px] truncate font-semibold text-foreground">
+                                    {application.event_title}
                                   </p>
 
-                                  <p className="mt-1 text-xs text-muted-foreground">
-                                    Application #
-                                    {
-                                      application.id
-                                    }
-                                  </p>
                                 </div>
                               </td>
 
                               {/* ROLE */}
 
-                              <td className="px-6 py-5">
-                                <p className="text-sm text-foreground">
-                                  {
-                                    application.role_name
-                                  }
+                              <td className="px-5 py-5 lg:px-6">
+                                <p className="max-w-[180px] truncate text-sm text-foreground">
+                                  {application.role_name}
                                 </p>
                               </td>
 
                               {/* STATUS */}
 
-                              <td className="px-6 py-5">
+                              <td className="px-5 py-5 lg:px-6">
                                 <StatusPill
-                                  status={
-                                    application.status
-                                  }
+                                  status={application.status}
                                 />
                               </td>
 
                               {/* DATE */}
 
-                              <td className="px-6 py-5">
-                                <p className="text-sm text-muted-foreground">
-                                  {
-                                    application.submitted_at
-                                  }
+                              <td className="px-5 py-5 lg:px-6">
+                                <p className="whitespace-nowrap text-sm text-muted-foreground">
+                                  {formatApplicationDate(application.submitted_at)}
                                 </p>
                               </td>
 
                               {/* ACTION */}
 
-                              <td className="px-6 py-5 text-right">
+                              <td className="px-5 py-5 text-right lg:px-6">
                                 {editable ? (
                                   <VSButton
                                     type="button"
                                     variant="outline"
                                     size="sm"
                                     onClick={() =>
-                                      openEditModal(
-                                        application,
-                                      )
+                                      openEditModal(application)
                                     }
+                                    className="rounded-xl"
                                   >
                                     <Pencil className="h-4 w-4" />
                                     Edit
@@ -376,13 +364,101 @@ function MyApplications() {
                               </td>
                             </tr>
                           );
-                        },
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </VSCardContent>
-            </VSCard>
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </VSCardContent>
+              </VSCard>
+
+              {/* -------------------------------------------------
+                  MOBILE CARDS
+              -------------------------------------------------- */}
+
+              <div className="space-y-4 md:hidden">
+                {applications.map((application) => {
+                  const editable =
+                    application.status === "pending" ||
+                    application.status === "waitlisted";
+
+                  return (
+                    <VSCard
+                      key={application.id}
+                      className="overflow-hidden rounded-[1.5rem] border-border"
+                    >
+                      <VSCardContent className="p-5">
+                        {/* EVENT HEADER */}
+
+                        <div className="flex min-w-0 items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                              Event
+                            </p>
+
+                            <h3 className="mt-1 break-words text-base font-semibold leading-6 text-foreground">
+                              {application.event_title}
+                            </h3>
+
+                          </div>
+
+                          <div className="shrink-0">
+                            <StatusPill
+                              status={application.status}
+                            />
+                          </div>
+                        </div>
+
+                        {/* DETAILS */}
+
+                        <div className="mt-5 grid grid-cols-1 gap-3 rounded-2xl bg-muted/30 p-4">
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                              Role
+                            </p>
+
+                            <p className="mt-1 break-words text-sm font-medium text-foreground">
+                              {application.role_name}
+                            </p>
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                              Applied
+                            </p>
+
+                            <p className="mt-1 text-sm text-muted-foreground">
+                              {formatApplicationDate(application.submitted_at)}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* ACTION */}
+
+                        <div className="mt-4">
+                          {editable ? (
+                            <VSButton
+                              type="button"
+                              variant="outline"
+                              onClick={() =>
+                                openEditModal(application)
+                              }
+                              className="w-full rounded-xl"
+                            >
+                              <Pencil className="h-4 w-4" />
+                              Edit application
+                            </VSButton>
+                          ) : (
+                            <div className="flex items-center justify-center rounded-xl bg-muted/40 px-4 py-3 text-xs font-medium text-muted-foreground">
+                              No changes available
+                            </div>
+                          )}
+                        </div>
+                      </VSCardContent>
+                    </VSCard>
+                  );
+                })}
+              </div>
+            </>
           )}
 
         {/* =====================================================
@@ -391,33 +467,30 @@ function MyApplications() {
 
         {editingApplication && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex min-h-[100dvh] items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4"
             onMouseDown={(event) => {
-              if (
-                event.target ===
-                event.currentTarget
-              ) {
+              if (event.target === event.currentTarget) {
                 closeEditModal();
               }
             }}
           >
-            <div className="w-full max-w-2xl overflow-hidden rounded-[2rem] border border-border bg-card shadow-2xl">
-              {/* HEADER */}
+            <div className="flex max-h-[95dvh] w-full flex-col overflow-hidden rounded-t-[1.75rem] border border-border bg-card shadow-2xl sm:max-h-[90vh] sm:max-w-2xl sm:rounded-[2rem]">
+              {/* -------------------------------------------------
+                  MODAL HEADER
+              -------------------------------------------------- */}
 
-              <div className="flex items-start justify-between border-b border-border p-6">
-                <div>
+              <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border p-5 sm:p-6">
+                <div className="min-w-0 flex-1">
                   <p className="eyebrow">
                     Edit application
                   </p>
 
-                  <h2 className="mt-2 text-2xl font-semibold text-foreground">
+                  <h2 className="mt-2 text-xl font-semibold leading-tight text-foreground sm:text-2xl">
                     Update your application
                   </h2>
 
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {
-                      editingApplication.event_title
-                    }
+                  <p className="mt-2 line-clamp-2 text-sm leading-5 text-muted-foreground">
+                    {editingApplication.event_title}
                   </p>
                 </div>
 
@@ -425,16 +498,18 @@ function MyApplications() {
                   type="button"
                   onClick={closeEditModal}
                   disabled={saving}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:opacity-50"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
                   aria-label="Close"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
-              {/* BODY */}
+              {/* -------------------------------------------------
+                  MODAL BODY
+              -------------------------------------------------- */}
 
-              <div className="max-h-[75vh] overflow-y-auto p-6">
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 sm:p-6">
                 <div className="space-y-5">
                   {/* ROLE */}
 
@@ -444,15 +519,10 @@ function MyApplications() {
                     <select
                       value={selectedRoleId}
                       onChange={(event) =>
-                        setSelectedRoleId(
-                          event.target.value,
-                        )
+                        setSelectedRoleId(event.target.value)
                       }
-                      disabled={
-                        loadingRoles ||
-                        saving
-                      }
-                      className="mt-2 h-11 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none transition focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={loadingRoles || saving}
+                      className="mt-2 h-12 w-full min-w-0 rounded-2xl border border-border bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4"
                     >
                       {loadingRoles ? (
                         <option value="">
@@ -464,40 +534,27 @@ function MyApplications() {
                             Select a role
                           </option>
 
-                          {roles.map(
-                            (role) => {
-                              const remaining =
-                                role.positions -
-                                role.filled_positions;
+                          {roles.map((role) => {
+                            const remaining =
+                              role.positions -
+                              role.filled_positions;
 
-                              return (
-                                <option
-                                  key={
-                                    role.id
-                                  }
-                                  value={
-                                    role.id
-                                  }
-                                  disabled={
-                                    remaining <=
-                                      0 &&
-                                    role.id !==
-                                      editingApplication.role_id
-                                  }
-                                >
-                                  {
-                                    role.name
-                                  }{" "}
-                                  —{" "}
-                                  {Math.max(
-                                    remaining,
-                                    0,
-                                  )}{" "}
-                                  spots available
-                                </option>
-                              );
-                            },
-                          )}
+                            return (
+                              <option
+                                key={role.id}
+                                value={role.id}
+                                disabled={
+                                  remaining <= 0 &&
+                                  role.id !==
+                                    editingApplication.role_id
+                                }
+                              >
+                                {role.name} —{" "}
+                                {Math.max(remaining, 0)} spots
+                                available
+                              </option>
+                            );
+                          })}
                         </>
                       )}
                     </select>
@@ -511,13 +568,11 @@ function MyApplications() {
                     <select
                       value={availability}
                       onChange={(event) =>
-                        setAvailability(
-                          event.target.value,
-                        )
+                        setAvailability(event.target.value)
                       }
                       disabled={saving}
                       required
-                      className="mt-2 h-11 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none transition focus:border-primary disabled:opacity-60"
+                      className="mt-2 h-12 w-full min-w-0 rounded-2xl border border-border bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:opacity-60 sm:px-4"
                     >
                       <option value="">
                         Select your availability
@@ -553,14 +608,12 @@ function MyApplications() {
                     <textarea
                       value={experience}
                       onChange={(event) =>
-                        setExperience(
-                          event.target.value,
-                        )
+                        setExperience(event.target.value)
                       }
                       rows={5}
                       disabled={saving}
                       placeholder="What experience would you bring?"
-                      className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-primary disabled:opacity-60"
+                      className="mt-2 min-h-[120px] w-full resize-y rounded-2xl border border-border bg-background px-3 py-3 text-sm leading-6 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:opacity-60 sm:px-4"
                     />
                   </label>
 
@@ -572,58 +625,62 @@ function MyApplications() {
                     <textarea
                       value={motivation}
                       onChange={(event) =>
-                        setMotivation(
-                          event.target.value,
-                        )
+                        setMotivation(event.target.value)
                       }
                       rows={4}
                       disabled={saving}
                       placeholder="What excites you about this event?"
-                      className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-primary disabled:opacity-60"
+                      className="mt-2 min-h-[110px] w-full resize-y rounded-2xl border border-border bg-background px-3 py-3 text-sm leading-6 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:opacity-60 sm:px-4"
                     />
                   </label>
 
                   {/* ERROR */}
 
                   {editError && (
-                    <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+                    <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4 text-sm leading-6 text-destructive">
                       {editError}
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* FOOTER */}
+              {/* -------------------------------------------------
+                  MODAL FOOTER
+              -------------------------------------------------- */}
 
-              <div className="flex flex-col-reverse gap-3 border-t border-border bg-muted/20 p-6 sm:flex-row sm:justify-end">
-                <VSButton
-                  type="button"
-                  variant="outline"
-                  onClick={closeEditModal}
-                  disabled={saving}
-                >
-                  Cancel
-                </VSButton>
+              <div className="shrink-0 border-t border-border bg-muted/20 p-4 sm:p-6">
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                  <VSButton
+                    type="button"
+                    variant="outline"
+                    onClick={closeEditModal}
+                    disabled={saving}
+                    className="w-full rounded-xl sm:w-auto"
+                  >
+                    Cancel
+                  </VSButton>
 
-                <VSButton
-                  type="button"
-                  onClick={handleSaveChanges}
-                  disabled={
-                    saving ||
-                    loadingRoles ||
-                    !selectedRoleId ||
-                    !availability
-                  }
-                >
-                  {saving ? (
-                    "Saving…"
-                  ) : (
-                    <>
-                      <Check className="h-4 w-4" />
-                      Save Changes
-                    </>
-                  )}
-                </VSButton>
+                  <VSButton
+                    type="button"
+                    onClick={handleSaveChanges}
+                    disabled={
+                      saving ||
+                      loadingRoles ||
+                      !selectedRoleId ||
+                      !availability
+                    }
+                    className="w-full rounded-xl sm:w-auto"
+                  >
+                    {saving ? (
+                      "Saving…"
+                    ) : (
+                      <>
+                        <Check className="h-4 w-4" />
+                        Save Changes
+                      </>
+                    )}
+                  </VSButton>
+                </div>
               </div>
             </div>
           </div>
@@ -632,3 +689,4 @@ function MyApplications() {
     </AppShell>
   );
 }
+

@@ -179,7 +179,13 @@ export async function getShifts(): Promise<Shift[]> {
         end_time,
         location,
         instructions,
-        event:events(title),
+        event:events(
+          id,
+          title,
+          cover_url,
+          city,
+          venue
+        ),
         role:event_roles(name)
       )
     `)
@@ -622,7 +628,11 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
     attendanceResult,
     trainingResult,
     accreditationResult,
+    latestEventsResult,
   ] = await Promise.all([
+    // --------------------------------
+    // Profile
+    // --------------------------------
     db
       .from("profiles")
       .select(`
@@ -644,6 +654,9 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
       .eq("id", userId)
       .single(),
 
+    // --------------------------------
+    // Applications
+    // --------------------------------
     db
       .from("applications")
       .select(`
@@ -655,17 +668,27 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
         motivation,
         event_id,
         role_id,
-        event:events(title, start_date, end_date, city, venue),
+        event:events(
+          title,
+          start_date,
+          end_date,
+          city,
+          venue
+        ),
         role:event_roles(name)
       `)
       .eq("profile_id", userId)
       .order("applied_at", { ascending: false }),
 
+    // --------------------------------
+    // Assigned shifts
+    // --------------------------------
     db
       .from("shift_assignments")
       .select(`
         id,
         status,
+        assigned_at,
         shift:event_shifts(
           id,
           event_id,
@@ -675,7 +698,13 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
           start_time,
           end_time,
           location,
-          event:events(title),
+          event:events(
+            id,
+            title,
+            cover_url,
+            city,
+            venue
+          ),
           role:event_roles(name)
         )
       `)
@@ -683,21 +712,33 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
       .eq("status", "assigned")
       .order("assigned_at", { ascending: true }),
 
+    // --------------------------------
+    // Certificates
+    // --------------------------------
     db
       .from("certificates")
       .select("id, hours")
       .eq("profile_id", userId),
 
+    // --------------------------------
+    // Attendance
+    // --------------------------------
     db
       .from("attendance_records")
       .select("id, status")
       .eq("profile_id", userId),
 
+    // --------------------------------
+    // Training progress
+    // --------------------------------
     db
       .from("training_progress")
       .select("training_id, completed")
       .eq("profile_id", userId),
 
+    // --------------------------------
+    // Accreditations
+    // --------------------------------
     db
       .from("accreditations")
       .select(`
@@ -707,7 +748,30 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
         role_id
       `)
       .eq("profile_id", userId),
+
+    // --------------------------------
+    // LATEST 3 EVENTS ON PLATFORM
+    // --------------------------------
+    db
+      .from("events")
+      .select(`
+        id,
+        title,
+        cover_url,
+        city,
+        venue,
+        start_date,
+        end_date,
+        status
+      `)
+      .eq("status", "published")
+      .order("created_at", { ascending: false })
+      .limit(3),
   ]);
+
+  // --------------------------------
+  // Errors
+  // --------------------------------
 
   const error =
     profileResult.error ||
@@ -716,77 +780,97 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
     certificatesResult.error ||
     attendanceResult.error ||
     trainingResult.error ||
-    accreditationResult.error;
+    accreditationResult.error ||
+    latestEventsResult.error;
 
   if (error) {
     throw error;
   }
 
+  // --------------------------------
+  // Data
+  // --------------------------------
+
   const profile = profileResult.data;
+
   const applications = applicationsResult.data ?? [];
   const shifts = shiftsResult.data ?? [];
   const certificates = certificatesResult.data ?? [];
   const attendance = attendanceResult.data ?? [];
   const training = trainingResult.data ?? [];
   const accreditations = accreditationResult.data ?? [];
+  const latestEvents = latestEventsResult.data ?? [];
 
-  // -------------------------
-  // Applications
-  // -------------------------
+  // ========================================
+  // APPLICATIONS
+  // ========================================
 
-  const formattedApplications: Application[] = applications.map((row: any) => ({
-    id: row.id,
-    event_id: row.event_id,
-    event_title: row.event?.title ?? "",
-    role_name: row.role?.name ?? "",
-    submitted_at: formatDate(row.applied_at),
-    status: row.status,
-    message:
-      [row.motivation, row.experience, row.availability]
-        .filter(Boolean)
-        .join("\n\n") || null,
-  }));
+  const formattedApplications: Application[] = applications.map(
+    (row: any) => ({
+      id: row.id,
+      event_id: row.event_id,
+      event_title: row.event?.title ?? "",
+      role_name: row.role?.name ?? "",
+      submitted_at: formatDate(row.applied_at),
+      status: row.status,
+      message:
+        [row.motivation, row.experience, row.availability]
+          .filter(Boolean)
+          .join("\n\n") || null,
+    }),
+  );
 
-  // -------------------------
-  // Upcoming event
-  // -------------------------
+  // ========================================
+  // LATEST 3 PLATFORM EVENTS
+  // ========================================
 
-  const now = new Date();
+  const upcomingEventsList: DashboardUpcomingEvent[] =
+    latestEvents.map((event: any) => ({
+      id: event.id,
+      event_id: event.id,
+      title: event.title ?? "",
+      status: "available",
+      date: formatDate(event.start_date),
+      role: "Volunteer",
+      shift: event.end_date
+        ? `${formatDate(event.start_date)} - ${formatDate(event.end_date)}`
+        : formatDate(event.start_date),
+      location:
+        [event.city, event.venue]
+          .filter(Boolean)
+          .join(" • ") || "",
+      training: "Required",
+      accreditation: "Pending",
+      cover_url: event.cover_url ?? null,
+    }));
 
-  const upcomingShift = [...shifts]
-    .filter((row: any) => {
-      const date = row.shift?.date;
-      return date && new Date(`${date}T23:59:59`) >= now;
-    })
-    .sort((a: any, b: any) => {
-      const dateA = new Date(`${a.shift.date}T${a.shift.start_time}`);
-      const dateB = new Date(`${b.shift.date}T${b.shift.start_time}`);
-
-      return dateA.getTime() - dateB.getTime();
-    })[0];
+  // ========================================
+  // UPCOMING EVENT
+  // First/latest published platform event
+  // ========================================
 
   let upcomingEvent = null;
 
-  if (upcomingShift?.shift) {
-    const shift = upcomingShift.shift;
+  const firstEvent = latestEvents[0];
 
+  if (firstEvent) {
+    // Check if current volunteer already has accreditation
     const accreditation = accreditations.find(
-      (item: any) =>
-        item.event_id === shift.event_id &&
-        item.role_id === shift.role_id,
+      (item: any) => item.event_id === firstEvent.id,
     );
 
-    const trainingRequired = await db
+    // Get required training for this event
+    const trainingRequiredResult = await db
       .from("training_modules")
       .select("id, required")
-      .eq("event_id", shift.event_id)
-      .eq("role_id", shift.role_id);
+      .eq("event_id", firstEvent.id);
 
-    if (trainingRequired.error) {
-      throw trainingRequired.error;
+    if (trainingRequiredResult.error) {
+      throw trainingRequiredResult.error;
     }
 
-    const requiredTraining = trainingRequired.data ?? [];
+    const requiredTraining =
+      trainingRequiredResult.data ?? [];
 
     const completedTrainingIds = new Set(
       training
@@ -801,40 +885,57 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
       );
 
     upcomingEvent = {
-      title: shift.event?.title ?? "",
-      status: "accepted",
-      date: formatDate(shift.date),
-      role: shift.role?.name ?? "",
-      shift: `${shift.start_time?.slice(0, 5) ?? ""} - ${
-        shift.end_time?.slice(0, 5) ?? ""
-      }`,
-      location: shift.location ?? "",
+      title: firstEvent.title ?? "",
+      status: "available",
+      date: formatDate(firstEvent.start_date),
+      role: "Volunteer",
+      shift: firstEvent.end_date
+        ? `${formatDate(firstEvent.start_date)} - ${formatDate(
+            firstEvent.end_date,
+          )}`
+        : formatDate(firstEvent.start_date),
+      location:
+        [firstEvent.city, firstEvent.venue]
+          .filter(Boolean)
+          .join(" • ") || "",
       training: trainingComplete ? "Complete" : "Required",
       accreditation: accreditation?.status ?? "Pending",
     };
   }
 
-  // -------------------------
-  // Statistics
-  // -------------------------
+  // ========================================
+  // STATISTICS
+  // ========================================
 
-  const volunteerHours = Number(profile?.volunteer_hours ?? 0);
+  const volunteerHours = Number(
+    profile?.volunteer_hours ?? 0,
+  );
 
-  const attendanceRate = Number(profile?.attendance_rate ?? 0);
+  const attendanceRate = Number(
+    profile?.attendance_rate ?? 0,
+  );
 
   const certificatesCount = certificates.length;
 
-  const upcomingEvents = shifts.filter((row: any) => {
-    const date = row.shift?.date;
+  // Number of upcoming assigned shifts
+  const now = new Date();
 
-    if (!date) return false;
+  const upcomingAssignedShifts = shifts.filter(
+    (row: any) => {
+      const date = row.shift?.date;
 
-    return new Date(`${date}T23:59:59`) >= now;
-  }).length;
+      if (!date) return false;
 
-  // -------------------------
-  // Profile completion
-  // -------------------------
+      return new Date(`${date}T23:59:59`) >= now;
+    },
+  );
+
+  const upcomingEvents =
+    upcomingAssignedShifts.length;
+
+  // ========================================
+  // PROFILE COMPLETION
+  // ========================================
 
   const profileFields = [
     profile?.first_name,
@@ -854,7 +955,9 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
       String(value).trim() !== "",
   ).length;
 
-  const interestsCount = Array.isArray(profile?.interests)
+  const interestsCount = Array.isArray(
+    profile?.interests,
+  )
     ? profile.interests.length
     : 0;
 
@@ -862,24 +965,27 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
     ? profile.skills.length
     : 0;
 
-  const languagesCount = Array.isArray(profile?.languages)
+  const languagesCount = Array.isArray(
+    profile?.languages,
+  )
     ? profile.languages.length
     : 0;
 
   let profileCompletion = Math.round(
-    (
-      (filledFields / profileFields.length) * 70 +
-      Math.min(interestsCount, 3) / 3 * 10 +
-      Math.min(skillsCount, 3) / 3 * 10 +
-      Math.min(languagesCount, 2) / 2 * 10
-    ),
+    (filledFields / profileFields.length) * 70 +
+      (Math.min(interestsCount, 3) / 3) * 10 +
+      (Math.min(skillsCount, 3) / 3) * 10 +
+      (Math.min(languagesCount, 2) / 2) * 10,
   );
 
-  profileCompletion = Math.min(100, Math.max(0, profileCompletion));
+  profileCompletion = Math.min(
+    100,
+    Math.max(0, profileCompletion),
+  );
 
-  // -------------------------
-  // Achievements
-  // -------------------------
+  // ========================================
+  // ACHIEVEMENTS
+  // ========================================
 
   const achievements = [
     {
@@ -887,20 +993,33 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
       progress: volunteerHours > 0 ? 100 : 0,
       unlocked: volunteerHours > 0,
     },
+
     {
       title: "10 Volunteer Hours",
-      progress: Math.min(100, Math.round((volunteerHours / 10) * 100)),
+      progress: Math.min(
+        100,
+        Math.round((volunteerHours / 10) * 100),
+      ),
       unlocked: volunteerHours >= 10,
     },
+
     {
       title: "Perfect Attendance",
-      progress: Math.min(100, Math.round(attendanceRate)),
+      progress: Math.min(
+        100,
+        Math.round(attendanceRate),
+      ),
       unlocked: attendanceRate >= 100,
     },
   ];
 
+  // ========================================
+  // RETURN
+  // ========================================
+
   return {
     upcomingEvents,
+    upcomingEventsList,
     volunteerHours,
     attendanceRate,
     certificates: certificatesCount,
