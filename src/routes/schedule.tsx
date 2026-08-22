@@ -95,7 +95,7 @@ function Schedule() {
         {!loading && !error && shifts.length === 0 && (
           <EmptyState
             title="No shifts scheduled"
-            description="Accept an event to see your next volunteer assignments here."
+            description="Your accepted volunteer events will appear here with their role, time, location and event-day instructions."
           />
         )}
 

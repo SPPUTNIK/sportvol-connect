@@ -1,43 +1,120 @@
-// import { getShifts } from "@/services/mockService";
-// import type { Shift } from "@/lib/types";
-
-// export interface ScheduleService {
-//   getShifts(): Promise<Shift[]>;
-// }
-
-// export const scheduleService: ScheduleService = {
-//   getShifts,
-// };
-
-
-import { demoSchedule } from "@/mocks/frontendDemo";
+import { supabase } from "@/lib/supabase";
 import type { Shift } from "@/lib/types";
-
-const USE_MOCK_DATA = true;
 
 export const scheduleService = {
   async getShifts(): Promise<Shift[]> {
-    if (USE_MOCK_DATA) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+    // ============================================================
+    // 1. GET AUTHENTICATED USER
+    // ============================================================
 
-      return demoSchedule.map(
-        (shift) =>
-          ({
-            id: shift.id,
-            event_title: shift.event,
-            role_name: shift.role,
-            date: `${shift.date} ${shift.month} 2026`,
-            start_time: shift.start,
-            end_time: shift.end,
-            location: shift.location,
-            instructions: shift.instructions,
-          }) as Shift,
-      );
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError) {
+      throw new Error(authError.message);
     }
 
-    // Supabase implementation will be added later.
-    throw new Error(
-      "Supabase schedule service is not connected yet.",
-    );
+    if (!user) {
+      throw new Error("You must be signed in.");
+    }
+
+    // ============================================================
+    // 2. GET ASSIGNED SHIFTS
+    // ============================================================
+    //
+    // A volunteer only sees shifts explicitly assigned to them.
+    //
+
+    const { data, error } = await supabase
+      .from("shift_assignments")
+      .select(`
+        id,
+        status,
+        assigned_at,
+
+        event_shifts (
+          id,
+          event_id,
+          role_id,
+          title,
+          location,
+          date,
+          start_time,
+          end_time,
+          instructions,
+
+          events (
+            title
+          ),
+
+          event_roles (
+            name
+          )
+        )
+      `)
+      .eq("profile_id", user.id)
+      .eq("status", "assigned");
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    // ============================================================
+    // 3. MAP DATA TO FRONTEND Shift TYPE
+    // ============================================================
+
+    return (data ?? [])
+      .map((assignment) => {
+        const shift = Array.isArray(assignment.event_shifts)
+          ? assignment.event_shifts[0]
+          : assignment.event_shifts;
+
+        if (!shift) {
+          return null;
+        }
+
+        const event = Array.isArray(shift.events)
+          ? shift.events[0]
+          : shift.events;
+
+        const role = Array.isArray(shift.event_roles)
+          ? shift.event_roles[0]
+          : shift.event_roles;
+
+        return {
+          id: shift.id,
+
+          event_id: shift.event_id,
+
+          event_title:
+            event?.title ?? "Unknown event",
+
+          role_name:
+            role?.name ?? "Volunteer",
+
+          date: shift.date,
+
+          start_time:
+            shift.start_time ?? "",
+
+          end_time:
+            shift.end_time ?? "",
+
+          location:
+            shift.location ?? "",
+
+          instructions:
+            shift.instructions ?? "",
+        } as Shift;
+      })
+      .filter((shift): shift is Shift => shift !== null)
+      .sort((a, b) => {
+        const dateA = `${a.date} ${a.start_time}`;
+        const dateB = `${b.date} ${b.start_time}`;
+
+        return dateA.localeCompare(dateB);
+      });
   },
 };
