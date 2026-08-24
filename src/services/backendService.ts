@@ -21,7 +21,7 @@ import type {
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
-async function getCurrentUserId(): Promise<string | null> {
+export async function getCurrentUserId(): Promise<string | null> {
   const {
     data: { user },
     error,
@@ -286,12 +286,30 @@ export async function getAttendance(): Promise<AttendanceRecord[]> {
     .from("attendance_records")
     .select(`
       id,
+      event_id,
+      role_id,
+      shift_id,
       date,
       status,
       check_in_time,
       check_out_time,
-      event:events(title),
-      role:event_roles(name)
+      notes,
+      event:events(
+        title,
+        start_date,
+        end_date,
+        venue,
+        city
+      ),
+      role:event_roles(
+        name
+      ),
+      shift:event_shifts(
+        title,
+        start_time,
+        end_time,
+        location
+      )
     `)
     .eq("profile_id", userId)
     .order("date", { ascending: false });
@@ -302,12 +320,47 @@ export async function getAttendance(): Promise<AttendanceRecord[]> {
 
   return (data ?? []).map((row: any) => ({
     id: row.id,
-    event_title: row.event?.title ?? "",
-    role_name: row.role?.name ?? "",
-    date: formatDate(row.date),
-    status: row.status,
-    check_in_time: row.check_in_time ?? null,
-    check_out_time: row.check_out_time ?? null,
+
+    event_id: row.event_id,
+
+    event_title:
+      row.event?.title ?? "Unknown event",
+
+    role_name:
+      row.role?.name ?? "Unknown role",
+
+    date:
+      formatDate(row.date),
+
+    status:
+      row.status,
+
+    check_in_time:
+      row.check_in_time ?? null,
+
+    check_out_time:
+      row.check_out_time ?? null,
+
+    notes:
+      row.notes ?? null,
+
+    venue:
+      row.event?.venue ?? null,
+
+    city:
+      row.event?.city ?? null,
+
+    shift_title:
+      row.shift?.title ?? null,
+
+    shift_start_time:
+      row.shift?.start_time ?? null,
+
+    shift_end_time:
+      row.shift?.end_time ?? null,
+
+    shift_location:
+      row.shift?.location ?? null,
   }));
 }
 
@@ -402,36 +455,45 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
     return {
       total: 0,
       current_year: 0,
+      events_completed: 0,
       by_sport: [],
       by_event: [],
     };
   }
 
   /*
-   * IMPORTANT:
+   * ============================================================
+   * 1. VOLUNTEER HOURS
    *
-   * volunteer_hours is the source of truth for volunteer hours.
-   * certificates are certificates, not the complete hours ledger.
+   * volunteer_hours remains the source of truth for:
+   * - total hours
+   * - current year hours
+   * - hours by sport
+   * - hours by event
+   * ============================================================
    */
 
-  const { data, error } = await db
+  const { data: hoursData, error: hoursError } = await db
     .from("volunteer_hours")
     .select(`
       hours,
       year,
+      event_id,
       event:events(
         title,
         sport,
-        start_date
+        start_date,
+        end_date,
+        end_time
       )
     `)
     .eq("profile_id", userId);
 
-  if (error) {
-    throw error;
+  if (hoursError) {
+    throw hoursError;
   }
 
-  const rows = data ?? [];
+  const hoursRows = hoursData ?? [];
   const currentYear = new Date().getFullYear();
 
   let total = 0;
@@ -440,10 +502,24 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
   const bySport = new Map<string, number>();
   const byEvent = new Map<string, number>();
 
-  rows.forEach((row: any) => {
+  /*
+   * Keep the event IDs that belong to this volunteer's
+   * recorded volunteer hours.
+   */
+  const volunteerEventIds = new Set<string>();
+
+  hoursRows.forEach((row: any) => {
     const hours = Number(row.hours ?? 0);
 
     total += hours;
+
+    if (Number(row.year) === currentYear) {
+      currentYearTotal += hours;
+    }
+
+    if (row.event_id) {
+      volunteerEventIds.add(row.event_id);
+    }
 
     const eventTitle =
       row.event?.title ?? "Unknown event";
@@ -460,32 +536,389 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
       sport,
       (bySport.get(sport) ?? 0) + hours,
     );
+  });
+
+  /*
+   * ============================================================
+   * 2. LOAD ATTENDANCE
+   *
+   * An event is NOT considered completed just because
+   * volunteer_hours.hours > 0.
+   *
+   * Completion requires:
+   *
+   * - Event has already ended.
+   * - Volunteer has check-in AND check-out.
+   * - For a multi-day event, every event day must have
+   *   a valid check-in AND check-out.
+   * ============================================================
+   */
+
+  let eventsCompleted = 0;
+
+  if (volunteerEventIds.size > 0) {
+    const eventIds = Array.from(volunteerEventIds);
+
+    const { data: attendanceData, error: attendanceError } =
+      await db
+        .from("attendance_records")
+        .select(`
+          event_id,
+          date,
+          check_in_time,
+          check_out_time,
+          status,
+          event:events(
+            id,
+            title,
+            start_date,
+            end_date,
+            end_time
+          )
+        `)
+        .eq("profile_id", userId)
+        .in("event_id", eventIds);
+
+    if (attendanceError) {
+      throw attendanceError;
+    }
+
+    const attendanceRows = attendanceData ?? [];
 
     /*
-     * Prefer the explicit year column from volunteer_hours.
+     * Group attendance records by event.
      */
-    if (Number(row.year) === currentYear) {
-      currentYearTotal += hours;
+    const attendanceByEvent = new Map<
+      string,
+      any[]
+    >();
+
+    attendanceRows.forEach((attendance: any) => {
+      if (!attendance.event_id) {
+        return;
+      }
+
+      const existing =
+        attendanceByEvent.get(
+          attendance.event_id,
+        ) ?? [];
+
+      existing.push(attendance);
+
+      attendanceByEvent.set(
+        attendance.event_id,
+        existing,
+      );
+    });
+
+    /*
+     * ==========================================================
+     * HELPER: Convert YYYY-MM-DD into a local Date
+     * ==========================================================
+     */
+
+    const parseDateOnly = (value: string): Date => {
+      const [year, month, day] = value
+        .split("-")
+        .map(Number);
+
+      return new Date(
+        year,
+        month - 1,
+        day,
+      );
+    };
+
+    /*
+     * ==========================================================
+     * HELPER: Format Date as YYYY-MM-DD
+     * ==========================================================
+     */
+
+    const formatDateOnly = (date: Date): string => {
+      const year = date.getFullYear();
+
+      const month = String(
+        date.getMonth() + 1,
+      ).padStart(2, "0");
+
+      const day = String(
+        date.getDate(),
+      ).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    };
+
+    /*
+     * ==========================================================
+     * HELPER: Get every date between start and end
+     *
+     * Example:
+     *
+     * 2026-08-20 -> 2026-08-22
+     *
+     * returns:
+     *
+     * 2026-08-20
+     * 2026-08-21
+     * 2026-08-22
+     * ==========================================================
+     */
+
+    const getEventDates = (
+      startDate: string,
+      endDate: string,
+    ): string[] => {
+      const dates: string[] = [];
+
+      const current =
+        parseDateOnly(startDate);
+
+      const end =
+        parseDateOnly(endDate);
+
+      while (current <= end) {
+        dates.push(
+          formatDateOnly(current),
+        );
+
+        current.setDate(
+          current.getDate() + 1,
+        );
+      }
+
+      return dates;
+    };
+
+    /*
+     * ==========================================================
+     * CHECK EVERY EVENT
+     * ==========================================================
+     */
+
+    for (const eventId of eventIds) {
+      const attendance =
+        attendanceByEvent.get(eventId) ?? [];
+
+      /*
+       * We need the event information.
+       *
+       * It is available through the attendance relation.
+       */
+      const event =
+        attendance.find(
+          (record) => record.event,
+        )?.event;
+
+      /*
+       * If there is no attendance record at all,
+       * the event cannot be completed.
+       */
+      if (!event) {
+        continue;
+      }
+
+      const startDate =
+        event.start_date;
+
+      const endDate =
+        event.end_date;
+
+      if (!startDate || !endDate) {
+        continue;
+      }
+
+      /*
+       * ========================================================
+       * 3. CHECK EVENT END DATE + END TIME
+       *
+       * Example:
+       *
+       * Event ends:
+       * 2026-08-22 at 18:00
+       *
+       * It should NOT be completed at:
+       * 17:30
+       *
+       * It CAN be completed at:
+       * 18:01
+       * ========================================================
+       */
+
+      const now = new Date();
+
+      let eventEndDateTime: Date;
+
+      if (event.end_time) {
+        const [hours, minutes, seconds = 0] =
+          String(event.end_time)
+            .split(":")
+            .map(Number);
+
+        const endDateObject =
+          parseDateOnly(endDate);
+
+        endDateObject.setHours(
+          hours,
+          minutes,
+          seconds,
+          0,
+        );
+
+        eventEndDateTime =
+          endDateObject;
+      } else {
+        /*
+         * If end_time is NULL, consider the event
+         * finished at the end of the end date.
+         */
+        const endDateObject =
+          parseDateOnly(endDate);
+
+        endDateObject.setHours(
+          23,
+          59,
+          59,
+          999,
+        );
+
+        eventEndDateTime =
+          endDateObject;
+      }
+
+      /*
+       * Event hasn't finished yet.
+       */
+      if (now < eventEndDateTime) {
+        continue;
+      }
+
+      /*
+       * ========================================================
+       * 4. GET ALL DAYS OF THE EVENT
+       * ========================================================
+       */
+
+      const eventDates =
+        getEventDates(
+          startDate,
+          endDate,
+        );
+
+      /*
+       * ========================================================
+       * 5. CHECK EVERY DAY
+       *
+       * Every day must have:
+       *
+       * check_in_time != null
+       * check_out_time != null
+       *
+       * Example:
+       *
+       * Event: 20 -> 22 August
+       *
+       * 20 Aug  check-in + check-out ✅
+       * 21 Aug  check-in + check-out ✅
+       * 22 Aug  check-in + check-out ✅
+       *
+       * => COMPLETED
+       *
+       * If one day is missing:
+       *
+       * 20 Aug  ✅
+       * 21 Aug  ❌
+       * 22 Aug  ✅
+       *
+       * => NOT COMPLETED
+       * ========================================================
+       */
+
+      const allDaysCompleted =
+        eventDates.every(
+          (eventDate) => {
+            const dayAttendance =
+              attendance.filter(
+                (record) =>
+                  record.date ===
+                  eventDate,
+              );
+
+            /*
+             * There must be at least one attendance
+             * record for this day.
+             */
+            if (
+              dayAttendance.length === 0
+            ) {
+              return false;
+            }
+
+            /*
+             * At least one attendance record
+             * for this day must have BOTH
+             * check-in and check-out.
+             */
+            return dayAttendance.some(
+              (record) =>
+                Boolean(
+                  record.check_in_time,
+                ) &&
+                Boolean(
+                  record.check_out_time,
+                ),
+            );
+          },
+        );
+
+      if (allDaysCompleted) {
+        eventsCompleted += 1;
+      }
     }
-  });
+  }
+
+  /*
+   * ============================================================
+   * 6. RETURN FINAL RESULT
+   * ============================================================
+   */
 
   return {
     total,
-    current_year: currentYearTotal,
 
-    by_sport: Array.from(bySport.entries()).map(
-      ([label, value]) => ({
-        label,
-        value,
-      }),
-    ),
+    current_year:
+      currentYearTotal,
 
-    by_event: Array.from(byEvent.entries()).map(
-      ([label, value]) => ({
-        label,
-        value,
-      }),
-    ),
+    events_completed:
+      eventsCompleted,
+
+    by_sport:
+      Array.from(
+        bySport.entries(),
+      )
+        .sort(
+          (a, b) => b[1] - a[1],
+        )
+        .map(
+          ([label, value]) => ({
+            label,
+            value,
+          }),
+        ),
+
+    by_event:
+      Array.from(
+        byEvent.entries(),
+      )
+        .sort(
+          (a, b) => b[1] - a[1],
+        )
+        .map(
+          ([label, value]) => ({
+            label,
+            value,
+          }),
+        ),
   };
 }
 

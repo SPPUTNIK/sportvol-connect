@@ -1,52 +1,97 @@
-// import { getAttendance } from "@/services/mockService";
-// import type { AttendanceService } from "@/services/contracts";
-
-// export const attendanceService: AttendanceService = {
-//   getAttendance,
-// };
-
-
-import { demoAttendance } from "@/mocks/frontendDemo";
+import { supabase } from "@/lib/supabase";
+import { getCurrentUserId } from "@/services/backendService";
 import type { AttendanceRecord } from "@/lib/types";
-
-const USE_MOCK_DATA = true;
 
 export const attendanceService = {
   async getAttendance(): Promise<AttendanceRecord[]> {
-    if (USE_MOCK_DATA) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+    const userId = await getCurrentUserId();
 
-      return demoAttendance.map(
-        (record) =>
-          ({
-            id: record.id,
-            event_title: record.event,
-            role_name: record.role,
-            date: record.date,
+    if (!userId) {
+      throw new Error("You must be signed in.");
+    }
 
-            status:
-              record.status === "Completed"
-                ? "checked-out"
-                : record.status === "Upcoming"
-                  ? "pending"
-                  : "pending",
+    const { data, error } = await supabase
+      .from("attendance_records")
+      .select(`
+        id,
+        event_id,
+        role_id,
+        shift_id,
+        date,
+        status,
+        check_in_time,
+        check_out_time,
+        notes,
+        event:events(
+          title,
+          start_date,
+          end_date,
+          venue,
+          city
+        ),
+        role:event_roles(
+          name
+        ),
+        shift:event_shifts(
+          title,
+          start_time,
+          end_time,
+          location
+        )
+      `)
+      .eq("profile_id", userId)
+      .order("date", { ascending: false });
 
-            check_in_time:
-              record.checkIn === "—"
-                ? null
-                : record.checkIn,
-
-            check_out_time:
-              record.checkOut === "—"
-                ? null
-                : record.checkOut,
-          }) as AttendanceRecord,
+    if (error) {
+      console.error("Failed to load attendance:", error);
+      throw new Error(
+        error.message || "Unable to load attendance.",
       );
     }
 
-    // Supabase implementation will be connected later.
-    throw new Error(
-      "Supabase attendance service is not connected yet.",
-    );
+    return (data ?? []).map((record: any) => ({
+      id: record.id,
+      event_id: record.event_id,
+
+      event_title:
+        record.event?.title ??
+        "Event",
+
+      role_name:
+        record.role?.title ??
+        "Volunteer",
+
+      date: record.date,
+
+      status:
+        record.status ?? "pending",
+
+      check_in_time:
+        record.check_in_time ?? null,
+
+      check_out_time:
+        record.check_out_time ?? null,
+
+      notes:
+        record.notes ?? null,
+
+      venue:
+        record.event?.venue ?? null,
+
+      city:
+        record.event?.city ?? null,
+
+      shift_title:
+        record.shift?.title ?? null,
+
+      shift_start_time:
+        record.shift?.start_time ?? null,
+
+      shift_end_time:
+        record.shift?.end_time ?? null,
+
+      shift_location:
+        record.shift?.location ?? null,
+    }));
   },
 };
