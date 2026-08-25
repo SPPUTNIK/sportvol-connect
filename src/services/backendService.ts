@@ -1056,6 +1056,7 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
   const [
     profileResult,
     applicationsResult,
+    volunteerHoursResult,
     shiftsResult,
     certificatesResult,
     attendanceResult,
@@ -1112,6 +1113,22 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
       `)
       .eq("profile_id", userId)
       .order("applied_at", { ascending: false }),
+
+    // --------------------------------
+    // Volunteer Hours
+    // --------------------------------
+    db
+      .from("volunteer_hours")
+      .select(`
+        id,
+        hours,
+        year,
+        approved_by,
+        event_id,
+        shift_id,
+        attendance_id
+      `)
+      .eq("profile_id", userId),
 
     // --------------------------------
     // Assigned shifts
@@ -1183,7 +1200,7 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
       .eq("profile_id", userId),
 
     // --------------------------------
-    // LATEST 3 EVENTS ON PLATFORM
+    // LATEST 3 EVENTS
     // --------------------------------
     db
       .from("events")
@@ -1209,6 +1226,7 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
   const error =
     profileResult.error ||
     applicationsResult.error ||
+    volunteerHoursResult.error ||
     shiftsResult.error ||
     certificatesResult.error ||
     attendanceResult.error ||
@@ -1227,6 +1245,8 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
   const profile = profileResult.data;
 
   const applications = applicationsResult.data ?? [];
+  const volunteerHoursRows =
+    volunteerHoursResult.data ?? [];
   const shifts = shiftsResult.data ?? [];
   const certificates = certificatesResult.data ?? [];
   const attendance = attendanceResult.data ?? [];
@@ -1238,10 +1258,11 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
   // APPLICATIONS
   // ========================================
 
-  const formattedApplications: Application[] = applications.map(
-    (row: any) => ({
+  const formattedApplications: Application[] =
+    applications.map((row: any) => ({
       id: row.id,
       event_id: row.event_id,
+      role_id: row.role_id,
       event_title: row.event?.title ?? "",
       role_name: row.role?.name ?? "",
       submitted_at: formatDate(row.applied_at),
@@ -1250,8 +1271,9 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
         [row.motivation, row.experience, row.availability]
           .filter(Boolean)
           .join("\n\n") || null,
-    }),
-  );
+      availability: row.availability ?? null,
+      experience: row.experience ?? null,
+    }));
 
   // ========================================
   // LATEST 3 PLATFORM EVENTS
@@ -1279,7 +1301,6 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
 
   // ========================================
   // UPCOMING EVENT
-  // First/latest published platform event
   // ========================================
 
   let upcomingEvent = null;
@@ -1287,12 +1308,10 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
   const firstEvent = latestEvents[0];
 
   if (firstEvent) {
-    // Check if current volunteer already has accreditation
     const accreditation = accreditations.find(
       (item: any) => item.event_id === firstEvent.id,
     );
 
-    // Get required training for this event
     const trainingRequiredResult = await db
       .from("training_modules")
       .select("id, required")
@@ -1340,8 +1359,10 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
   // STATISTICS
   // ========================================
 
-  const volunteerHours = Number(
-    profile?.volunteer_hours ?? 0,
+  const volunteerHours = volunteerHoursRows.reduce(
+    (total: number, row: any) =>
+      total + Number(row.hours ?? 0),
+    0,
   );
 
   const attendanceRate = Number(
@@ -1350,7 +1371,6 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
 
   const certificatesCount = certificates.length;
 
-  // Number of upcoming assigned shifts
   const now = new Date();
 
   const upcomingAssignedShifts = shifts.filter(
@@ -1426,7 +1446,6 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
       progress: volunteerHours > 0 ? 100 : 0,
       unlocked: volunteerHours > 0,
     },
-
     {
       title: "10 Volunteer Hours",
       progress: Math.min(
@@ -1435,7 +1454,6 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
       ),
       unlocked: volunteerHours >= 10,
     },
-
     {
       title: "Perfect Attendance",
       progress: Math.min(

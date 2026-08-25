@@ -1410,55 +1410,55 @@ export function TrainingDetailPage({ trainingId }: { trainingId: string }) {
   );
 }
 
-export function AccreditationPage() {
-  return (
-    <AppShell title="Accreditation">
-      <div className="mx-auto max-w-3xl">
-        <VSPageHeader
-          eyebrow="Event access"
-          title="Your accreditation"
-          description="Keep your event credentials ready for arrival and check-in."
-        />
-        <VSCard className="mt-8 overflow-hidden rounded-[2rem] border-border">
-          <div className="bg-ink p-6 text-white sm:p-8">
-            <div className="flex items-start justify-between gap-5">
-              <div>
-                <VSBadge variant="dark">
-                  {volunteerContentService.getAccreditation().status}
-                </VSBadge>
-                <h2 className="mt-5 text-2xl font-semibold">
-                  {volunteerContentService.getAccreditation().event}
-                </h2>
-                <p className="mt-2 text-sm text-white/65">
-                  {volunteerContentService.getAccreditation().role} ·{" "}
-                  {volunteerContentService.getAccreditation().zone}
-                </p>
-              </div>
-              <QrCode className="h-10 w-10 text-primary" />
-            </div>
-          </div>
-          <VSCardContent className="grid gap-5 p-6 sm:grid-cols-2 sm:p-8">
-            <Info label="Volunteer" value={volunteerContentService.getAccreditation().volunteer} />
-            <Info
-              label="Volunteer ID"
-              value={volunteerContentService.getAccreditation().volunteerId}
-            />
-            <Info label="Event" value={volunteerContentService.getAccreditation().event} />
-            <Info label="Zone" value={volunteerContentService.getAccreditation().zone} />
-            <div className="flex aspect-square items-center justify-center rounded-3xl border-2 border-dashed border-border bg-muted/50 sm:col-span-2">
-              <div className="text-center">
-                <QrCode className="mx-auto h-20 w-20 text-ink" />
-                <p className="mt-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  QR placeholder
-                </p>
-              </div>
-            </div>
-          </VSCardContent>
-        </VSCard>
-      </div>
-    </AppShell>
-  );
-}
+// export function AccreditationPage() {
+//   return (
+//     <AppShell title="Accreditation">
+//       <div className="mx-auto max-w-3xl">
+//         <VSPageHeader
+//           eyebrow="Event access"
+//           title="Your accreditation"
+//           description="Keep your event credentials ready for arrival and check-in."
+//         />
+//         <VSCard className="mt-8 overflow-hidden rounded-[2rem] border-border">
+//           <div className="bg-ink p-6 text-white sm:p-8">
+//             <div className="flex items-start justify-between gap-5">
+//               <div>
+//                 <VSBadge variant="dark">
+//                   {volunteerContentService.getAccreditation().status}
+//                 </VSBadge>
+//                 <h2 className="mt-5 text-2xl font-semibold">
+//                   {volunteerContentService.getAccreditation().event}
+//                 </h2>
+//                 <p className="mt-2 text-sm text-white/65">
+//                   {volunteerContentService.getAccreditation().role} ·{" "}
+//                   {volunteerContentService.getAccreditation().zone}
+//                 </p>
+//               </div>
+//               <QrCode className="h-10 w-10 text-primary" />
+//             </div>
+//           </div>
+//           <VSCardContent className="grid gap-5 p-6 sm:grid-cols-2 sm:p-8">
+//             <Info label="Volunteer" value={volunteerContentService.getAccreditation().volunteer} />
+//             <Info
+//               label="Volunteer ID"
+//               value={volunteerContentService.getAccreditation().volunteerId}
+//             />
+//             <Info label="Event" value={volunteerContentService.getAccreditation().event} />
+//             <Info label="Zone" value={volunteerContentService.getAccreditation().zone} />
+//             <div className="flex aspect-square items-center justify-center rounded-3xl border-2 border-dashed border-border bg-muted/50 sm:col-span-2">
+//               <div className="text-center">
+//                 <QrCode className="mx-auto h-20 w-20 text-ink" />
+//                 <p className="mt-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+//                   QR placeholder
+//                 </p>
+//               </div>
+//             </div>
+//           </VSCardContent>
+//         </VSCard>
+//       </div>
+//     </AppShell>
+//   );
+// }
 
 export function AttendancePage() {
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);

@@ -125,11 +125,11 @@ export const volunteerNavigation: NavGroup[] = [
         href: "/notifications",
         icon: Bell,
       },
-      {
-        label: "Settings",
-        href: "/settings",
-        icon: Settings,
-      },
+      // {
+      //   label: "Settings",
+      //   href: "/settings",
+      //   icon: Settings,
+      // },
     ],
   },
 ];
@@ -457,14 +457,21 @@ export function VolunteerLayout({
                   </span>
                 )}
               </Link>
-
               {/* Profile */}
               <Link
                 to="/profile"
                 className="flex items-center gap-2 rounded-full border border-border bg-card py-1.5 pl-1.5 pr-3"
               >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-ink text-[0.65rem] font-semibold text-white">
-                  {firstName.slice(0, 1).toUpperCase()}
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ink text-[0.65rem] font-semibold text-white">
+                  {profile?.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt={`${firstName}'s profile`}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    firstName.slice(0, 1).toUpperCase()
+                  )}
                 </span>
 
                 <span className="hidden text-sm font-medium text-foreground sm:block">

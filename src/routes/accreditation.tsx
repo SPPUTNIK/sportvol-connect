@@ -27,6 +27,8 @@ import {
   type AccreditationRecord,
 } from "@/services/accreditationService";
 
+import { QRCodeSVG } from "qrcode.react";
+
 export const Route = createFileRoute("/accreditation")({
   component: Accreditation,
   head: () => ({
@@ -82,8 +84,8 @@ function Accreditation() {
 
   return (
     <AppShell title="Accreditation">
-      <main>
-        <div className="relative z-10 mx-auto max-w-7xl space-y-8">
+      <main className="w-full min-w-0 overflow-x-hidden">
+        <div className="relative z-10 mx-auto w-full max-w-7xl min-w-0 space-y-6 sm:space-y-8">
 
           {/* =====================================================
               HEADER
@@ -211,393 +213,427 @@ function Accreditation() {
               ACCREDITATION
           ===================================================== */}
 
-          {!loading &&
-            !error &&
-            accreditation && (
-              <div className="mx-auto max-w-6xl">
+          {!loading && !error && accreditation && (
+            <div className="mx-auto w-full max-w-6xl min-w-0">
+              <VSCard className="w-full min-w-0 overflow-hidden rounded-[1.5rem] border-border shadow-[var(--shadow-float)] sm:rounded-[2rem]">
 
-                <VSCard className="overflow-hidden rounded-[2rem] border-border shadow-[var(--shadow-float)]">
+                {/* =================================================
+                    CREDENTIAL HEADER
+                ================================================= */}
 
-                  {/* =================================================
-                      CREDENTIAL HEADER
-                  ================================================= */}
+                <div className="relative overflow-hidden bg-ink px-4 py-6 text-white sm:px-6 sm:py-8 lg:px-10 lg:py-10">
 
-                  <div className="relative overflow-hidden bg-ink px-6 py-8 text-white sm:px-10 sm:py-10">
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-primary/20 blur-3xl sm:-right-20 sm:-top-32 sm:h-80 sm:w-80"
+                  />
 
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute -right-20 -top-32 h-80 w-80 rounded-full bg-primary/20 blur-3xl"
-                    />
+                  <div className="relative z-10 min-w-0">
 
-                    <div className="relative z-10">
+                    {/* BRAND + STATUS */}
 
-                      <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex min-w-0 flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
 
-                        {/* BRAND + EVENT */}
+                      {/* BRAND + EVENT */}
 
-                        <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
 
-                          <div className="flex items-center gap-3">
+                        {/* BRAND */}
 
-                            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm">
-                              <img
-                                src="/logo.png"
-                                alt="VolunSport Morocco"
-                                className="h-full w-full object-contain"
-                              />
-                            </div>
+                        <div className="flex min-w-0 items-center gap-3">
 
-                            <div>
-                              <p className="font-display text-lg font-semibold tracking-tight">
-                                VOLUNSPORT
-                              </p>
-
-                              <p className="font-mono text-[0.58rem] uppercase tracking-[0.3em] text-primary">
-                                Morocco
-                              </p>
-                            </div>
-
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm sm:h-11 sm:w-11">
+                            <img
+                              src="/logo.png"
+                              alt="VolunSport Morocco"
+                              className="h-full w-full object-contain"
+                            />
                           </div>
 
-                          <div className="mt-8">
-
-                            <p className="font-mono text-[0.62rem] font-semibold uppercase tracking-[0.25em] text-white/45">
-                              Volunteer accreditation
+                          <div className="min-w-0">
+                            <p className="font-display text-base font-semibold tracking-tight sm:text-lg">
+                              VOLUNSPORT
                             </p>
 
-                            <h2 className="mt-3 max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">
-                              {accreditation.role_name}
-                            </h2>
-
-                            <p className="mt-2 text-sm text-white/55">
-                              {accreditation.event_title}
+                            <p className="font-mono text-[0.5rem] uppercase tracking-[0.25em] text-primary sm:text-[0.58rem] sm:tracking-[0.3em]">
+                              Morocco
                             </p>
-
                           </div>
 
                         </div>
 
-                        {/* STATUS */}
+                        {/* TITLE */}
 
-                        <div
-                          className={`flex shrink-0 items-center gap-2 self-start rounded-full border px-4 py-2 text-xs font-semibold ${
-                            isActive
-                              ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
-                              : isPending
-                                ? "border-amber-400/20 bg-amber-400/10 text-amber-300"
-                                : "border-white/10 bg-white/5 text-white/60"
-                          }`}
-                        >
+                        <div className="mt-7 min-w-0 sm:mt-8">
 
-                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          <p className="font-mono text-[0.55rem] font-semibold uppercase tracking-[0.18em] text-white/45 sm:text-[0.62rem] sm:tracking-[0.25em]">
+                            Volunteer accreditation
+                          </p>
 
+                          <h2 className="mt-2 break-words text-2xl font-semibold leading-tight tracking-tight sm:mt-3 sm:text-3xl lg:text-4xl">
+                            {accreditation.role_name}
+                          </h2>
+
+                          <p className="mt-2 break-words text-sm leading-5 text-white/55">
+                            {accreditation.event_title}
+                          </p>
+
+                        </div>
+
+                      </div>
+
+                      {/* STATUS */}
+
+                      <div
+                        className={`inline-flex w-fit max-w-full shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-[11px] font-semibold sm:px-4 sm:text-xs ${
+                          isActive
+                            ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
+                            : isPending
+                              ? "border-amber-400/20 bg-amber-400/10 text-amber-300"
+                              : "border-white/10 bg-white/5 text-white/60"
+                        }`}
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+
+                        <span className="truncate">
                           {isActive
                             ? "Approved"
                             : isPending
                               ? "Pending"
                               : accreditation.status}
-
-                        </div>
-
-                      </div>
-
-                      {/* VOLUNTEER ID */}
-
-                      <div className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-end sm:justify-between">
-
-                        <div>
-
-                          <p className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-white/40">
-                            Volunteer ID
-                          </p>
-
-                          <p className="mt-1 font-mono text-lg font-semibold tracking-[0.08em] text-white">
-                            {accreditation.profile_id.slice(0, 8).toUpperCase()}
-                          </p>
-
-                        </div>
-
-                        <div className="flex items-center gap-2 text-xs text-white/40">
-                          <ShieldCheck className="h-3.5 w-3.5" />
-                          Official event credential
-                        </div>
-
+                        </span>
                       </div>
 
                     </div>
+
+                    {/* VOLUNTEER ID */}
+
+                    <div className="mt-8 flex min-w-0 flex-col gap-4 border-t border-white/10 pt-5 sm:mt-10 sm:flex-row sm:items-end sm:justify-between sm:pt-6">
+
+                      <div className="min-w-0">
+
+                        <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-white/40 sm:text-[0.6rem] sm:tracking-[0.2em]">
+                          Volunteer ID
+                        </p>
+
+                        <p className="mt-1 break-all font-mono text-base font-semibold tracking-[0.06em] text-white sm:text-lg sm:tracking-[0.08em]">
+                          {accreditation.profile_id
+                            .slice(0, 8)
+                            .toUpperCase()}
+                        </p>
+
+                      </div>
+
+                      <div className="flex items-center gap-2 text-[11px] text-white/40 sm:text-xs">
+                        <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+                        <span>Official event credential</span>
+                      </div>
+
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* =================================================
+                    CONTENT
+                ================================================= */}
+
+                <VSCardContent className="w-full min-w-0 p-4 sm:p-6 lg:p-10">
+
+                  {/* =================================================
+                      INFO CARDS
+                  ================================================= */}
+
+                  <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+
+                    <InfoCard
+                      icon={UserRound}
+                      label="Volunteer"
+                      value={accreditation.volunteer_name}
+                    />
+
+                    <InfoCard
+                      icon={IdCard}
+                      label="Role"
+                      value={accreditation.role_name}
+                    />
+
+                    <InfoCard
+                      icon={MapPin}
+                      label="Access zone"
+                      value={
+                        accreditation.zone || "General access"
+                      }
+                    />
+
+                    <InfoCard
+                      icon={ShieldCheck}
+                      label="Status"
+                      value={
+                        isActive
+                          ? "Approved"
+                          : isPending
+                            ? "Pending"
+                            : accreditation.status
+                      }
+                      accent={isActive}
+                    />
+
                   </div>
 
                   {/* =================================================
-                      CONTENT
+                      EVENT ASSIGNMENT
                   ================================================= */}
 
-                  <VSCardContent className="p-6 sm:p-8 lg:p-10">
+                  <div className="mt-5 w-full min-w-0 rounded-[1.25rem] border border-border bg-background/70 p-4 sm:mt-8 sm:rounded-[1.75rem] sm:p-6 sm:p-7">
 
-                    {/* =================================================
-                        INFO CARDS
-                    ================================================= */}
+                    <div className="flex min-w-0 flex-col gap-4 sm:gap-5 md:flex-row md:items-center md:justify-between">
 
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                      <div className="min-w-0">
 
-                      <InfoCard
-                        icon={UserRound}
-                        label="Volunteer"
-                        value={accreditation.volunteer_name}
-                      />
+                        <p className="font-mono text-[0.55rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-[0.62rem] sm:tracking-[0.2em]">
+                          Assignment
+                        </p>
 
-                      <InfoCard
-                        icon={IdCard}
-                        label="Role"
-                        value={accreditation.role_name}
-                      />
+                        <h3 className="mt-2 break-words text-lg font-semibold leading-tight text-foreground sm:text-xl">
+                          {accreditation.event_title}
+                        </h3>
 
-                      <InfoCard
-                        icon={MapPin}
-                        label="Access zone"
-                        value={
-                          accreditation.zone ||
-                          "General access"
-                        }
-                      />
+                        <p className="mt-1 break-words text-sm leading-5 text-muted-foreground">
+                          {accreditation.event_venue},{" "}
+                          {accreditation.event_city}
+                        </p>
 
-                      <InfoCard
-                        icon={ShieldCheck}
-                        label="Status"
-                        value={
-                          isActive
-                            ? "Approved"
-                            : isPending
-                              ? "Pending"
-                              : accreditation.status
-                        }
-                        accent={isActive}
-                      />
+                      </div>
 
-                    </div>
+                      <VSBadge
+                        variant="soft"
+                        className="w-fit max-w-full shrink-0"
+                      >
+                        <CalendarDays className="mr-1.5 h-3.5 w-3.5 shrink-0" />
 
-                    {/* =================================================
-                        EVENT ASSIGNMENT
-                    ================================================= */}
-
-                    <div className="mt-8 rounded-[1.75rem] border border-border bg-background/70 p-6 sm:p-7">
-
-                      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-
-                        <div>
-
-                          <p className="font-mono text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                            Assignment
-                          </p>
-
-                          <h3 className="mt-2 text-xl font-semibold text-foreground">
-                            {accreditation.event_title}
-                          </h3>
-
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            {accreditation.event_venue},{" "}
-                            {accreditation.event_city}
-                          </p>
-
-                        </div>
-
-                        <VSBadge variant="soft">
-                          <CalendarDays className="mr-1.5 h-3.5 w-3.5" />
-
+                        <span className="truncate">
                           {accreditation.assignment_status ===
                           "assigned"
                             ? "Confirmed assignment"
                             : accreditation.assignment_status ||
                               "Accredited"}
-                        </VSBadge>
+                        </span>
+                      </VSBadge>
+
+                    </div>
+
+                    {/* DETAILS */}
+
+                    <div className="mt-5 grid min-w-0 grid-cols-1 gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4">
+
+                      <DetailRow
+                        icon={CalendarDays}
+                        label="Event date"
+                        value={formatEventDate(
+                          accreditation.event_start_date,
+                          accreditation.event_end_date,
+                        )}
+                      />
+
+                      <DetailRow
+                        icon={MapPin}
+                        label="Venue"
+                        value={`${accreditation.event_venue}, ${accreditation.event_city}`}
+                      />
+
+                      <DetailRow
+                        icon={Clock3}
+                        label="Shift"
+                        value={
+                          accreditation.shift_title ||
+                          "No shift assigned"
+                        }
+                      />
+
+                      <DetailRow
+                        icon={MapPin}
+                        label="Shift location"
+                        value={
+                          accreditation.shift_location ||
+                          accreditation.zone ||
+                          "General event area"
+                        }
+                      />
+
+                    </div>
+
+                  </div>
+
+                  {/* =================================================
+                      SHIFT TIME
+                  ================================================= */}
+
+                  {accreditation.shift_title && (
+                    <div className="mt-3 grid min-w-0 grid-cols-1 gap-3 sm:mt-4 sm:grid-cols-2 sm:gap-4">
+
+                      <DetailRow
+                        icon={Clock3}
+                        label="Shift start"
+                        value={
+                          accreditation.shift_start_time
+                            ? formatTime(
+                                accreditation.shift_start_time,
+                              )
+                            : "Not available"
+                        }
+                      />
+
+                      <DetailRow
+                        icon={Clock3}
+                        label="Shift end"
+                        value={
+                          accreditation.shift_end_time
+                            ? formatTime(
+                                accreditation.shift_end_time,
+                              )
+                            : "Not available"
+                        }
+                      />
+
+                    </div>
+                  )}
+
+                  {/* =================================================
+                      QR SECTION
+                  ================================================= */}
+
+                  <div className="mt-6 grid min-w-0 grid-cols-1 gap-6 lg:mt-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-center lg:gap-8">
+
+                    {/* LEFT */}
+
+                    <div className="min-w-0">
+
+                      <div className="flex items-center gap-3">
+
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:h-11 sm:w-11">
+                          <QrCode className="h-5 w-5" />
+                        </div>
+
+                        <div className="min-w-0">
+
+                          <p className="font-mono text-[0.55rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-[0.62rem] sm:tracking-[0.2em]">
+                            Event check-in
+                          </p>
+
+                          <h3 className="mt-1 break-words text-lg font-semibold leading-tight text-foreground sm:text-xl">
+                            Show your accreditation
+                          </h3>
+
+                        </div>
 
                       </div>
 
-                      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                      <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:mt-5">
+                        Present this credential to event staff
+                        when you arrive. Your accreditation
+                        confirms your approved volunteer
+                        assignment and access level.
+                      </p>
 
-                        <DetailRow
-                          icon={CalendarDays}
-                          label="Event date"
-                          value={formatEventDate(
-                            accreditation.event_start_date,
-                            accreditation.event_end_date,
-                          )}
-                        />
+                      {/* BUTTON */}
 
-                        <DetailRow
-                          icon={MapPin}
-                          label="Venue"
-                          value={`${accreditation.event_venue}, ${accreditation.event_city}`}
-                        />
+                      <div className="mt-5 flex w-full sm:mt-6">
 
-                        <DetailRow
-                          icon={Clock3}
-                          label="Shift"
-                          value={
-                            accreditation.shift_title
-                              ? accreditation.shift_title
-                              : "No shift assigned"
-                          }
-                        />
+                        <VSButton
+                          type="button"
+                          onClick={handlePrint}
+                          className="w-full sm:w-auto"
+                        >
+                          <Download className="h-4 w-4" />
+                          Save credential
+                        </VSButton>
 
-                        <DetailRow
-                          icon={MapPin}
-                          label="Shift location"
-                          value={
-                            accreditation.shift_location ||
-                            accreditation.zone ||
-                            "General event area"
-                          }
-                        />
+                      </div>
+
+                      {/* CREDENTIAL CODE */}
+
+                      {accreditation.qr_code_data && (
+                        <div className="mt-4 w-full min-w-0 rounded-2xl border border-border bg-muted/30 p-4">
+
+                          <p className="text-xs font-semibold text-foreground">
+                            Credential code
+                          </p>
+
+                          <p className="mt-2 max-w-full break-all font-mono text-[11px] leading-5 text-muted-foreground">
+                            {accreditation.qr_code_data}
+                          </p>
+
+                        </div>
+                      )}
+
+                      {/* PRIVACY */}
+
+                      <div className="mt-4 flex items-start gap-3 rounded-2xl border border-primary/10 bg-primary/[0.04] p-4 sm:mt-6">
+
+                        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+
+                        <p className="text-xs leading-5 text-muted-foreground">
+                          Keep your accreditation private and
+                          only show it to authorized event staff
+                          when required.
+                        </p>
 
                       </div>
 
                     </div>
 
-                    {/* =================================================
-                        SHIFT TIME
-                    ================================================= */}
+                    {/* QR */}
 
-                    {accreditation.shift_title && (
-                      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <div className="mx-auto w-full max-w-[280px] rounded-[1.5rem] border border-border bg-background p-4 sm:p-5 lg:max-w-[300px]">
 
-                        <DetailRow
-                          icon={Clock3}
-                          label="Shift start"
-                          value={
-                            accreditation.shift_start_time
-                              ? formatTime(
-                                  accreditation.shift_start_time,
-                                )
-                              : "Not available"
-                          }
-                        />
+                      <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
 
-                        <DetailRow
-                          icon={Clock3}
-                          label="Shift end"
-                          value={
-                            accreditation.shift_end_time
-                              ? formatTime(
-                                  accreditation.shift_end_time,
-                                )
-                              : "Not available"
-                          }
-                        />
+                        <div className="flex aspect-square w-full items-center justify-center rounded-xl bg-white">
 
-                      </div>
-                    )}
+                          {accreditation.qr_code_data ? (
+                            <QRCodeSVG
+                              value={accreditation.qr_code_data}
+                              size={220}
+                              level="H"
+                              includeMargin
+                              className="h-auto w-full max-w-[220px]"
+                            />
+                          ) : (
+                            <div className="flex flex-col items-center justify-center text-center">
+                              <QrCode className="h-12 w-12 text-muted-foreground" />
 
-                    {/* =================================================
-                        QR SECTION
-                    ================================================= */}
-
-                    <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_300px] lg:items-center">
-
-                      <div>
-
-                        <div className="flex items-center gap-3">
-
-                          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                            <QrCode className="h-5 w-5" />
-                          </div>
-
-                          <div>
-
-                            <p className="font-mono text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                              Event check-in
-                            </p>
-
-                            <h3 className="mt-1 text-xl font-semibold text-foreground">
-                              Show your accreditation
-                            </h3>
-
-                          </div>
+                              <p className="mt-3 text-xs font-semibold text-muted-foreground">
+                                QR unavailable
+                              </p>
+                            </div>
+                          )}
 
                         </div>
 
-                        <p className="mt-5 max-w-xl text-sm leading-6 text-muted-foreground">
-                          Present this credential to event staff
-                          when you arrive. Your accreditation
-                          confirms your approved volunteer
-                          assignment and access level.
-                        </p>
+                        <div className="mt-4 text-center">
 
-                        <div className="mt-6 flex flex-wrap gap-3">
+                          <p className="text-xs font-semibold text-foreground">
+                            Scan at check-in
+                          </p>
 
-                          <VSButton
-                            type="button"
-                            onClick={handlePrint}
-                          >
-                            <Download className="h-4 w-4" />
-                            Save credential
-                          </VSButton>
-
-                        </div>
-
-                        {accreditation.qr_code_data && (
-                          <div className="mt-4 rounded-2xl border border-border bg-muted/30 p-4">
-
-                            <p className="text-xs font-semibold text-foreground">
-                              Credential code
-                            </p>
-
-                            <p className="mt-2 break-all font-mono text-xs text-muted-foreground">
-                              {accreditation.qr_code_data}
-                            </p>
-
-                          </div>
-                        )}
-
-                        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-primary/10 bg-primary/[0.04] p-4">
-
-                          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-
-                          <p className="text-xs leading-5 text-muted-foreground">
-                            Keep your accreditation private and
-                            only show it to authorized event staff
-                            when required.
+                          <p className="mt-1 text-[0.65rem] text-muted-foreground">
+                            Volunteer credential
                           </p>
 
                         </div>
 
                       </div>
 
-                      {/* QR */}
-
-                      <div className="rounded-[1.75rem] border border-border bg-background p-5">
-
-                        <div className="flex aspect-square items-center justify-center rounded-2xl border border-dashed border-border bg-muted/40">
-
-                          <div className="text-center">
-
-                            <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-2xl bg-card shadow-sm ring-1 ring-border">
-
-                              <QrCode className="h-24 w-24 text-foreground/80" />
-
-                            </div>
-
-                            <p className="mt-4 text-xs font-semibold text-foreground">
-                              Scan at check-in
-                            </p>
-
-                            <p className="mt-1 text-[0.65rem] text-muted-foreground">
-                              Volunteer credential
-                            </p>
-
-                          </div>
-
-                        </div>
-
-                      </div>
-
                     </div>
 
-                  </VSCardContent>
+                  </div>
 
-                </VSCard>
+                </VSCardContent>
 
-              </div>
-            )}
+              </VSCard>
+            </div>
+          )}
 
         </div>
       </main>
@@ -688,7 +724,7 @@ function InfoCard({
   accent = false,
 }: InfoCardProps) {
   return (
-    <div className="group rounded-[1.5rem] border border-border bg-card/80 p-5 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-sm">
+    <div className="min-w-0 rounded-[1.25rem] border border-border bg-card/80 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-sm sm:rounded-[1.5rem] sm:p-5">
 
       <div
         className={`flex h-10 w-10 items-center justify-center rounded-xl ${
@@ -700,12 +736,12 @@ function InfoCard({
         <Icon className="h-4 w-4" />
       </div>
 
-      <p className="mt-5 text-xs font-medium text-muted-foreground">
+      <p className="mt-4 text-xs font-medium text-muted-foreground sm:mt-5">
         {label}
       </p>
 
       <p
-        className={`mt-1 truncate text-sm font-semibold ${
+        className={`mt-1 break-words text-sm font-semibold leading-5 ${
           accent
             ? "text-emerald-600"
             : "text-foreground"
@@ -732,19 +768,19 @@ function DetailRow({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">
+    <div className="flex min-w-0 items-start gap-3 rounded-2xl border border-border bg-card p-3.5 sm:p-4">
 
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground sm:h-10 sm:w-10">
         <Icon className="h-4 w-4" />
       </div>
 
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
 
         <p className="text-xs text-muted-foreground">
           {label}
         </p>
 
-        <p className="mt-1 truncate text-sm font-semibold text-foreground">
+        <p className="mt-1 break-words text-sm font-semibold leading-5 text-foreground">
           {value}
         </p>
 
