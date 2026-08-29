@@ -168,52 +168,6 @@ export interface MyEvent {
   application_status: ApplicationStatus;
 }
 
-/*
- * ============================================================
- * ACREDITATION
- * ============================================================
- */
-
-export interface AccreditationRecord {
-  id: string;
-  profile_id: string;
-  event_id: string;
-  role_id: string;
-
-  volunteer_identifier: string;
-  zone: string | null;
-  qr_code_data: string | null;
-  status: string;
-
-  created_at: string;
-  updated_at: string;
-
-  volunteer_name: string;
-  volunteer_email: string | null;
-
-  event_title: string;
-  event_city: string;
-  event_country: string;
-  event_venue: string;
-  event_cover_url: string | null;
-  event_start_date: string;
-  event_end_date: string;
-  event_start_time: string | null;
-  event_end_time: string | null;
-
-  role_name: string;
-
-  shift_id: string | null;
-  shift_title: string | null;
-  shift_location: string | null;
-  shift_date: string | null;
-  shift_start_time: string | null;
-  shift_end_time: string | null;
-  assignment_status: string | null;
-}
-
-
-
 
 /*
  * ============================================================
@@ -290,34 +244,12 @@ export interface Training {
 
 export interface AttendanceRecord {
   id: string;
-
-  event_id: string;
-
   event_title: string;
-
   role_name: string;
-
   date: string;
-
   status: string;
-
   check_in_time: string | null;
-
   check_out_time: string | null;
-
-  notes: string | null;
-
-  venue: string | null;
-
-  city: string | null;
-
-  shift_title: string | null;
-
-  shift_start_time: string | null;
-
-  shift_end_time: string | null;
-
-  shift_location: string | null;
 }
 
 /*
@@ -507,7 +439,6 @@ export interface LabelledValue {
 export interface VolunteerHours {
   total: number;
   current_year: number;
-  events_completed: number;
   by_sport: LabelledValue[];
   by_event: LabelledValue[];
 }
