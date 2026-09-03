@@ -1,4 +1,36 @@
+// import { Link } from "@tanstack/react-router";
+// import {
+//   Award,
+//   ArrowRight,
+//   CalendarDays,
+//   CheckCircle2,
+//   Clock3,
+//   Download,
+//   ExternalLink,
+//   FileCheck2,
+//   MapPin,
+//   QrCode,
+//   ShieldCheck,
+//   Trophy,
+//   Users,
+// } from "lucide-react";
+// import { AppShell } from "@/components/app/AppShell";
+// import {
+//   VSAvatar,
+//   VSBadge,
+//   VSButton,
+//   VSCard,
+//   VSCardContent,
+//   VSEmptyState,
+//   VSNotificationItem,
+//   VSPageHeader,
+//   VSSectionHeader,
+//   VSStatCard,
+//   VSStatusBadge,
+//   VSTabs,
+// } from "@/components/design-system";
 import { volunteerContentService } from "@/services/volunteerContentService";
+// import { useAuth } from "@/lib/auth";
 
 
 import { useEffect, useRef, useState } from "react";
@@ -34,9 +66,9 @@ import {
 
 import { useAuth } from "@/lib/auth";
 
-import { getVolunteerDashboard, getVolunteerHours,   getAttendance, } from "@/services/backendService";
+import { getVolunteerDashboard } from "@/services/backendService";
 
-import { VolunteerDashboard, VolunteerHours, AttendanceRecord } from "@/lib/types";
+import { VolunteerDashboard } from "@/lib/types";
 
 import {
   eventService,
@@ -1012,275 +1044,166 @@ export function SchedulePage() {
 }
 
 export function HoursPage() {
-  const [hours, setHours] = useState<VolunteerHours | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-
-    async function loadHours() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const data = await getVolunteerHours();
-
-        if (mounted) {
-          setHours(data);
-        }
-      } catch (err: unknown) {
-        console.error("Failed to load volunteer hours:", err);
-
-        if (mounted) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Unable to load your volunteer hours.",
-          );
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadHours();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  if (loading) {
-    return (
-      <AppShell title="Volunteer hours">
-        <div className="mx-auto max-w-7xl space-y-8">
-          <VSPageHeader
-            eyebrow="Your impact"
-            title="Every hour counts"
-            description="Track the time, consistency, and community impact behind your volunteer journey."
-          />
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div
-                key={index}
-                className="h-32 animate-pulse rounded-[1.5rem] border border-border bg-muted/40"
-              />
-            ))}
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="h-80 animate-pulse rounded-[2rem] border border-border bg-muted/40" />
-            <div className="h-80 animate-pulse rounded-[2rem] border border-border bg-muted/40" />
-          </div>
-        </div>
-      </AppShell>
-    );
-  }
-
-  if (error || !hours) {
-    return (
-      <AppShell title="Volunteer hours">
-        <div className="mx-auto max-w-7xl space-y-8">
-          <VSPageHeader
-            eyebrow="Your impact"
-            title="Every hour counts"
-            description="Track the time, consistency, and community impact behind your volunteer journey."
-          />
-
-          <VSCard className="rounded-[2rem] border-border">
-            <VSCardContent className="p-6 sm:p-8">
-              <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
-                  <span className="font-bold text-destructive">
-                    !
-                  </span>
-                </div>
-
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground">
-                    Unable to load your volunteer hours
-                  </p>
-
-                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    {error ?? "Something went wrong."}
-                  </p>
-                </div>
-              </div>
-            </VSCardContent>
-          </VSCard>
-        </div>
-      </AppShell>
-    );
-  }
-
   return (
     <AppShell title="Volunteer hours">
-      <div className="mx-auto max-w-7xl space-y-8">
-        {/* Header */}
+      <div className="mx-auto max-w-7xl">
         <VSPageHeader
           eyebrow="Your impact"
           title="Every hour counts"
           description="Track the time, consistency, and community impact behind your volunteer journey."
         />
-
-        {/* Stats */}
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <VSStatCard
             label="Total hours"
-            value={hours.total}
-            description="Verified volunteer hours"
+            value={volunteerContentService.getHours().total}
             icon={<Clock3 className="h-5 w-5" />}
-            accent
           />
-
           <VSStatCard
             label="Current year"
-            value={hours.current_year}
-            description={`${new Date().getFullYear()} volunteer hours`}
+            value={volunteerContentService.getHours().currentYear}
             icon={<CalendarDays className="h-5 w-5" />}
+            accent
           />
-
           <VSStatCard
             label="Events completed"
-            value={hours.events_completed}
-            description="Events with recorded hours"
+            value={volunteerContentService.getHours().eventsCompleted}
             icon={<CheckCircle2 className="h-5 w-5" />}
           />
-        </section>
-
-        {/* Breakdown */}
-        <section className="grid gap-6 lg:grid-cols-2">
-          {/* By sport */}
+        </div>
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
           <VSCard className="rounded-[2rem] border-border">
-            <VSCardContent className="p-5 sm:p-8">
-              <VSSectionHeader
-                eyebrow="By sport"
-                title="Where your time goes"
-              />
-
-              {hours.by_sport.length > 0 ? (
-                <div className="mt-6 space-y-5">
-                  {hours.by_sport.map((item) => (
-                    <ProgressRow
-                      key={item.label}
-                      label={item.label}
-                      value={item.value}
-                      total={hours.total}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
-                  <Clock3 className="mx-auto h-8 w-8 text-muted-foreground" />
-
-                  <p className="mt-3 text-sm font-semibold text-foreground">
-                    No hours recorded yet
-                  </p>
-
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Your sports breakdown will appear here after you
-                    complete volunteer work.
-                  </p>
-                </div>
-              )}
+            <VSCardContent className="p-6 sm:p-8">
+              <VSSectionHeader eyebrow="By sport" title="Where your time goes" />
+              <div className="mt-6 space-y-5">
+                {volunteerContentService.getHours().bySport.map((item) => (
+                  <ProgressRow
+                    key={item.label}
+                    label={item.label}
+                    value={item.value}
+                    total={volunteerContentService.getHours().total}
+                  />
+                ))}
+              </div>
             </VSCardContent>
           </VSCard>
-
-          {/* By event */}
           <VSCard className="rounded-[2rem] border-border">
-            <VSCardContent className="p-5 sm:p-8">
-              <VSSectionHeader
-                eyebrow="By event"
-                title="Your event history"
-              />
-
-              {hours.by_event.length > 0 ? (
-                <div className="mt-6 space-y-5">
-                  {hours.by_event.map((item) => (
-                    <ProgressRow
-                      key={item.label}
-                      label={item.label}
-                      value={item.value}
-                      total={hours.total}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
-                  <CalendarDays className="mx-auto h-8 w-8 text-muted-foreground" />
-
-                  <p className="mt-3 text-sm font-semibold text-foreground">
-                    No event history yet
-                  </p>
-
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Your completed events and hours will appear here.
-                  </p>
-                </div>
-              )}
+            <VSCardContent className="p-6 sm:p-8">
+              <VSSectionHeader eyebrow="By event" title="Your event history" />
+              <div className="mt-6 space-y-5">
+                {volunteerContentService.getHours().byEvent.map((item) => (
+                  <ProgressRow
+                    key={item.label}
+                    label={item.label}
+                    value={item.value}
+                    total={volunteerContentService.getHours().total}
+                  />
+                ))}
+              </div>
             </VSCardContent>
           </VSCard>
-        </section>
+        </div>
       </div>
     </AppShell>
   );
 }
 
+export function AchievementsPage() {
+  return (
+    <AppShell title="Achievements">
+      <div className="mx-auto max-w-7xl">
+        <VSPageHeader
+          eyebrow="Keep growing"
+          title="Milestones worth celebrating"
+          description="Small commitments become a track record you can carry with you."
+        />
+        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {volunteerContentService.getAchievements().map((item) => (
+            <VSCard key={item.title} className="rounded-[1.75rem] border-border">
+              <VSCardContent className="p-6">
+                <Trophy
+                  className={
+                    item.unlocked ? "h-7 w-7 text-primary" : "h-7 w-7 text-muted-foreground"
+                  }
+                />
+                <div className="mt-5 flex items-center justify-between gap-3">
+                  <h2 className="text-lg font-semibold text-foreground">{item.title}</h2>
+                  <VSBadge variant={item.unlocked ? "soft" : "outline"}>
+                    {item.unlocked ? "Unlocked" : "Locked"}
+                  </VSBadge>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.description}</p>
+                <div className="mt-6 h-2 rounded-full bg-muted">
+                  <div
+                    className={
+                      item.unlocked
+                        ? "h-full rounded-full bg-primary"
+                        : "h-full rounded-full bg-muted-foreground/40"
+                    }
+                    style={{ width: `${item.progress}%` }}
+                  />
+                </div>
+                <p className="mt-2 text-xs font-semibold text-muted-foreground">
+                  {item.progress}% complete
+                </p>
+              </VSCardContent>
+            </VSCard>
+          ))}
+        </div>
+      </div>
+    </AppShell>
+  );
+}
 
-// export function CertificatesPage() {
-//   return (
-//     <AppShell title="Certificates">
-//       <div className="mx-auto max-w-7xl">
-//         <VSPageHeader
-//           eyebrow="Proof of impact"
-//           title="Certificates you have earned"
-//           description="Keep a record of the events and hours that shaped your volunteer journey."
-//         />
-//         <div className="mt-8 grid gap-5 lg:grid-cols-2">
-//           {volunteerContentService.getCertificates().map((certificate) => (
-//             <VSCard key={certificate.id} className="overflow-hidden rounded-[2rem] border-border">
-//               <div className="bg-ink p-7 text-white">
-//                 <div className="flex items-center justify-between">
-//                   <ShieldCheck className="h-7 w-7 text-primary" />
-//                   <span className="font-mono text-xs text-white/60">{certificate.id}</span>
-//                 </div>
-//                 <p className="mt-12 text-xs uppercase tracking-[0.22em] text-white/55">
-//                   Certificate of contribution
-//                 </p>
-//                 <h2 className="mt-3 text-2xl font-semibold">{certificate.event}</h2>
-//               </div>
-//               <VSCardContent className="p-6">
-//                 <div className="grid gap-4 sm:grid-cols-3">
-//                   <Info label="Role" value={certificate.role} />
-//                   <Info label="Hours" value={`${certificate.hours} hours`} />
-//                   <Info label="Issued" value={certificate.date} />
-//                 </div>
-//                 <div className="mt-6 flex flex-wrap gap-3">
-//                   <VSButton asChild size="sm">
-//                     <Link
-//                       to="/certificates/$certificateId"
-//                       params={{ certificateId: certificate.id }}
-//                     >
-//                       View details
-//                     </Link>
-//                   </VSButton>
-//                   <VSButton variant="outline" size="sm">
-//                     <Download className="h-4 w-4" />
-//                     Download
-//                   </VSButton>
-//                 </div>
-//               </VSCardContent>
-//             </VSCard>
-//           ))}
-//         </div>
-//       </div>
-//     </AppShell>
-//   );
-// }
+export function CertificatesPage() {
+  return (
+    <AppShell title="Certificates">
+      <div className="mx-auto max-w-7xl">
+        <VSPageHeader
+          eyebrow="Proof of impact"
+          title="Certificates you have earned"
+          description="Keep a record of the events and hours that shaped your volunteer journey."
+        />
+        <div className="mt-8 grid gap-5 lg:grid-cols-2">
+          {volunteerContentService.getCertificates().map((certificate) => (
+            <VSCard key={certificate.id} className="overflow-hidden rounded-[2rem] border-border">
+              <div className="bg-ink p-7 text-white">
+                <div className="flex items-center justify-between">
+                  <ShieldCheck className="h-7 w-7 text-primary" />
+                  <span className="font-mono text-xs text-white/60">{certificate.id}</span>
+                </div>
+                <p className="mt-12 text-xs uppercase tracking-[0.22em] text-white/55">
+                  Certificate of contribution
+                </p>
+                <h2 className="mt-3 text-2xl font-semibold">{certificate.event}</h2>
+              </div>
+              <VSCardContent className="p-6">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <Info label="Role" value={certificate.role} />
+                  <Info label="Hours" value={`${certificate.hours} hours`} />
+                  <Info label="Issued" value={certificate.date} />
+                </div>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <VSButton asChild size="sm">
+                    <Link
+                      to="/certificates/$certificateId"
+                      params={{ certificateId: certificate.id }}
+                    >
+                      View details
+                    </Link>
+                  </VSButton>
+                  <VSButton variant="outline" size="sm">
+                    <Download className="h-4 w-4" />
+                    Download
+                  </VSButton>
+                </div>
+              </VSCardContent>
+            </VSCard>
+          ))}
+        </div>
+      </div>
+    </AppShell>
+  );
+}
 
 export function TrainingPage() {
   const completed = volunteerContentService.getTraining().filter((item) => item.complete).length;
@@ -1410,218 +1333,122 @@ export function TrainingDetailPage({ trainingId }: { trainingId: string }) {
   );
 }
 
-// export function AccreditationPage() {
-//   return (
-//     <AppShell title="Accreditation">
-//       <div className="mx-auto max-w-3xl">
-//         <VSPageHeader
-//           eyebrow="Event access"
-//           title="Your accreditation"
-//           description="Keep your event credentials ready for arrival and check-in."
-//         />
-//         <VSCard className="mt-8 overflow-hidden rounded-[2rem] border-border">
-//           <div className="bg-ink p-6 text-white sm:p-8">
-//             <div className="flex items-start justify-between gap-5">
-//               <div>
-//                 <VSBadge variant="dark">
-//                   {volunteerContentService.getAccreditation().status}
-//                 </VSBadge>
-//                 <h2 className="mt-5 text-2xl font-semibold">
-//                   {volunteerContentService.getAccreditation().event}
-//                 </h2>
-//                 <p className="mt-2 text-sm text-white/65">
-//                   {volunteerContentService.getAccreditation().role} ·{" "}
-//                   {volunteerContentService.getAccreditation().zone}
-//                 </p>
-//               </div>
-//               <QrCode className="h-10 w-10 text-primary" />
-//             </div>
-//           </div>
-//           <VSCardContent className="grid gap-5 p-6 sm:grid-cols-2 sm:p-8">
-//             <Info label="Volunteer" value={volunteerContentService.getAccreditation().volunteer} />
-//             <Info
-//               label="Volunteer ID"
-//               value={volunteerContentService.getAccreditation().volunteerId}
-//             />
-//             <Info label="Event" value={volunteerContentService.getAccreditation().event} />
-//             <Info label="Zone" value={volunteerContentService.getAccreditation().zone} />
-//             <div className="flex aspect-square items-center justify-center rounded-3xl border-2 border-dashed border-border bg-muted/50 sm:col-span-2">
-//               <div className="text-center">
-//                 <QrCode className="mx-auto h-20 w-20 text-ink" />
-//                 <p className="mt-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-//                   QR placeholder
-//                 </p>
-//               </div>
-//             </div>
-//           </VSCardContent>
-//         </VSCard>
-//       </div>
-//     </AppShell>
-//   );
-// }
+export function AccreditationPage() {
+  return (
+    <AppShell title="Accreditation">
+      <div className="mx-auto max-w-3xl">
+        <VSPageHeader
+          eyebrow="Event access"
+          title="Your accreditation"
+          description="Keep your event credentials ready for arrival and check-in."
+        />
+        <VSCard className="mt-8 overflow-hidden rounded-[2rem] border-border">
+          <div className="bg-ink p-6 text-white sm:p-8">
+            <div className="flex items-start justify-between gap-5">
+              <div>
+                <VSBadge variant="dark">
+                  {volunteerContentService.getAccreditation().status}
+                </VSBadge>
+                <h2 className="mt-5 text-2xl font-semibold">
+                  {volunteerContentService.getAccreditation().event}
+                </h2>
+                <p className="mt-2 text-sm text-white/65">
+                  {volunteerContentService.getAccreditation().role} ·{" "}
+                  {volunteerContentService.getAccreditation().zone}
+                </p>
+              </div>
+              <QrCode className="h-10 w-10 text-primary" />
+            </div>
+          </div>
+          <VSCardContent className="grid gap-5 p-6 sm:grid-cols-2 sm:p-8">
+            <Info label="Volunteer" value={volunteerContentService.getAccreditation().volunteer} />
+            <Info
+              label="Volunteer ID"
+              value={volunteerContentService.getAccreditation().volunteerId}
+            />
+            <Info label="Event" value={volunteerContentService.getAccreditation().event} />
+            <Info label="Zone" value={volunteerContentService.getAccreditation().zone} />
+            <div className="flex aspect-square items-center justify-center rounded-3xl border-2 border-dashed border-border bg-muted/50 sm:col-span-2">
+              <div className="text-center">
+                <QrCode className="mx-auto h-20 w-20 text-ink" />
+                <p className="mt-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                  QR placeholder
+                </p>
+              </div>
+            </div>
+          </VSCardContent>
+        </VSCard>
+      </div>
+    </AppShell>
+  );
+}
 
 export function AttendancePage() {
-  const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-
-    async function loadAttendance() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const data = await getAttendance();
-
-        if (mounted) {
-          setAttendance(data);
-        }
-      } catch (err: unknown) {
-        console.error("Failed to load attendance:", err);
-
-        if (mounted) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Unable to load your attendance records.",
-          );
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadAttendance();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
   return (
     <AppShell title="Attendance">
       <div className="mx-auto max-w-6xl">
         <VSPageHeader
           eyebrow="Event day records"
           title="Your attendance"
-          description="Review your check-in and check-out records across your volunteer assignments."
+          description="Review check-in and check-out records across your volunteer assignments."
         />
-
-        {/* Loading */}
-        {loading && (
-          <div className="mt-8 space-y-4">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <div
-                key={index}
-                className="h-32 animate-pulse rounded-[1.75rem] border border-border bg-muted/40"
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Error */}
-        {!loading && error && (
-          <div className="mt-8">
-            <VSErrorState
-              title="Unable to load your attendance"
-              description={error}
-            />
-          </div>
-        )}
-
-        {/* Empty */}
-        {!loading && !error && attendance.length === 0 && (
-          <div className="mt-8">
-            <VSEmptyState
-              title="No attendance records yet"
-              description="Your check-in and check-out records will appear here when you attend your volunteer assignments."
-            />
-          </div>
-        )}
-
-        {/* Attendance records */}
-        {!loading && !error && attendance.length > 0 && (
-          <div className="mt-8 space-y-4">
-            {attendance.map((item) => (
-              <VSCard
-                key={item.id}
-                className="rounded-[1.75rem] border-border"
-              >
-                <VSCardContent className="p-5 sm:p-6">
-                  <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
-                    {/* Event information */}
-                    <div className="min-w-0">
-                      <VSStatusBadge status={item.status} />
-
-                      <h2 className="mt-3 text-lg font-semibold text-foreground">
-                        {item.event_title || "Volunteer event"}
-                      </h2>
-
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {item.role_name || "Volunteer role"} · {item.date}
-                      </p>
-                    </div>
-
-                    {/* Attendance times */}
-                    <div className="grid grid-cols-2 gap-6 sm:gap-8">
-                      <Info
-                        label="Check-in"
-                        value={item.check_in_time ?? "Not recorded"}
-                        icon={<Clock3 className="h-3.5 w-3.5" />}
-                      />
-
-                      <Info
-                        label="Check-out"
-                        value={item.check_out_time ?? "Not recorded"}
-                        icon={<CheckCircle2 className="h-3.5 w-3.5" />}
-                      />
-                    </div>
+        <div className="mt-8 space-y-4">
+          {volunteerContentService.getAttendance().map((item) => (
+            <VSCard key={item.id} className="rounded-[1.75rem] border-border">
+              <VSCardContent className="p-5 sm:p-6">
+                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                  <div>
+                    <VSStatusBadge status={item.status} />
+                    <h2 className="mt-3 text-lg font-semibold text-foreground">{item.event}</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {item.role} · {item.date}
+                    </p>
                   </div>
-                </VSCardContent>
-              </VSCard>
-            ))}
-          </div>
-        )}
+                  <div className="grid grid-cols-2 gap-5 text-sm">
+                    <Info label="Check-in" value={item.checkIn} />
+                    <Info label="Check-out" value={item.checkOut} />
+                  </div>
+                </div>
+              </VSCardContent>
+            </VSCard>
+          ))}
+        </div>
       </div>
     </AppShell>
   );
 }
 
-// export function NotificationsPage() {
-//   const unread = volunteerContentService.getNotifications().filter((item) => !item.read).length;
-//   return (
-//     <AppShell title="Notifications">
-//       <div className="mx-auto max-w-3xl">
-//         <VSPageHeader
-//           eyebrow="Stay in the loop"
-//           title="Notifications"
-//           description={`${unread} unread updates from your volunteer journey.`}
-//           action={
-//             <VSButton variant="outline" size="sm">
-//               Mark all read
-//             </VSButton>
-//           }
-//         />
-//         <div className="mt-8 space-y-3">
-//           {volunteerContentService.getNotifications().map((item) => (
-//             <VSNotificationItem
-//               key={item.id}
-//               title={item.title}
-//               description={item.body}
-//               timestamp={item.date}
-//               unread={!item.read}
-//               href="/notifications"
-//             />
-//           ))}
-//         </div>
-//       </div>
-//     </AppShell>
-//   );
-// }
+export function NotificationsPage() {
+  const unread = volunteerContentService.getNotifications().filter((item) => !item.read).length;
+  return (
+    <AppShell title="Notifications">
+      <div className="mx-auto max-w-3xl">
+        <VSPageHeader
+          eyebrow="Stay in the loop"
+          title="Notifications"
+          description={`${unread} unread updates from your volunteer journey.`}
+          action={
+            <VSButton variant="outline" size="sm">
+              Mark all read
+            </VSButton>
+          }
+        />
+        <div className="mt-8 space-y-3">
+          {volunteerContentService.getNotifications().map((item) => (
+            <VSNotificationItem
+              key={item.id}
+              title={item.title}
+              description={item.body}
+              timestamp={item.date}
+              unread={!item.read}
+              href="/notifications"
+            />
+          ))}
+        </div>
+      </div>
+    </AppShell>
+  );
+}
 
 function QuickAction({
   href,

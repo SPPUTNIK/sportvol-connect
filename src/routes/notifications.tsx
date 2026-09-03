@@ -1,13 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Bell,
-  CheckCircle2,
-  Info,
-  Megaphone,
-  ShieldCheck,
-  Award,
-} from "lucide-react";
+import { Bell, CheckCircle2, Info, Megaphone } from "lucide-react";
 
 import { AppShell } from "@/components/app/AppShell";
 import { notificationService } from "@/services/notificationService";
@@ -24,20 +17,14 @@ export const Route = createFileRoute("/notifications")({
 
 function getCategoryIcon(category: string) {
   switch (category.toLowerCase()) {
-    case "application":
+    case "applications":
       return <CheckCircle2 className="h-5 w-5" />;
 
-    case "event":
+    case "events":
       return <Megaphone className="h-5 w-5" />;
 
     case "training":
       return <Info className="h-5 w-5" />;
-
-    case "accreditation":
-      return <ShieldCheck className="h-5 w-5" />;
-
-    case "certificate":
-      return <Award className="h-5 w-5" />;
 
     default:
       return <Bell className="h-5 w-5" />;
@@ -47,77 +34,27 @@ function getCategoryIcon(category: string) {
 function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-  const [markingAll, setMarkingAll] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function loadNotifications() {
-    try {
-      setError(null);
-
-      const data = await notificationService.getNotifications();
-
-      setNotifications(data);
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to load notifications.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    loadNotifications();
+    notificationService
+      .getNotifications()
+      .then((data) => setNotifications(data))
+      .catch((err: unknown) => {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load notifications.",
+        );
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const unreadCount = notifications.filter(
     (notification) => !notification.read,
   ).length;
-
-  async function handleMarkAsRead(id: string) {
-    try {
-      await notificationService.markAsRead(id);
-
-      setNotifications((current) =>
-        current.map((notification) =>
-          notification.id === id
-            ? {
-                ...notification,
-                read: true,
-              }
-            : notification,
-        ),
-      );
-    } catch (err) {
-      console.error("[Notifications] Failed to mark as read:", err);
-    }
-  }
-
-  async function handleMarkAllAsRead() {
-    if (unreadCount === 0) return;
-
-    try {
-      setMarkingAll(true);
-
-      await notificationService.markAllAsRead();
-
-      setNotifications((current) =>
-        current.map((notification) => ({
-          ...notification,
-          read: true,
-        })),
-      );
-    } catch (err) {
-      console.error(
-        "[Notifications] Failed to mark all as read:",
-        err,
-      );
-    } finally {
-      setMarkingAll(false);
-    }
-  }
 
   return (
     <AppShell title="Notifications">
@@ -128,7 +65,7 @@ function Notifications() {
           <div>
             <p className="eyebrow">Notifications</p>
 
-            <h1 className="display-md mt-3">
+            <h1 className="display-md mt-3 text-ink-foreground">
               Stay up to date.
             </h1>
 
@@ -139,14 +76,10 @@ function Notifications() {
           </div>
 
           {unreadCount > 0 && (
-            <button
-              type="button"
-              onClick={handleMarkAllAsRead}
-              disabled={markingAll}
-              className="w-fit rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary/40 hover:text-primary disabled:opacity-50"
-            >
-              {markingAll ? "Marking…" : `Mark all as read (${unreadCount})`}
-            </button>
+            <div className="flex w-fit items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
+              <span className="h-2 w-2 rounded-full bg-primary" />
+              {unreadCount} unread
+            </div>
           )}
         </header>
 
@@ -165,15 +98,11 @@ function Notifications() {
           />
         ) : (
           <div className="space-y-4">
+
             {notifications.map((notification) => (
-              <button
+              <article
                 key={notification.id}
-                type="button"
-                onClick={() =>
-                  !notification.read &&
-                  handleMarkAsRead(notification.id)
-                }
-                className={`group w-full rounded-[2rem] border bg-card p-5 text-left shadow-[var(--shadow-lift)] transition hover:-translate-y-0.5 sm:p-6 ${
+                className={`group rounded-[2rem] border bg-card p-5 shadow-[var(--shadow-lift)] transition hover:-translate-y-0.5 sm:p-6 ${
                   notification.read
                     ? "border-border"
                     : "border-primary/30 bg-primary/[0.02]"
@@ -194,7 +123,9 @@ function Notifications() {
 
                   {/* Content */}
                   <div className="min-w-0 flex-1">
+
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
                           <h2 className="text-base font-semibold text-foreground sm:text-lg">
@@ -222,12 +153,12 @@ function Notifications() {
 
                     {!notification.read && (
                       <div className="mt-4 text-xs font-semibold text-primary">
-                        New notification · Click to mark as read
+                        New notification
                       </div>
                     )}
                   </div>
                 </div>
-              </button>
+              </article>
             ))}
           </div>
         )}
