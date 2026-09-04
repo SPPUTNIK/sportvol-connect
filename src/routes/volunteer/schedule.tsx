@@ -9,7 +9,7 @@ import { LoadingState } from "@/components/ui/loading-state";
 
 import type { Shift } from "@/lib/types";
 
-export const Route = createFileRoute("/schedule")({
+export const Route = createFileRoute("/volunteer/schedule")({
   component: Schedule,
 
   head: () => ({

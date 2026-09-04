@@ -25,7 +25,7 @@ function Login() {
   const { t } = useI18n();
   const { user, signIn, loading } = useAuth();
   const { next } = Route.useSearch();
-  const destination = safeNext(next) ?? "/dashboard";
+  const destination = safeNext(next) ?? "/volunteer/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);

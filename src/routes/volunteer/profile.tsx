@@ -31,7 +31,7 @@ import { profileService } from "@/services/profileService";
 
 import type { VolunteerProfile } from "@/lib/types";
 
-export const Route = createFileRoute("/profile")({
+export const Route = createFileRoute("/volunteer/profile")({
   component: Profile,
   head: () => ({
     meta: [{ title: "Profile | VolunSport Morocco" }],

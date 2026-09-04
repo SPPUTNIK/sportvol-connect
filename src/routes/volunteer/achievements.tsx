@@ -17,7 +17,7 @@ import {
 import { achievementsService } from "@/services/achievementsService";
 import type { DashboardAchievement } from "@/lib/types";
 
-export const Route = createFileRoute("/achievements")({
+export const Route = createFileRoute("/volunteer/achievements")({
   component: AchievementsPage,
 
   head: () => ({

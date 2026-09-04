@@ -18,7 +18,7 @@ import {
 
 import type { Certificate } from "@/lib/types";
 
-export const Route = createFileRoute("/certificates")({
+export const Route = createFileRoute("/volunteer/certificates")({
   component: Certificates,
 
   head: () => ({

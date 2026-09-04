@@ -23,7 +23,7 @@ import {
 import { attendanceService } from "@/services/attendanceService";
 import type { AttendanceRecord } from "@/lib/types";
 
-export const Route = createFileRoute("/attendance")({
+export const Route = createFileRoute("/volunteer/attendance")({
   component: Attendance,
   head: () => ({
     meta: [

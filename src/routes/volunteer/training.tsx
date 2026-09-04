@@ -21,7 +21,7 @@ import {
 import { trainingService } from "@/services/trainingService";
 import type { Training } from "@/lib/types";
 
-export const Route = createFileRoute("/training")({
+export const Route = createFileRoute("/volunteer/training")({
   component: TrainingPage,
   head: () => ({
     meta: [

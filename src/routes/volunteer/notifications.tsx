@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
 import type { Notification } from "@/lib/types";
 
-export const Route = createFileRoute("/notifications")({
+export const Route = createFileRoute("/volunteer/notifications")({
   component: Notifications,
   head: () => ({
     meta: [{ title: "Notifications | VolunSport Morocco" }],

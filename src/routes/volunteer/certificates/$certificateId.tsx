@@ -10,7 +10,7 @@ import {
 } from "@/components/design-system";
 import { volunteerContentService } from "@/services/volunteerContentService";
 
-export const Route = createFileRoute("/certificates/$certificateId")({
+export const Route = createFileRoute("/volunteer/certificates/$certificateId")({
   component: CertificateDetailRoute,
   head: ({ params }) => ({
     meta: [{ title: `Certificate · ${params.certificateId} | VolunSport Morocco` }],

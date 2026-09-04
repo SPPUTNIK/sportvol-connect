@@ -26,7 +26,7 @@ import { applicationService } from "@/services/applicationService";
 import { eventService } from "@/services/eventService";
 import { AppShell } from "@/components/app/AppShell";
 
-export const Route = createFileRoute("/events/$eventId")({
+export const Route = createFileRoute("/volunteer/events/$eventId")({
   component: EventDetails,
   head: ({ params }) => ({ meta: [{ title: `Event · ${params.eventId}` }] }),
 });

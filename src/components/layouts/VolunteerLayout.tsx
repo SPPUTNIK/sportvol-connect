@@ -48,32 +48,27 @@ export const volunteerNavigation: NavGroup[] = [
     items: [
       {
         label: "Dashboard",
-        href: "/dashboard",
+        href: "/volunteer/dashboard",
         icon: LayoutDashboard,
       },
       {
         label: "Discover Events",
-        href: "/events",
+        href: "/volunteer/events",
         icon: Search,
       },
       {
         label: "My Applications",
-        href: "/applications",
+        href: "/volunteer/applications",
         icon: CheckCircle2,
       },
       {
         label: "My Events",
-        href: "/my-events",
+        href: "/volunteer/my-events",
         icon: CalendarCheck,
       },
       {
-        label: "My Committees",
-        href: "/my/committees",
-        icon: Users,
-      },
-      {
         label: "Schedule",
-        href: "/schedule",
+        href: "/volunteer/schedule",
         icon: CalendarDays,
       },
     ],
@@ -83,17 +78,17 @@ export const volunteerNavigation: NavGroup[] = [
     items: [
       {
         label: "Volunteer Hours",
-        href: "/hours",
+        href: "/volunteer/hours",
         icon: Clock3,
       },
       {
         label: "Certificates",
-        href: "/certificates",
+        href: "/volunteer/certificates",
         icon: Award,
       },
       {
         label: "Achievements",
-        href: "/achievements",
+        href: "/volunteer/achievements",
         icon: Trophy,
       },
     ],
@@ -103,17 +98,17 @@ export const volunteerNavigation: NavGroup[] = [
     items: [
       {
         label: "Training",
-        href: "/training",
+        href: "/volunteer/training",
         icon: GraduationCap,
       },
       {
         label: "Accreditation",
-        href: "/accreditation",
+        href: "/volunteer/accreditation",
         icon: ShieldCheck,
       },
       {
         label: "Attendance",
-        href: "/attendance",
+        href: "/volunteer/attendance",
         icon: CalendarCheck,
       },
     ],
@@ -123,12 +118,12 @@ export const volunteerNavigation: NavGroup[] = [
     items: [
       {
         label: "My Profile",
-        href: "/profile",
+        href: "/volunteer/profile",
         icon: UserRound,
       },
       {
         label: "Notifications",
-        href: "/notifications",
+        href: "/volunteer/notifications",
         icon: Bell,
       },
       // {
@@ -213,7 +208,7 @@ function VolunteerNavigation({
               <div className="space-y-1">
                 {group.items.map(({ label, href, icon: Icon }) => {
                   const active = currentPath === href;
-                  const isNotifications = href === "/notifications";
+                  const isNotifications = href === "/volunteer/notifications";
 
                   return (
                     <Link
@@ -258,7 +253,7 @@ function VolunteerNavigation({
 
         {/* Profile card */}
         <Link
-          to="/profile"
+          to="/volunteer/profile"
           onClick={onNavigate}
           className="mt-8 rounded-3xl border border-border bg-background p-4 transition hover:border-primary/40"
         >
@@ -445,7 +440,7 @@ export function VolunteerLayout({
             <div className="flex items-center gap-2">
               {/* Notifications */}
               <Link
-                to="/notifications"
+                to="/volunteer/notifications"
                 className="relative rounded-xl border border-border p-2.5 text-muted-foreground transition hover:text-foreground"
                 aria-label={
                   unreadNotifications > 0
@@ -465,7 +460,7 @@ export function VolunteerLayout({
               </Link>
               {/* Profile */}
               <Link
-                to="/profile"
+                to="/volunteer/profile"
                 className="flex items-center gap-2 rounded-full border border-border bg-card py-1.5 pl-1.5 pr-3"
               >
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ink text-[0.65rem] font-semibold text-white">

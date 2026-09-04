@@ -29,7 +29,7 @@ import {
 
 import { QRCodeSVG } from "qrcode.react";
 
-export const Route = createFileRoute("/accreditation")({
+export const Route = createFileRoute("/volunteer/accreditation")({
   component: Accreditation,
   head: () => ({
     meta: [

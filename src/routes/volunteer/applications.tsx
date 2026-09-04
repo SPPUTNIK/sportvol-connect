@@ -27,7 +27,7 @@ import type {
   EventRole,
 } from "@/lib/types";
 
-export const Route = createFileRoute("/applications")({
+export const Route = createFileRoute("/volunteer/applications")({
   component: MyApplications,
 
   head: () => ({

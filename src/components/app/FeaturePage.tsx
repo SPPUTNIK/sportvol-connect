@@ -276,7 +276,7 @@ export function DashboardPage() {
           description="Everything you need to keep showing up for the moments that matter."
           action={
             <VSButton asChild>
-              <Link to="/events">
+              <Link to="/volunteer/events">
                 Discover events
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -304,7 +304,7 @@ export function DashboardPage() {
             </p>
 
             <Link
-              to={upcomingEvent ? "/my-events" : "/events"}
+              to={upcomingEvent ? "/volunteer/my-events" : "/volunteer/events"}
               className="mt-7 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
             >
               {upcomingEvent ? "View my event" : "Discover events"}
@@ -483,7 +483,7 @@ export function DashboardPage() {
                           className="w-full shrink-0 rounded-xl sm:w-auto"
                         >
                           <Link
-                            to="/events/$eventId"
+                            to="/volunteer/events/$eventId"
                             params={{
                               eventId: currentDashboardEvent.id,
                             }}
@@ -542,7 +542,7 @@ export function DashboardPage() {
                   </p>
 
                   <VSButton asChild className="mt-4">
-                    <Link to="/events">
+                    <Link to="/volunteer/events">
                       Browse events
                       <ArrowRight className="h-4 w-4" />
                     </Link>
@@ -594,7 +594,7 @@ export function DashboardPage() {
                 title="Recent applications"
                 action={
                   <Link
-                    to="/applications"
+                    to="/volunteer/applications"
                     className="shrink-0 text-xs font-semibold text-primary sm:text-sm"
                   >
                     View all
@@ -671,7 +671,7 @@ export function DashboardPage() {
                   </p>
 
                   <Link
-                    to="/events"
+                    to="/volunteer/events"
                     className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary"
                   >
                     Discover events
@@ -722,7 +722,7 @@ export function DashboardPage() {
                   </p>
 
                   <Link
-                    to="/profile"
+                    to="/volunteer/profile"
                     className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary"
                   >
                     {profileCompletion >= 100
@@ -745,7 +745,7 @@ export function DashboardPage() {
             title="Achievements"
             action={
               <Link
-                to="/achievements"
+                to="/volunteer/achievements"
                 className="text-sm font-semibold text-primary"
               >
                 See all
@@ -867,7 +867,7 @@ export function MyEventsPage() {
               description="Once an event team accepts your application, the event will appear here."
               action={
                 <Link
-                  to="/events"
+                  to="/volunteer/events"
                   className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
                 >
                   Browse events
@@ -937,7 +937,7 @@ export function MyEventsPage() {
 
                   <div className="mt-7 flex flex-wrap gap-4">
                     <Link
-                      to="/accreditation"
+                      to="/volunteer/accreditation"
                       className="inline-flex items-center gap-2 text-sm font-semibold text-primary"
                     >
                       View accreditation
@@ -945,7 +945,7 @@ export function MyEventsPage() {
                     </Link>
 
                     <Link
-                      to="/events/$eventId"
+                      to="/volunteer/events/$eventId"
                       params={{
                         eventId: item.eventId,
                       }}
@@ -1333,7 +1333,7 @@ export function TrainingPage() {
                   size="sm"
                   className="mt-6"
                 >
-                  <Link to="/training/$trainingId" params={{ trainingId: item.id }}>
+                  <Link to="/volunteer/training/$trainingId" params={{ trainingId: item.id }}>
                     {item.complete ? "Review module" : "Start module"}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
