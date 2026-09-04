@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Users,
   Search,
   Settings,
   ShieldCheck,
@@ -64,6 +65,11 @@ export const volunteerNavigation: NavGroup[] = [
         label: "My Events",
         href: "/my-events",
         icon: CalendarCheck,
+      },
+      {
+        label: "My Committees",
+        href: "/my/committees",
+        icon: Users,
       },
       {
         label: "Schedule",

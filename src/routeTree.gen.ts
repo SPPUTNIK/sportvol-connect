@@ -38,6 +38,7 @@ import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as AdminApplicationsRouteImport } from './routes/admin/applications'
 import { Route as AdminAttendanceRouteImport } from './routes/admin/attendance'
 import { Route as AdminCertificatesRouteImport } from './routes/admin/certificates'
+import { Route as AdminCommitteesRouteImport } from './routes/admin/committees'
 import { Route as AdminHoursRouteImport } from './routes/admin/hours'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminNotificationsRouteImport } from './routes/admin/notifications'
@@ -49,6 +50,7 @@ import { Route as AdminTrainingRouteImport } from './routes/admin/training'
 import { Route as CertificatesCertificateIdRouteImport } from './routes/certificates/$certificateId'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
+import { Route as MyCommitteesRouteImport } from './routes/my/committees'
 import { Route as TrainingTrainingIdRouteImport } from './routes/training/$trainingId'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
@@ -205,6 +207,11 @@ const AdminCertificatesRoute = AdminCertificatesRouteImport.update({
   path: '/certificates',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCommitteesRoute = AdminCommitteesRouteImport.update({
+  id: '/committees',
+  path: '/committees',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminHoursRoute = AdminHoursRouteImport.update({
   id: '/hours',
   path: '/hours',
@@ -259,6 +266,11 @@ const EventsIndexRoute = EventsIndexRouteImport.update({
 const EventsEventIdRoute = EventsEventIdRouteImport.update({
   id: '/events/$eventId',
   path: '/events/$eventId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyCommitteesRoute = MyCommitteesRouteImport.update({
+  id: '/my/committees',
+  path: '/my/committees',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TrainingTrainingIdRoute = TrainingTrainingIdRouteImport.update({
@@ -333,6 +345,7 @@ export interface FileRoutesByFullPath {
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
   '/admin/certificates': typeof AdminCertificatesRoute
+  '/admin/committees': typeof AdminCommitteesRoute
   '/admin/hours': typeof AdminHoursRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/notifications': typeof AdminNotificationsRoute
@@ -343,6 +356,7 @@ export interface FileRoutesByFullPath {
   '/admin/training': typeof AdminTrainingRoute
   '/certificates/$certificateId': typeof CertificatesCertificateIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/my/committees': typeof MyCommitteesRoute
   '/training/$trainingId': typeof TrainingTrainingIdRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
@@ -382,6 +396,7 @@ export interface FileRoutesByTo {
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
   '/admin/certificates': typeof AdminCertificatesRoute
+  '/admin/committees': typeof AdminCommitteesRoute
   '/admin/hours': typeof AdminHoursRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/notifications': typeof AdminNotificationsRoute
@@ -392,6 +407,7 @@ export interface FileRoutesByTo {
   '/admin/training': typeof AdminTrainingRoute
   '/certificates/$certificateId': typeof CertificatesCertificateIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/my/committees': typeof MyCommitteesRoute
   '/training/$trainingId': typeof TrainingTrainingIdRoute
   '/admin': typeof AdminIndexRoute
   '/events': typeof EventsIndexRoute
@@ -433,6 +449,7 @@ export interface FileRoutesById {
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
   '/admin/certificates': typeof AdminCertificatesRoute
+  '/admin/committees': typeof AdminCommitteesRoute
   '/admin/hours': typeof AdminHoursRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/notifications': typeof AdminNotificationsRoute
@@ -443,6 +460,7 @@ export interface FileRoutesById {
   '/admin/training': typeof AdminTrainingRoute
   '/certificates/$certificateId': typeof CertificatesCertificateIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/my/committees': typeof MyCommitteesRoute
   '/training/$trainingId': typeof TrainingTrainingIdRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
@@ -485,6 +503,7 @@ export interface FileRouteTypes {
     | '/admin/applications'
     | '/admin/attendance'
     | '/admin/certificates'
+    | '/admin/committees'
     | '/admin/hours'
     | '/admin/login'
     | '/admin/notifications'
@@ -495,6 +514,7 @@ export interface FileRouteTypes {
     | '/admin/training'
     | '/certificates/$certificateId'
     | '/events/$eventId'
+    | '/my/committees'
     | '/training/$trainingId'
     | '/admin/'
     | '/events/'
@@ -534,6 +554,7 @@ export interface FileRouteTypes {
     | '/admin/applications'
     | '/admin/attendance'
     | '/admin/certificates'
+    | '/admin/committees'
     | '/admin/hours'
     | '/admin/login'
     | '/admin/notifications'
@@ -544,6 +565,7 @@ export interface FileRouteTypes {
     | '/admin/training'
     | '/certificates/$certificateId'
     | '/events/$eventId'
+    | '/my/committees'
     | '/training/$trainingId'
     | '/admin'
     | '/events'
@@ -584,6 +606,7 @@ export interface FileRouteTypes {
     | '/admin/applications'
     | '/admin/attendance'
     | '/admin/certificates'
+    | '/admin/committees'
     | '/admin/hours'
     | '/admin/login'
     | '/admin/notifications'
@@ -594,6 +617,7 @@ export interface FileRouteTypes {
     | '/admin/training'
     | '/certificates/$certificateId'
     | '/events/$eventId'
+    | '/my/committees'
     | '/training/$trainingId'
     | '/admin/'
     | '/events/'
@@ -631,6 +655,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
+  MyCommitteesRoute: typeof MyCommitteesRoute
   EventsIndexRoute: typeof EventsIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -841,6 +866,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCertificatesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/committees': {
+      id: '/admin/committees'
+      path: '/committees'
+      fullPath: '/admin/committees'
+      preLoaderRoute: typeof AdminCommitteesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/hours': {
       id: '/admin/hours'
       path: '/hours'
@@ -918,6 +950,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsEventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/my/committees': {
+      id: '/my/committees'
+      path: '/my/committees'
+      fullPath: '/my/committees'
+      preLoaderRoute: typeof MyCommitteesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/training/$trainingId': {
       id: '/training/$trainingId'
       path: '/$trainingId'
@@ -983,6 +1022,7 @@ interface AdminRouteChildren {
   AdminApplicationsRoute: typeof AdminApplicationsRoute
   AdminAttendanceRoute: typeof AdminAttendanceRoute
   AdminCertificatesRoute: typeof AdminCertificatesRoute
+  AdminCommitteesRoute: typeof AdminCommitteesRoute
   AdminHoursRoute: typeof AdminHoursRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
@@ -1005,6 +1045,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminApplicationsRoute: AdminApplicationsRoute,
   AdminAttendanceRoute: AdminAttendanceRoute,
   AdminCertificatesRoute: AdminCertificatesRoute,
+  AdminCommitteesRoute: AdminCommitteesRoute,
   AdminHoursRoute: AdminHoursRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
@@ -1073,6 +1114,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   EventsEventIdRoute: EventsEventIdRoute,
+  MyCommitteesRoute: MyCommitteesRoute,
   EventsIndexRoute: EventsIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,

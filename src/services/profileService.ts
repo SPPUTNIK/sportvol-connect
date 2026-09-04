@@ -543,4 +543,21 @@ export const profileService = {
       throw error;
     }
   },
+
+  async searchProfiles(query: string): Promise<Array<{ id: string; first_name: string | null; last_name: string | null; avatar_url: string | null; email: string | null }>> {
+    const q = query.trim();
+    if (!q) return [];
+
+    const ilike = `%${q.replace(/%/g, "\\%")}%`;
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, first_name, last_name, avatar_url, email")
+      .or(`first_name.ilike.${ilike},last_name.ilike.${ilike},email.ilike.${ilike}`)
+      .limit(30);
+
+    if (error) throw error;
+
+    return (data ?? []).map((r: any) => ({ id: r.id, first_name: r.first_name ?? null, last_name: r.last_name ?? null, avatar_url: r.avatar_url ?? null, email: r.email ?? null }));
+  },
 };

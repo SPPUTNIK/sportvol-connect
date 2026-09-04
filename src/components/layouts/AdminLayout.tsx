@@ -62,6 +62,11 @@ export const adminNavigation: AdminNavGroup[] = [
         icon: CalendarDays,
       },
       {
+        label: "Committees",
+        href: "/admin/committees",
+        icon: Users,
+      },
+      {
         label: "Roles",
         href: "/admin/roles",
         icon: Users,

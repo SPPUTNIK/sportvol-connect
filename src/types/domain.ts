@@ -398,6 +398,47 @@ export interface AdminNotification {
 // Admin dashboard
 // ============================================================
 
+// ============================================================
+// Committees
+// ============================================================
+
+export interface Committee {
+  id: string;
+  eventId: string;
+  name: string;
+  description?: string | null;
+  leaderProfileId?: string | null;
+  status: "active" | "inactive" | "archived";
+  createdAt: string;
+  updatedAt: string;
+  // Note: DB fields use snake_case; domain model uses camelCase.
+}
+
+export interface CommitteeMember {
+  id: string;
+  committeeId: string;
+  profileId: string;
+  eventRoleId?: string | null;
+  status: "assigned" | "removed" | "completed";
+  joinedAt: string;
+}
+
+export interface CommitteeFeedback {
+  id: string;
+  eventId: string;
+  committeeId: string;
+  memberProfileId: string;
+  leaderProfileId: string;
+  punctuality: number;
+  teamwork: number;
+  communication: number;
+  responsibility: number;
+  overallRating: number;
+  comment?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AdminStats {
   volunteers: number;
   upcomingEvents: number;

@@ -435,3 +435,230 @@ create trigger volunteer_hours_set_updated_at before update on volunteer_hours f
 create trigger certificates_set_updated_at before update on certificates for each row execute function trigger_set_updated_at();
 create trigger notifications_set_updated_at before update on notifications for each row execute function trigger_set_updated_at();
 create trigger reports_set_updated_at before update on reports for each row execute function trigger_set_updated_at();
+
+-- ============================================================
+-- Committees feature
+-- ============================================================
+-- Enums for committees
+-- Live DB enums: keep in sync with generated types
+create type committee_status as enum ('active', 'inactive', 'archived');
+create type committee_member_status as enum ('assigned', 'removed', 'completed');
+
+create table if not exists committees (
+  id uuid primary key default gen_random_uuid(),
+  event_id uuid not null references events(id) on delete cascade,
+  name text not null,
+  description text,
+  leader_profile_id uuid references profiles(id) on delete set null,
+  status committee_status not null default 'draft',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint committees_event_name_unique unique (event_id, name)
+);
+
+create index if not exists committees_event_id_idx on committees (event_id);
+create index if not exists committees_leader_profile_id_idx on committees (leader_profile_id);
+
+create table if not exists committee_members (
+  id uuid primary key default gen_random_uuid(),
+  committee_id uuid not null references committees(id) on delete cascade,
+  profile_id uuid not null references profiles(id) on delete cascade,
+  event_role_id uuid references event_roles(id) on delete set null,
+  status committee_member_status not null default 'assigned',
+  joined_at timestamptz not null default now(),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint committee_members_unique unique (committee_id, profile_id)
+);
+
+create index if not exists committee_members_committee_id_idx on committee_members (committee_id);
+create index if not exists committee_members_profile_id_idx on committee_members (profile_id);
+
+create table if not exists committee_feedback (
+  id uuid primary key default gen_random_uuid(),
+  committee_id uuid not null references committees(id) on delete cascade,
+  event_id uuid not null references events(id) on delete cascade,
+  member_profile_id uuid not null references profiles(id) on delete cascade,
+  leader_profile_id uuid not null references profiles(id) on delete cascade,
+  punctuality integer not null check (punctuality >= 1 and punctuality <= 5),
+  teamwork integer not null check (teamwork >= 1 and teamwork <= 5),
+  communication integer not null check (communication >= 1 and communication <= 5),
+  responsibility integer not null check (responsibility >= 1 and responsibility <= 5),
+  overall_rating integer not null check (overall_rating >= 1 and overall_rating <= 5),
+  comment text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists committee_feedback_committee_id_idx on committee_feedback (committee_id);
+create index if not exists committee_feedback_member_profile_id_idx on committee_feedback (member_profile_id);
+
+-- Helper functions for committee authorization
+create or replace function is_committee_member(p_committee uuid) returns boolean
+  language sql stable security definer
+  set search_path = public
+as $$
+  select exists(
+    select 1 from committee_members cm
+    where cm.committee_id = p_committee
+      and cm.profile_id = auth.uid()
+      and cm.status = 'assigned'
+  );
+$$;
+
+create or replace function is_committee_leader(p_committee uuid) returns boolean
+  language sql stable security definer
+  set search_path = public
+as $$
+  select exists(
+    select 1 from committees c
+    where c.id = p_committee
+      and (c.leader_profile_id = auth.uid() or exists(
+        select 1 from committee_members cm
+        where cm.committee_id = p_committee
+          and cm.profile_id = auth.uid()
+          and cm.status = 'assigned'
+      ))
+  );
+$$;
+
+create or replace function leads_committee_with_member(p_committee uuid, p_member uuid) returns boolean
+  language sql stable security definer
+  set search_path = public
+as $$
+  select exists(
+    select 1 from committees c
+    where c.id = p_committee
+      and (c.leader_profile_id = auth.uid() or exists(
+        select 1 from committee_members cm
+        where cm.committee_id = p_committee
+          and cm.profile_id = auth.uid()
+          and cm.role_in_committee = 'leader'
+          and cm.status = 'active'
+      ))
+      and exists(
+        select 1 from committee_members m
+        where m.committee_id = p_committee
+          and m.profile_id = p_member
+          and m.status = 'active'
+      )
+  );
+$$;
+
+-- Enable RLS and policies
+alter table committees enable row level security;
+create policy committees_select on committees for select using (
+  is_admin() or is_committee_leader(id) or is_committee_member(id)
+);
+create policy committees_insert on committees for insert with check (is_admin());
+create policy committees_update on committees for update using (is_admin()) with check (is_admin());
+create policy committees_delete on committees for delete using (is_admin());
+
+alter table committee_members enable row level security;
+create policy committee_members_select on committee_members for select using (
+  is_admin() or exists(select 1 from committees c where c.id = committee_id and (c.leader_profile_id = auth.uid() or is_committee_member(committee_id))) or profile_id = auth.uid()
+);
+create policy committee_members_insert on committee_members for insert with check (is_admin());
+create policy committee_members_update on committee_members for update using (is_admin()) with check (is_admin());
+create policy committee_members_delete on committee_members for delete using (is_admin());
+
+alter table committee_feedback enable row level security;
+create policy committee_feedback_select on committee_feedback for select using (
+  is_admin() or is_committee_leader(committee_id) or member_profile_id = auth.uid()
+);
+create policy committee_feedback_insert on committee_feedback for insert with check (
+  is_admin() or (
+    exists(select 1 from committees c where c.id = committee_id and c.leader_profile_id = auth.uid())
+    and exists(select 1 from committee_members cm where cm.committee_id = committee_id and cm.profile_id = member_profile_id and cm.status = 'active')
+  )
+);
+create policy committee_feedback_update on committee_feedback for update using (is_admin()) with check (is_admin());
+create policy committee_feedback_delete on committee_feedback for delete using (is_admin());
+
+-- Triggers
+create trigger committees_set_updated_at before update on committees for each row execute function trigger_set_updated_at();
+create trigger committee_members_set_updated_at before update on committee_members for each row execute function trigger_set_updated_at();
+create trigger committee_feedback_set_updated_at before update on committee_feedback for each row execute function trigger_set_updated_at();
+
+-- ============================================================
+-- Integrity constraints and consistency triggers for Committees
+-- ============================================================
+
+-- 1) Ensure committee_members.event_role_id (when not null) belongs to the same event as the committee
+create or replace function check_committee_member_event_role_consistency() returns trigger
+  language plpgsql security definer
+  set search_path = public
+as $$
+begin
+  if (NEW.event_role_id is not null) then
+    if not exists(
+      select 1
+      from event_roles er
+      join committees c on c.id = NEW.committee_id
+      where er.id = NEW.event_role_id
+        and er.event_id = c.event_id
+    ) then
+      raise exception 'event_role_id % does not belong to the same event as committee %', NEW.event_role_id, NEW.committee_id;
+    end if;
+  end if;
+  return NEW;
+end;
+$$;
+
+create trigger committee_members_event_role_check
+  before insert or update on committee_members
+  for each row execute function check_committee_member_event_role_consistency();
+
+-- 2) Ensure committee_feedback.event_id matches committee.event_id, leader_profile_id matches committee.leader_profile_id,
+--    and member_profile_id is an active member of the committee.
+create or replace function check_committee_feedback_consistency() returns trigger
+  language plpgsql security definer
+  set search_path = public
+as $$
+begin
+  -- verify committee exists and event_id matches
+  if not exists(select 1 from committees c where c.id = NEW.committee_id and c.event_id = NEW.event_id) then
+    raise exception 'committee % does not belong to event %', NEW.committee_id, NEW.event_id;
+  end if;
+
+  -- verify leader_profile_id matches committee leader
+  if not exists(select 1 from committees c where c.id = NEW.committee_id and c.leader_profile_id = NEW.leader_profile_id) then
+    raise exception 'leader_profile_id % is not the leader of committee %', NEW.leader_profile_id, NEW.committee_id;
+  end if;
+
+  -- verify member_profile_id is active member of the committee
+  if not exists(select 1 from committee_members cm where cm.committee_id = NEW.committee_id and cm.profile_id = NEW.member_profile_id and cm.status = 'active') then
+    raise exception 'member_profile_id % is not an active member of committee %', NEW.member_profile_id, NEW.committee_id;
+  end if;
+
+  return NEW;
+end;
+$$;
+
+create trigger committee_feedback_consistency_check
+  before insert or update on committee_feedback
+  for each row execute function check_committee_feedback_consistency();
+
+-- 3) Add unique constraint for (committee_id, member_profile_id, leader_profile_id) if no duplicates exist
+do $$
+begin
+  if exists(
+    select 1 from (
+      select committee_id, member_profile_id, leader_profile_id, count(*) as cnt
+      from committee_feedback
+      group by committee_id, member_profile_id, leader_profile_id
+      having count(*) > 1
+    ) t
+  ) then
+    -- duplicates exist; skip creating unique index to avoid failing migrations
+    raise notice 'Skipping creation of unique index committee_feedback_unique_idx because duplicates exist';
+  else
+    perform (
+      case when (select count(*) from pg_indexes where indexname = 'committee_feedback_unique_idx') = 0
+      then (
+        execute 'create unique index if not exists committee_feedback_unique_idx on committee_feedback (committee_id, member_profile_id, leader_profile_id)'
+      ) else null end
+    );
+  end if;
+end;
+$$;

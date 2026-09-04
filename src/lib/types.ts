@@ -512,3 +512,49 @@ export interface VolunteerHours {
   by_event: LabelledValue[];
 }
 
+/*
+ * ============================================================
+ * COMMITTEES
+ * ============================================================
+ */
+
+export interface Committee {
+  id: string;
+  event_id: string;
+  name: string;
+  description: string | null;
+  leader_profile_id: string | null;
+  status: "draft" | "active" | "closed";
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CommitteeMember {
+  id: string;
+  committee_id: string;
+  profile_id: string;
+  event_role_id: string | null;
+  role_in_committee: string;
+  status: "active" | "removed";
+  joined_at: string;
+  created_at: string;
+  updated_at: string;
+  profile?: Profile | null;
+}
+
+export interface CommitteeFeedback {
+  id: string;
+  committee_id: string;
+  event_id: string;
+  member_profile_id: string;
+  leader_profile_id: string;
+  punctuality: number;
+  teamwork: number;
+  communication: number;
+  responsibility: number;
+  overall_rating: number;
+  comment: string | null;
+  created_at: string;
+  updated_at: string;
+}
+

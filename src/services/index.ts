@@ -4,6 +4,7 @@ export { applicationService } from "./applicationService";
 export { attendanceService } from "./attendanceService";
 export { certificateService } from "./certificateService";
 export { eventService } from "./eventService";
+export { committeeService } from "./committeeService";
 export { notificationService } from "./notificationService";
 export { trainingService } from "./trainingService";
 export { scheduleService } from "./scheduleService";
