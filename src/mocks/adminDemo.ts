@@ -478,8 +478,7 @@ export const adminNotifications = [
     event_id: "event-002",
     event: "Rabat Beach Games",
 
-    message:
-      "The volunteer hub will be open from 07:00 to 19:00 during the event weekend.",
+    message: "The volunteer hub will be open from 07:00 to 19:00 during the event weekend.",
 
     sent_at: null,
 
@@ -638,8 +637,7 @@ export const adminRoles = [
     name: "Accreditation support",
     event_id: "event-001",
     event: "Marrakech International Marathon",
-    description:
-      "Support accreditation checks, badge distribution, and volunteer access control.",
+    description: "Support accreditation checks, badge distribution, and volunteer access control.",
     volunteers: 8,
     required: 10,
     status: "Open",

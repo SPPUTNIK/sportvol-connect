@@ -1,11 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-  Bell,
-  CheckCheck,
-  Clock3,
-  Send,
-  Trash2,
-} from "lucide-react";
+import { Bell, CheckCheck, Clock3, Send, Trash2 } from "lucide-react";
 
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 
@@ -19,7 +13,7 @@ import {
   VSStatusBadge,
 } from "@/components/design-system";
 
-import { adminService } from "@/services/adminService";
+import { adminService } from "@/services/admin/adminService";
 
 function formatDate(date: string | null) {
   if (!date) return "Not sent";
@@ -49,28 +43,18 @@ export function AdminNotificationsPage() {
    */
   const notifications = adminService.getNotifications();
 
-  const [readNotifications, setReadNotifications] = useState<
-    string[]
-  >([]);
+  const [readNotifications, setReadNotifications] = useState<string[]>([]);
 
-  const [deletedNotifications, setDeletedNotifications] =
-    useState<string[]>([]);
+  const [deletedNotifications, setDeletedNotifications] = useState<string[]>([]);
 
   const visibleNotifications = useMemo(() => {
     return notifications
-      .filter(
-        (notification) =>
-          !deletedNotifications.includes(notification.id),
-      )
+      .filter((notification) => !deletedNotifications.includes(notification.id))
       .map((notification) => ({
         ...notification,
         read: readNotifications.includes(notification.id),
       }));
-  }, [
-    notifications,
-    readNotifications,
-    deletedNotifications,
-  ]);
+  }, [notifications, readNotifications, deletedNotifications]);
 
   const filteredNotifications = useMemo(() => {
     const normalizedQuery = query.toLowerCase().trim();
@@ -83,51 +67,32 @@ export function AdminNotificationsPage() {
           .includes(normalizedQuery);
 
       const matchesCategory =
-        category === "all" ||
-        normalize(notification.category) ===
-          normalize(category);
+        category === "all" || normalize(notification.category) === normalize(category);
 
       return matchesQuery && matchesCategory;
     });
-  }, [
-    visibleNotifications,
-    query,
-    category,
-  ]);
+  }, [visibleNotifications, query, category]);
 
-  const unreadCount = visibleNotifications.filter(
-    (notification) => !notification.read,
-  ).length;
+  const unreadCount = visibleNotifications.filter((notification) => !notification.read).length;
 
   const sentCount = visibleNotifications.filter(
     (notification) => notification.status === "sent",
   ).length;
 
   function markAsRead(id: string) {
-    setReadNotifications((current) =>
-      current.includes(id) ? current : [...current, id],
-    );
+    setReadNotifications((current) => (current.includes(id) ? current : [...current, id]));
   }
 
   function markAllAsRead() {
-    setReadNotifications(
-      visibleNotifications.map(
-        (notification) => notification.id,
-      ),
-    );
+    setReadNotifications(visibleNotifications.map((notification) => notification.id));
   }
 
   function deleteNotification(id: string) {
-    setDeletedNotifications((current) =>
-      current.includes(id) ? current : [...current, id],
-    );
+    setDeletedNotifications((current) => (current.includes(id) ? current : [...current, id]));
   }
 
   return (
-    <AdminLayout
-      title="Notifications"
-      eyebrow="Communication"
-    >
+    <AdminLayout title="Notifications" eyebrow="Communication">
       <div className="mx-auto max-w-7xl">
         <VSPageHeader
           eyebrow="Communication"
@@ -135,10 +100,7 @@ export function AdminNotificationsPage() {
           description="Create, review, and manage announcements sent to volunteers and event teams."
           action={
             unreadCount > 0 ? (
-              <VSButton
-                variant="outline"
-                onClick={markAllAsRead}
-              >
+              <VSButton variant="outline" onClick={markAllAsRead}>
                 <CheckCheck className="h-4 w-4" />
                 Mark all as read
               </VSButton>
@@ -156,13 +118,9 @@ export function AdminNotificationsPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Total
-                  </p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">Total</p>
 
-                  <p className="mt-1 text-2xl font-semibold">
-                    {visibleNotifications.length}
-                  </p>
+                  <p className="mt-1 text-2xl font-semibold">{visibleNotifications.length}</p>
                 </div>
               </div>
             </VSCardContent>
@@ -176,13 +134,9 @@ export function AdminNotificationsPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Unread
-                  </p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">Unread</p>
 
-                  <p className="mt-1 text-2xl font-semibold">
-                    {unreadCount}
-                  </p>
+                  <p className="mt-1 text-2xl font-semibold">{unreadCount}</p>
                 </div>
               </div>
             </VSCardContent>
@@ -196,13 +150,9 @@ export function AdminNotificationsPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Sent
-                  </p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">Sent</p>
 
-                  <p className="mt-1 text-2xl font-semibold">
-                    {sentCount}
-                  </p>
+                  <p className="mt-1 text-2xl font-semibold">{sentCount}</p>
                 </div>
               </div>
             </VSCardContent>
@@ -214,18 +164,14 @@ export function AdminNotificationsPage() {
           <div className="flex-1">
             <VSInput
               value={query}
-              onChange={(event) =>
-                setQuery(event.target.value)
-              }
+              onChange={(event) => setQuery(event.target.value)}
               placeholder="Search notifications..."
             />
           </div>
 
           <select
             value={category}
-            onChange={(event) =>
-              setCategory(event.target.value)
-            }
+            onChange={(event) => setCategory(event.target.value)}
             className="h-11 rounded-2xl border border-border bg-card px-4 text-sm"
           >
             <option value="all">All categories</option>
@@ -247,9 +193,7 @@ export function AdminNotificationsPage() {
               <VSCard
                 key={notification.id}
                 className={`rounded-[1.75rem] border-border transition ${
-                  !notification.read
-                    ? "border-primary/30 bg-primary/[0.025]"
-                    : ""
+                  !notification.read ? "border-primary/30 bg-primary/[0.025]" : ""
                 }`}
               >
                 <VSCardContent className="p-6">
@@ -278,9 +222,7 @@ export function AdminNotificationsPage() {
                             </span>
                           )}
 
-                          <VSStatusBadge
-                            status={notification.status}
-                          />
+                          <VSStatusBadge status={notification.status} />
                         </div>
 
                         <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -290,33 +232,23 @@ export function AdminNotificationsPage() {
                         {/* Metadata */}
                         <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
                           <span>
-                            <strong className="font-medium text-foreground">
-                              Audience:
-                            </strong>{" "}
+                            <strong className="font-medium text-foreground">Audience:</strong>{" "}
                             {notification.audience}
                           </span>
 
                           <span>
-                            <strong className="font-medium text-foreground">
-                              Category:
-                            </strong>{" "}
+                            <strong className="font-medium text-foreground">Category:</strong>{" "}
                             {notification.category}
                           </span>
 
                           <span>
-                            <strong className="font-medium text-foreground">
-                              Event:
-                            </strong>{" "}
+                            <strong className="font-medium text-foreground">Event:</strong>{" "}
                             {notification.event}
                           </span>
 
                           <span>
-                            <strong className="font-medium text-foreground">
-                              Sent:
-                            </strong>{" "}
-                            {formatDate(
-                              notification.sentAt,
-                            )}
+                            <strong className="font-medium text-foreground">Sent:</strong>{" "}
+                            {formatDate(notification.sentAt)}
                           </span>
                         </div>
                       </div>
@@ -328,9 +260,7 @@ export function AdminNotificationsPage() {
                         <VSButton
                           variant="outline"
                           size="sm"
-                          onClick={() =>
-                            markAsRead(notification.id)
-                          }
+                          onClick={() => markAsRead(notification.id)}
                         >
                           <CheckCheck className="h-4 w-4" />
                           Mark read
@@ -340,11 +270,7 @@ export function AdminNotificationsPage() {
                       <VSButton
                         variant="outline"
                         size="sm"
-                        onClick={() =>
-                          deleteNotification(
-                            notification.id,
-                          )
-                        }
+                        onClick={() => deleteNotification(notification.id)}
                         aria-label={`Delete ${notification.title}`}
                       >
                         <Trash2 className="h-4 w-4" />

@@ -1,29 +1,12 @@
-import {
-  BadgeCheck,
-  CheckCircle2,
-  Clock3,
-  Plus,
-  Search,
-  XCircle,
-} from "lucide-react";
+import { BadgeCheck, CheckCircle2, Clock3, Plus, Search, XCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { AdminLayout } from "@/components/layouts/AdminLayout";
-import {
-  VSButton,
-  VSCard,
-  VSCardContent,
-  VSInput,
-  VSPageHeader,
-} from "@/components/design-system";
+import { VSButton, VSCard, VSCardContent, VSInput, VSPageHeader } from "@/components/design-system";
 
-import { adminService } from "@/services/adminService";
+import { adminService } from "@/services/admin/adminService";
 
-function StatusIcon({
-  status,
-}: {
-  status: string;
-}) {
+function StatusIcon({ status }: { status: string }) {
   if (status === "Approved") {
     return <CheckCircle2 className="h-4 w-4" />;
   }
@@ -48,13 +31,7 @@ export function AdminAccreditationPage() {
     }
 
     return accreditations.filter((item) =>
-      [
-        item.volunteer,
-        item.event,
-        item.role,
-        item.badge,
-        item.status,
-      ]
+      [item.volunteer, item.event, item.role, item.badge, item.status]
         .join(" ")
         .toLowerCase()
         .includes(normalized),
@@ -82,9 +59,7 @@ export function AdminAccreditationPage() {
 
             <VSInput
               value={query}
-              onChange={(event) =>
-                setQuery(event.target.value)
-              }
+              onChange={(event) => setQuery(event.target.value)}
               placeholder="Search volunteers, events, or badge IDs"
               className="pl-11"
             />
@@ -93,10 +68,7 @@ export function AdminAccreditationPage() {
 
         <div className="mt-6 grid gap-4">
           {rows.map((item) => (
-            <VSCard
-              key={item.id}
-              className="rounded-[1.75rem] border-border"
-            >
+            <VSCard key={item.id} className="rounded-[1.75rem] border-border">
               <VSCardContent className="p-6">
                 <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex items-start gap-4">
@@ -105,19 +77,14 @@ export function AdminAccreditationPage() {
                     </div>
 
                     <div>
-                      <h2 className="font-semibold">
-                        {item.volunteer}
-                      </h2>
+                      <h2 className="font-semibold">{item.volunteer}</h2>
 
                       <p className="mt-1 text-sm text-muted-foreground">
                         {item.event} · {item.role}
                       </p>
 
                       <p className="mt-2 text-xs text-muted-foreground">
-                        Badge ID:{" "}
-                        <span className="font-medium text-foreground">
-                          {item.badge}
-                        </span>
+                        Badge ID: <span className="font-medium text-foreground">{item.badge}</span>
                       </p>
                     </div>
                   </div>
@@ -128,10 +95,7 @@ export function AdminAccreditationPage() {
                       {item.status}
                     </span>
 
-                    <VSButton
-                      variant="outline"
-                      size="sm"
-                    >
+                    <VSButton variant="outline" size="sm">
                       Review
                     </VSButton>
                   </div>

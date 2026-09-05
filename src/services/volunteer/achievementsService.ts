@@ -38,7 +38,6 @@ async function getCurrentUserId(): Promise<string> {
     throw new Error("You must be signed in.");
   }
 
-
   return user.id;
 }
 
@@ -46,13 +45,13 @@ export const achievementsService = {
   async getAchievements(): Promise<DashboardAchievement[]> {
     const profileId = await getCurrentUserId();
 
-
     /*
      * 1. Get all active achievement definitions.
      */
     const { data: definitions, error: definitionsError } = await supabase
       .from("achievement_definitions")
-      .select(`
+      .select(
+        `
         id,
         code,
         title,
@@ -63,10 +62,10 @@ export const achievementsService = {
         requirement_value,
         points,
         active
-      `)
+      `,
+      )
       .eq("active", true)
       .order("created_at", { ascending: true });
-
 
     if (definitionsError) {
       throw definitionsError;
@@ -75,21 +74,19 @@ export const achievementsService = {
     /*
      * 2. Get this volunteer's achievement progress.
      */
-    const {
-      data: profileAchievements,
-      error: progressError,
-    } = await supabase
+    const { data: profileAchievements, error: progressError } = await supabase
       .from("profile_achievements")
-      .select(`
+      .select(
+        `
         id,
         profile_id,
         achievement_id,
         progress,
         unlocked,
         unlocked_at
-      `)
+      `,
+      )
       .eq("profile_id", profileId);
-
 
     if (progressError) {
       throw progressError;
@@ -107,9 +104,7 @@ export const achievementsService = {
     /*
      * 4. Merge definitions with volunteer progress.
      */
-    const achievements = (
-      (definitions ?? []) as AchievementDefinitionRow[]
-    ).map((definition) => {
+    const achievements = ((definitions ?? []) as AchievementDefinitionRow[]).map((definition) => {
       const profileAchievement = progressMap.get(definition.id);
 
       const rawProgress = profileAchievement?.progress ?? 0;
@@ -125,29 +120,22 @@ export const achievementsService = {
        * => 50%
        */
       if (definition.requirement_value > 0) {
-        progress = Math.round(
-          (rawProgress / definition.requirement_value) * 100,
-        );
+        progress = Math.round((rawProgress / definition.requirement_value) * 100);
       }
 
       progress = Math.max(0, Math.min(100, progress));
 
-      const unlocked =
-        profileAchievement?.unlocked ??
-        progress >= 100;
+      const unlocked = profileAchievement?.unlocked ?? progress >= 100;
 
       return {
         code: definition.code,
         title: definition.title,
-        description:
-          definition.description ??
-          "Keep volunteering to unlock this achievement.",
+        description: definition.description ?? "Keep volunteering to unlock this achievement.",
         icon: definition.icon,
         progress,
         unlocked,
       };
     });
-
 
     return achievements;
   },

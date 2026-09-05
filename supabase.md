@@ -6,14 +6,14 @@ The frontend and backend exist separately.
 
 Your task is ONLY:
 
-* PostgreSQL schema
-* Supabase migrations
-* Relationships
-* Constraints
-* Indexes
-* RLS
-* Database functions/triggers where necessary
-* Storage policies if required
+- PostgreSQL schema
+- Supabase migrations
+- Relationships
+- Constraints
+- Indexes
+- RLS
+- Database functions/triggers where necessary
+- Storage policies if required
 
 Do NOT redesign the frontend.
 
@@ -90,19 +90,19 @@ auth.users.id
 
 Fields:
 
-* id
-* first_name
-* last_name
-* avatar
-* bio
-* phone
-* city
-* country
-* date_of_birth if required
-* role
-* status
-* created_at
-* updated_at
+- id
+- first_name
+- last_name
+- avatar
+- bio
+- phone
+- city
+- country
+- date_of_birth if required
+- role
+- status
+- created_at
+- updated_at
 
 Role:
 
@@ -121,15 +121,15 @@ Create sports/categories.
 
 Initial data:
 
-* Football
-* Basketball
-* Tennis
-* Athletics
-* Marathon
-* Cycling
-* Swimming
-* Motorsport
-* Other
+- Football
+- Basketball
+- Tennis
+- Athletics
+- Marathon
+- Cycling
+- Swimming
+- Motorsport
+- Other
 
 Make the system extensible.
 
@@ -141,13 +141,13 @@ Create a reusable skills table.
 
 Examples:
 
-* Communication
-* Photography
-* First Aid
-* Event Management
-* Logistics
-* IT
-* Social Media
+- Communication
+- Photography
+- First Aid
+- Event Management
+- Logistics
+- IT
+- Social Media
 
 Use a junction table between profiles and skills.
 
@@ -163,25 +163,25 @@ Create languages and profile-language relationships.
 
 Create:
 
-* id
-* title
-* slug
-* description
-* sport_id or appropriate sport reference
-* cover_image
-* venue
-* address
-* city
-* country
-* start_date
-* end_date
-* start_time
-* end_time
-* application_deadline
-* volunteer_capacity
-* status
-* created_at
-* updated_at
+- id
+- title
+- slug
+- description
+- sport_id or appropriate sport reference
+- cover_image
+- venue
+- address
+- city
+- country
+- start_date
+- end_date
+- start_time
+- end_time
+- application_deadline
+- volunteer_capacity
+- status
+- created_at
+- updated_at
 
 Statuses:
 
@@ -203,15 +203,15 @@ Each event can have multiple roles.
 
 Fields:
 
-* id
-* event_id
-* name
-* description
-* responsibilities
-* requirements
-* capacity
-* created_at
-* updated_at
+- id
+- event_id
+- name
+- description
+- responsibilities
+- requirements
+- capacity
+- created_at
+- updated_at
 
 Add foreign keys.
 
@@ -223,17 +223,17 @@ Prevent invalid capacity values.
 
 Fields:
 
-* id
-* volunteer_id
-* event_id
-* role_id
-* status
-* experience
-* availability
-* motivation if needed
-* admin_notes if needed
-* created_at
-* updated_at
+- id
+- volunteer_id
+- event_id
+- role_id
+- status
+- experience
+- availability
+- motivation if needed
+- admin_notes if needed
+- created_at
+- updated_at
 
 Statuses:
 
@@ -259,17 +259,17 @@ event_shifts
 
 Fields:
 
-* id
-* event_id
-* role_id
-* title
-* location
-* start_time
-* end_time
-* capacity
-* instructions
-* created_at
-* updated_at
+- id
+- event_id
+- role_id
+- title
+- location
+- start_time
+- end_time
+- capacity
+- instructions
+- created_at
+- updated_at
 
 Create:
 
@@ -300,12 +300,12 @@ training_progress
 
 Training should support:
 
-* Event-specific training
-* Role-specific training
-* Required/optional
-* Video
-* PDF
-* Text/resource
+- Event-specific training
+- Role-specific training
+- Required/optional
+- Video
+- PDF
+- Text/resource
 
 Track completion per volunteer.
 
@@ -317,15 +317,15 @@ Create accreditation records.
 
 Support:
 
-* volunteer
-* event
-* role
-* volunteer ID
-* zone
-* QR/token data
-* status
-* created_at
-* updated_at
+- volunteer
+- event
+- role
+- volunteer ID
+- zone
+- QR/token data
+- status
+- created_at
+- updated_at
 
 ---
 
@@ -335,15 +335,15 @@ Create attendance records.
 
 Support:
 
-* volunteer
-* event
-* shift
-* check_in
-* check_out
-* status
-* notes
-* created_at
-* updated_at
+- volunteer
+- event
+- shift
+- check_in
+- check_out
+- status
+- notes
+- created_at
+- updated_at
 
 Statuses:
 
@@ -365,13 +365,13 @@ Create official volunteer hour records.
 
 Support:
 
-* volunteer
-* event
-* shift
-* attendance reference
-* hours
-* approved_by
-* created_at
+- volunteer
+- event
+- shift
+- attendance reference
+- hours
+- approved_by
+- created_at
 
 Volunteers must not be able to modify official hours.
 
@@ -383,13 +383,13 @@ Create certificate records.
 
 Support:
 
-* volunteer
-* event
-* role
-* hours
-* certificate_id
-* issued_at
-* file/path if applicable
+- volunteer
+- event
+- role
+- hours
+- certificate_id
+- issued_at
+- file/path if applicable
 
 Certificate IDs must be unique.
 
@@ -399,15 +399,15 @@ Certificate IDs must be unique.
 
 Create:
 
-* id
-* recipient
-* title
-* message
-* type
-* related_event
-* related_application
-* read_at
-* created_at
+- id
+- recipient
+- title
+- message
+- type
+- related_event
+- related_application
+- read_at
+- created_at
 
 Add indexes for unread notifications.
 
@@ -419,14 +419,14 @@ Create reports for user-submitted issues.
 
 Support:
 
-* reporter
-* target
-* type
-* reason
-* description
-* status
-* created_at
-* resolved_at
+- reporter
+- target
+- type
+- reason
+- description
+- status
+- created_at
+- resolved_at
 
 Statuses:
 
@@ -498,19 +498,19 @@ Do not accidentally delete important historical volunteer records when an event 
 
 Add useful indexes for:
 
-* events.status
-* events.start_date
-* events.sport_id
-* events.city
-* applications.volunteer_id
-* applications.event_id
-* applications.status
-* event_roles.event_id
-* event_shifts.event_id
-* notifications.recipient_id
-* notifications.read_at
-* attendance.volunteer_id
-* certificates.volunteer_id
+- events.status
+- events.start_date
+- events.sport_id
+- events.city
+- applications.volunteer_id
+- applications.event_id
+- applications.status
+- event_roles.event_id
+- event_shifts.event_id
+- notifications.recipient_id
+- notifications.read_at
+- attendance.volunteer_id
+- certificates.volunteer_id
 
 Do not create unnecessary indexes.
 
@@ -522,15 +522,15 @@ Implement database-level constraints where appropriate.
 
 Examples:
 
-* Valid role capacity
-* Valid event status
-* Valid application status
-* Unique certificate ID
-* Unique application
-* Unique shift assignment
-* Unique attendance per shift
-* Valid timestamps
-* Valid hours
+- Valid role capacity
+- Valid event status
+- Valid application status
+- Unique certificate ID
+- Unique application
+- Unique shift assignment
+- Unique attendance per shift
+- Valid timestamps
+- Valid hours
 
 Business-critical constraints should not depend only on frontend validation.
 
@@ -546,16 +546,16 @@ Can access only their own private data.
 
 They can read:
 
-* Published events
-* Event roles
-* Their applications
-* Their schedule
-* Their training
-* Their accreditation
-* Their attendance
-* Their hours
-* Their certificates
-* Their notifications
+- Published events
+- Event roles
+- Their applications
+- Their schedule
+- Their training
+- Their accreditation
+- Their attendance
+- Their hours
+- Their certificates
+- Their notifications
 
 They can modify only allowed personal data.
 
@@ -565,17 +565,17 @@ Can manage platform data.
 
 Admin must be able to:
 
-* Create/update/delete events
-* Manage roles
-* Manage applications
-* Manage volunteers
-* Manage shifts
-* Manage training
-* Manage attendance
-* Manage hours
-* Manage certificates
-* Manage notifications
-* Manage reports
+- Create/update/delete events
+- Manage roles
+- Manage applications
+- Manage volunteers
+- Manage shifts
+- Manage training
+- Manage attendance
+- Manage hours
+- Manage certificates
+- Manage notifications
+- Manage reports
 
 Do not implement RLS by trusting a client-provided role.
 
@@ -610,10 +610,10 @@ admin
 
 If required by the existing application, create Supabase Storage configuration for:
 
-* avatars
-* event images
-* training files
-* certificates
+- avatars
+- event images
+- training files
+- certificates
 
 Apply proper policies.
 
@@ -629,10 +629,10 @@ Do not make undocumented manual database changes.
 
 Migration files should be:
 
-* Ordered
-* Reproducible
-* Safe
-* Clear
+- Ordered
+- Reproducible
+- Safe
+- Clear
 
 ---
 
@@ -640,9 +640,9 @@ Migration files should be:
 
 If appropriate, create safe seed data for:
 
-* sports
-* skills
-* languages
+- sports
+- skills
+- languages
 
 Do not create fake production volunteers or fake applications unless explicitly needed for development.
 
@@ -652,15 +652,15 @@ Do not create fake production volunteers or fake applications unless explicitly 
 
 After implementation verify:
 
-* Migrations
-* Tables
-* Foreign keys
-* Constraints
-* Indexes
-* RLS
-* Policies
-* Storage policies
-* Relationships
+- Migrations
+- Tables
+- Foreign keys
+- Constraints
+- Indexes
+- RLS
+- Policies
+- Storage policies
+- Relationships
 
 If the project supports local Supabase testing, use it.
 
@@ -679,14 +679,14 @@ SUPABASE_REMAINING.md
 
 `SUPABASE_SCHEMA.md` must document:
 
-* Tables
-* Columns
-* Relationships
-* Constraints
-* Indexes
-* RLS
-* Storage
-* Important database rules
+- Tables
+- Columns
+- Relationships
+- Constraints
+- Indexes
+- RLS
+- Storage
+- Important database rules
 
 `SUPABASE_REMAINING.md` must contain anything not implemented or not verified.
 

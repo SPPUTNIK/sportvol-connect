@@ -1,9 +1,17 @@
 import React, { useState } from "react";
 import { VSInput, VSTextarea, VSButton } from "@/components/design-system";
-import committeeService from "@/services/committeeService";
+import committeeService from "@/services/admin/committeeService";
 import type { Committee } from "@/types/domain";
 
-export default function CommitteeForm({ onSaved, initial, eventId }: { onSaved?: () => void; initial?: Partial<Committee>; eventId?: string }) {
+export default function CommitteeForm({
+  onSaved,
+  initial,
+  eventId,
+}: {
+  onSaved?: () => void;
+  initial?: Partial<Committee>;
+  eventId?: string;
+}) {
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [saving, setSaving] = useState(false);
@@ -15,7 +23,11 @@ export default function CommitteeForm({ onSaved, initial, eventId }: { onSaved?:
         await committeeService.updateCommittee(initial.id, { name, description });
       } else {
         if (!eventId && !initial?.eventId) throw new Error("eventId is required");
-        await committeeService.createCommittee({ name, description, eventId: eventId ?? initial?.eventId ?? "" });
+        await committeeService.createCommittee({
+          name,
+          description,
+          eventId: eventId ?? initial?.eventId ?? "",
+        });
       }
       onSaved?.();
     } finally {
@@ -34,7 +46,9 @@ export default function CommitteeForm({ onSaved, initial, eventId }: { onSaved?:
         <VSTextarea value={description ?? ""} onChange={(e) => setDescription(e.target.value)} />
       </div>
       <div className="flex justify-end">
-        <VSButton onClick={handleSave} disabled={saving || name.trim() === ""}>{saving ? "Saving…" : "Save"}</VSButton>
+        <VSButton onClick={handleSave} disabled={saving || name.trim() === ""}>
+          {saving ? "Saving…" : "Save"}
+        </VSButton>
       </div>
     </div>
   );

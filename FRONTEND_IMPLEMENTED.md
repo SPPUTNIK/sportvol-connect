@@ -4,14 +4,14 @@
 
 VolunSport now provides a cohesive public, volunteer, and administrator frontend built around the established premium Moroccan editorial visual language. The current implementation preserves the existing product direction rather than introducing a redesign or major new feature set.
 
-| Area | Verified frontend coverage |
-|---|---|
-| Public experience | Landing page, event discovery, event detail, about, login, registration, password recovery, and reset-password routes |
-| Volunteer experience | Dashboard, applications, events, schedule, training, accreditation, attendance, hours, certificates, achievements, notifications, profile, and settings |
-| Admin experience | Dashboard, events, event creation/details, applications, volunteers, training, attendance, certificates, notifications, reports, analytics, profile, and settings |
-| Data boundary | Typed frontend domain models and service adapters under `src/types/` and `src/services/` |
-| Responsive shells | Public navigation, responsive volunteer sidebar/drawer, and responsive admin sidebar/drawer |
-| UI states | Existing loading, empty, error, success, status, filter, search, table, card, and form states |
+| Area                 | Verified frontend coverage                                                                                                                                        |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public experience    | Landing page, event discovery, event detail, about, login, registration, password recovery, and reset-password routes                                             |
+| Volunteer experience | Dashboard, applications, events, schedule, training, accreditation, attendance, hours, certificates, achievements, notifications, profile, and settings           |
+| Admin experience     | Dashboard, events, event creation/details, applications, volunteers, training, attendance, certificates, notifications, reports, analytics, profile, and settings |
+| Data boundary        | Typed frontend domain models and service adapters under `src/types/` and `src/services/`                                                                          |
+| Responsive shells    | Public navigation, responsive volunteer sidebar/drawer, and responsive admin sidebar/drawer                                                                       |
+| UI states            | Existing loading, empty, error, success, status, filter, search, table, card, and form states                                                                     |
 
 ## Polish and QA fixes
 
@@ -33,11 +33,11 @@ The temporary development server log did not report runtime exceptions during th
 
 ## Automated verification
 
-| Check | Result |
-|---|---|
-| `npx eslint .` | Passed with existing Fast Refresh and React Hook advisory warnings |
-| `npx tsc --noEmit --pretty false` | Passed |
-| `npx vite build` | Passed |
-| Backend/Supabase modifications | None |
+| Check                             | Result                                                             |
+| --------------------------------- | ------------------------------------------------------------------ |
+| `npx eslint .`                    | Passed with existing Fast Refresh and React Hook advisory warnings |
+| `npx tsc --noEmit --pretty false` | Passed                                                             |
+| `npx vite build`                  | Passed                                                             |
+| Backend/Supabase modifications    | None                                                               |
 
 Only frontend source, frontend service/types, formatting configuration, and frontend documentation were touched during this QA pass. No schema, migration, RLS policy, trigger, or backend authorization was changed.

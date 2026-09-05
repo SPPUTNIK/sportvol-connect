@@ -54,9 +54,7 @@ type AdminState = {
 };
 
 function uid(prefix: string) {
-  return `${prefix}-${Math.random().toString(36).slice(2, 8)}${Date.now()
-    .toString(36)
-    .slice(-3)}`;
+  return `${prefix}-${Math.random().toString(36).slice(2, 8)}${Date.now().toString(36).slice(-3)}`;
 }
 
 let state: AdminState = {
@@ -215,9 +213,7 @@ export const adminStore = {
     emit({
       ...state,
       roles: state.roles.map((role) =>
-        role.id === id
-          ? { ...role, ...patch, event: event ? event.title : role.event }
-          : role,
+        role.id === id ? { ...role, ...patch, event: event ? event.title : role.event } : role,
       ),
       shifts: state.shifts.map((shift) =>
         shift.roleId === id && patch.name ? { ...shift, role: patch.name } : shift,

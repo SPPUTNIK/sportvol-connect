@@ -1,5 +1,4 @@
-import { volunteerContentService } from "@/services/volunteerContentService";
-
+import { volunteerContentService } from "@/services/shared/volunteerContentService";
 
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
@@ -34,24 +33,19 @@ import {
 
 import { useAuth } from "@/lib/auth";
 
-import { getVolunteerDashboard, getVolunteerHours,   getAttendance, } from "@/services/backendService";
+import { getVolunteerDashboard, getVolunteerHours, getAttendance } from "@/services/shared/backendService";
 
 import { VolunteerDashboard, VolunteerHours, AttendanceRecord } from "@/lib/types";
 
-import {
-  eventService,
-  type MyEvent,
-} from "@/services/eventService";
-
+import { eventService, type MyEvent } from "@/services/shared/eventService";
 
 export function DashboardPage() {
   const { profile } = useAuth();
-  
+
   const [dashboard, setDashboard] = useState<VolunteerDashboard | null>(null);
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
-  
-  
+
   const firstName = profile?.first_name || "Volunteer";
   const upcomingEventsList = dashboard?.upcomingEventsList ?? [];
 
@@ -61,27 +55,18 @@ export function DashboardPage() {
   const dragStartX = useRef<number | null>(null);
   const dragCurrentX = useRef<number | null>(null);
 
-  const currentDashboardEvent =
-    upcomingEventsList[currentEventIndex] ?? null;
+  const currentDashboardEvent = upcomingEventsList[currentEventIndex] ?? null;
 
   const goToNextEvent = () => {
     if (upcomingEventsList.length <= 1) return;
 
-    setCurrentEventIndex((current) =>
-      current >= upcomingEventsList.length - 1
-        ? 0
-        : current + 1,
-    );
+    setCurrentEventIndex((current) => (current >= upcomingEventsList.length - 1 ? 0 : current + 1));
   };
 
   const goToPreviousEvent = () => {
     if (upcomingEventsList.length <= 1) return;
 
-    setCurrentEventIndex((current) =>
-      current <= 0
-        ? upcomingEventsList.length - 1
-        : current - 1,
-    );
+    setCurrentEventIndex((current) => (current <= 0 ? upcomingEventsList.length - 1 : current - 1));
   };
 
   useEffect(() => {
@@ -102,9 +87,7 @@ export function DashboardPage() {
 
         if (mounted) {
           setDashboardError(
-            error instanceof Error
-              ? error.message
-              : "Failed to load your dashboard.",
+            error instanceof Error ? error.message : "Failed to load your dashboard.",
           );
         }
       } finally {
@@ -126,9 +109,7 @@ export function DashboardPage() {
 
     const interval = window.setInterval(() => {
       setCurrentEventIndex((current) =>
-        current >= upcomingEventsList.length - 1
-          ? 0
-          : current + 1,
+        current >= upcomingEventsList.length - 1 ? 0 : current + 1,
       );
     }, 4000);
 
@@ -137,33 +118,25 @@ export function DashboardPage() {
     };
   }, [upcomingEventsList.length]);
 
-  const handlePointerDown = (
-    event: React.PointerEvent<HTMLDivElement>,
-  ) => {
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     dragStartX.current = event.clientX;
     dragCurrentX.current = event.clientX;
     setIsDragging(true);
   };
 
-  const handlePointerMove = (
-    event: React.PointerEvent<HTMLDivElement>,
-  ) => {
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging) return;
 
     dragCurrentX.current = event.clientX;
   };
 
   const handlePointerUp = () => {
-    if (
-      dragStartX.current === null ||
-      dragCurrentX.current === null
-    ) {
+    if (dragStartX.current === null || dragCurrentX.current === null) {
       setIsDragging(false);
       return;
     }
 
-    const distance =
-      dragStartX.current - dragCurrentX.current;
+    const distance = dragStartX.current - dragCurrentX.current;
 
     const threshold = 60;
 
@@ -185,7 +158,6 @@ export function DashboardPage() {
     dragCurrentX.current = null;
     setIsDragging(false);
   };
-
 
   if (dashboardLoading) {
     return (
@@ -239,9 +211,7 @@ export function DashboardPage() {
                     Unable to load your dashboard
                   </p>
 
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {dashboardError}
-                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{dashboardError}</p>
 
                   <button
                     type="button"
@@ -319,9 +289,7 @@ export function DashboardPage() {
             label="Upcoming events"
             value={dashboard.upcomingEvents}
             description={
-              dashboard.upcomingEvents === 1
-                ? "One confirmed assignment"
-                : "Confirmed assignments"
+              dashboard.upcomingEvents === 1 ? "One confirmed assignment" : "Confirmed assignments"
             }
             icon={<CalendarDays className="h-5 w-5" />}
           />
@@ -350,15 +318,11 @@ export function DashboardPage() {
           />
         </section>
 
-        
         {/* Upcoming Event + Quick Actions */}
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <VSCard className="rounded-[2rem] border-border shadow-[var(--shadow-float)]">
             <VSCardContent className="p-6 sm:p-8">
-              <VSSectionHeader
-                eyebrow="Upcoming events"
-                title="Your next opportunities"
-              />
+              <VSSectionHeader eyebrow="Upcoming events" title="Your next opportunities" />
 
               {upcomingEventsList.length > 0 && currentDashboardEvent ? (
                 <div className="mt-6">
@@ -501,8 +465,7 @@ export function DashboardPage() {
                       {upcomingEventsList.length > 1 && (
                         <div className="mt-6 flex items-center justify-between gap-4 border-t border-border pt-5">
                           <p className="text-xs text-muted-foreground">
-                            {currentEventIndex + 1} of{" "}
-                            {upcomingEventsList.length}
+                            {currentEventIndex + 1} of {upcomingEventsList.length}
                           </p>
 
                           <div className="flex items-center gap-1.5">
@@ -521,9 +484,7 @@ export function DashboardPage() {
                             ))}
                           </div>
 
-                          <p className="hidden text-xs text-muted-foreground sm:block">
-                            
-                          </p>
+                          <p className="hidden text-xs text-muted-foreground sm:block"></p>
                         </div>
                       )}
                     </div>
@@ -533,9 +494,7 @@ export function DashboardPage() {
                 <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
                   <CalendarDays className="mx-auto h-8 w-8 text-muted-foreground" />
 
-                  <p className="mt-3 text-sm font-semibold text-foreground">
-                    No upcoming events
-                  </p>
+                  <p className="mt-3 text-sm font-semibold text-foreground">No upcoming events</p>
 
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     Find your next opportunity and start volunteering.
@@ -554,10 +513,7 @@ export function DashboardPage() {
 
           <VSCard className="rounded-[2rem] border-border shadow-[var(--shadow-float)]">
             <VSCardContent className="p-6 sm:p-8">
-              <VSSectionHeader
-                eyebrow="Quick actions"
-                title="Keep moving"
-              />
+              <VSSectionHeader eyebrow="Quick actions" title="Keep moving" />
 
               <div className="mt-6 space-y-3">
                 <QuickAction
@@ -582,10 +538,8 @@ export function DashboardPage() {
           </VSCard>
         </div>
 
-
         {/* Applications + Profile */}
         <div className="grid min-w-0 gap-5 sm:gap-6 lg:grid-cols-2">
-
           {/* Applications */}
           <VSCard className="min-w-0 overflow-hidden rounded-[1.5rem] border-border sm:rounded-[2rem]">
             <VSCardContent className="p-4 sm:p-6 lg:p-8">
@@ -643,9 +597,7 @@ export function DashboardPage() {
                         </p>
 
                         <p className="mt-1.5 overflow-hidden text-xs leading-5 text-muted-foreground">
-                          <span className="break-words">
-                            {item.role_name}
-                          </span>
+                          <span className="break-words">{item.role_name}</span>
 
                           <span className="mx-1">·</span>
 
@@ -662,9 +614,7 @@ export function DashboardPage() {
                 </div>
               ) : (
                 <div className="mt-5 rounded-2xl border border-dashed border-border p-5 text-center sm:mt-6 sm:p-6">
-                  <p className="text-sm font-semibold text-foreground">
-                    No applications yet
-                  </p>
+                  <p className="text-sm font-semibold text-foreground">No applications yet</p>
 
                   <p className="mx-auto mt-1 max-w-xs text-xs leading-5 text-muted-foreground">
                     Start exploring events and apply for a volunteer role.
@@ -682,17 +632,12 @@ export function DashboardPage() {
             </VSCardContent>
           </VSCard>
 
-
           {/* Profile completion */}
           <VSCard className="min-w-0 overflow-hidden rounded-[1.5rem] border-border sm:rounded-[2rem]">
             <VSCardContent className="p-4 sm:p-6 lg:p-8">
-              <VSSectionHeader
-                eyebrow="Profile completion"
-                title="Make your profile work harder"
-              />
+              <VSSectionHeader eyebrow="Profile completion" title="Make your profile work harder" />
 
               <div className="mt-5 flex min-w-0 flex-col gap-5 sm:mt-6 sm:flex-row sm:items-center sm:gap-5">
-
                 {/* Progress circle */}
                 <div className="relative mx-auto h-20 w-20 shrink-0 rounded-full bg-muted sm:mx-0">
                   <div className="absolute inset-1 rounded-full bg-card" />
@@ -725,9 +670,7 @@ export function DashboardPage() {
                     to="/volunteer/profile"
                     className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary"
                   >
-                    {profileCompletion >= 100
-                      ? "View profile"
-                      : "Update profile"}
+                    {profileCompletion >= 100 ? "View profile" : "Update profile"}
 
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
@@ -735,7 +678,6 @@ export function DashboardPage() {
               </div>
             </VSCardContent>
           </VSCard>
-
         </div>
 
         {/* Achievements */}
@@ -744,10 +686,7 @@ export function DashboardPage() {
             eyebrow="Milestones"
             title="Achievements"
             action={
-              <Link
-                to="/volunteer/achievements"
-                className="text-sm font-semibold text-primary"
-              >
+              <Link to="/volunteer/achievements" className="text-sm font-semibold text-primary">
                 See all
               </Link>
             }
@@ -756,22 +695,15 @@ export function DashboardPage() {
           {dashboard.achievements.length > 0 ? (
             <div className="mt-5 grid gap-4 md:grid-cols-3">
               {dashboard.achievements.slice(0, 3).map((item) => (
-                <VSCard
-                  key={item.title}
-                  className="rounded-[1.5rem] border-border"
-                >
+                <VSCard key={item.title} className="rounded-[1.5rem] border-border">
                   <VSCardContent className="p-5">
                     <Trophy
                       className={
-                        item.unlocked
-                          ? "h-6 w-6 text-primary"
-                          : "h-6 w-6 text-muted-foreground"
+                        item.unlocked ? "h-6 w-6 text-primary" : "h-6 w-6 text-muted-foreground"
                       }
                     />
 
-                    <p className="mt-4 text-sm font-semibold text-foreground">
-                      {item.title}
-                    </p>
+                    <p className="mt-4 text-sm font-semibold text-foreground">{item.title}</p>
 
                     <div className="mt-4 h-1.5 rounded-full bg-muted">
                       <div
@@ -781,17 +713,12 @@ export function DashboardPage() {
                             : "h-full rounded-full bg-muted-foreground/40"
                         }
                         style={{
-                          width: `${Math.min(
-                            100,
-                            Math.max(0, item.progress),
-                          )}%`,
+                          width: `${Math.min(100, Math.max(0, item.progress))}%`,
                         }}
                       />
                     </div>
 
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      {item.progress}% complete
-                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">{item.progress}% complete</p>
                   </VSCardContent>
                 </VSCard>
               ))}
@@ -825,11 +752,7 @@ export function MyEventsPage() {
       .getMyEvents()
       .then(setEvents)
       .catch((err: unknown) => {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Unable to load your events.",
-        );
+        setError(err instanceof Error ? err.message : "Unable to load your events.");
       })
       .finally(() => {
         setLoading(false);
@@ -853,10 +776,7 @@ export function MyEventsPage() {
 
         {!loading && error && (
           <div className="mt-8">
-            <VSErrorState
-              title="Unable to load your events"
-              description={error}
-            />
+            <VSErrorState title="Unable to load your events" description={error} />
           </div>
         )}
 
@@ -881,18 +801,13 @@ export function MyEventsPage() {
         {!loading && !error && events.length > 0 && (
           <div className="mt-8 grid gap-5 lg:grid-cols-2">
             {events.map((item) => (
-              <VSCard
-                key={item.id}
-                className="rounded-[2rem] border-border"
-              >
+              <VSCard key={item.id} className="rounded-[2rem] border-border">
                 <VSCardContent className="p-6 sm:p-8">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <VSStatusBadge status="accepted" />
 
-                      <h2 className="mt-4 text-2xl font-semibold text-foreground">
-                        {item.event}
-                      </h2>
+                      <h2 className="mt-4 text-2xl font-semibold text-foreground">{item.event}</h2>
 
                       <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                         <MapPin className="h-4 w-4" />
@@ -904,35 +819,17 @@ export function MyEventsPage() {
                   </div>
 
                   <div className="mt-7 grid gap-4 sm:grid-cols-2">
-                    <Info
-                      label="Date"
-                      value={item.date}
-                    />
+                    <Info label="Date" value={item.date} />
 
-                    <Info
-                      label="Role"
-                      value={item.role}
-                    />
+                    <Info label="Role" value={item.role} />
 
-                    <Info
-                      label="Shift"
-                      value={item.shift}
-                    />
+                    <Info label="Shift" value={item.shift} />
 
-                    <Info
-                      label="Training"
-                      value={item.training}
-                    />
+                    <Info label="Training" value={item.training} />
 
-                    <Info
-                      label="Accreditation"
-                      value={item.accreditation}
-                    />
+                    <Info label="Accreditation" value={item.accreditation} />
 
-                    <Info
-                      label="Attendance"
-                      value={item.attendance}
-                    />
+                    <Info label="Attendance" value={item.attendance} />
                   </div>
 
                   <div className="mt-7 flex flex-wrap gap-4">
@@ -1033,11 +930,7 @@ export function HoursPage() {
         console.error("Failed to load volunteer hours:", err);
 
         if (mounted) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Unable to load your volunteer hours.",
-          );
+          setError(err instanceof Error ? err.message : "Unable to load your volunteer hours.");
         }
       } finally {
         if (mounted) {
@@ -1095,9 +988,7 @@ export function HoursPage() {
             <VSCardContent className="p-6 sm:p-8">
               <div className="flex items-start gap-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
-                  <span className="font-bold text-destructive">
-                    !
-                  </span>
+                  <span className="font-bold text-destructive">!</span>
                 </div>
 
                 <div className="min-w-0">
@@ -1157,10 +1048,7 @@ export function HoursPage() {
           {/* By sport */}
           <VSCard className="rounded-[2rem] border-border">
             <VSCardContent className="p-5 sm:p-8">
-              <VSSectionHeader
-                eyebrow="By sport"
-                title="Where your time goes"
-              />
+              <VSSectionHeader eyebrow="By sport" title="Where your time goes" />
 
               {hours.by_sport.length > 0 ? (
                 <div className="mt-6 space-y-5">
@@ -1182,8 +1070,7 @@ export function HoursPage() {
                   </p>
 
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Your sports breakdown will appear here after you
-                    complete volunteer work.
+                    Your sports breakdown will appear here after you complete volunteer work.
                   </p>
                 </div>
               )}
@@ -1193,10 +1080,7 @@ export function HoursPage() {
           {/* By event */}
           <VSCard className="rounded-[2rem] border-border">
             <VSCardContent className="p-5 sm:p-8">
-              <VSSectionHeader
-                eyebrow="By event"
-                title="Your event history"
-              />
+              <VSSectionHeader eyebrow="By event" title="Your event history" />
 
               {hours.by_event.length > 0 ? (
                 <div className="mt-6 space-y-5">
@@ -1213,9 +1097,7 @@ export function HoursPage() {
                 <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
                   <CalendarDays className="mx-auto h-8 w-8 text-muted-foreground" />
 
-                  <p className="mt-3 text-sm font-semibold text-foreground">
-                    No event history yet
-                  </p>
+                  <p className="mt-3 text-sm font-semibold text-foreground">No event history yet</p>
 
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     Your completed events and hours will appear here.
@@ -1229,7 +1111,6 @@ export function HoursPage() {
     </AppShell>
   );
 }
-
 
 // export function CertificatesPage() {
 //   return (
@@ -1482,11 +1363,7 @@ export function AttendancePage() {
         console.error("Failed to load attendance:", err);
 
         if (mounted) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Unable to load your attendance records.",
-          );
+          setError(err instanceof Error ? err.message : "Unable to load your attendance records.");
         }
       } finally {
         if (mounted) {
@@ -1526,10 +1403,7 @@ export function AttendancePage() {
         {/* Error */}
         {!loading && error && (
           <div className="mt-8">
-            <VSErrorState
-              title="Unable to load your attendance"
-              description={error}
-            />
+            <VSErrorState title="Unable to load your attendance" description={error} />
           </div>
         )}
 
@@ -1547,10 +1421,7 @@ export function AttendancePage() {
         {!loading && !error && attendance.length > 0 && (
           <div className="mt-8 space-y-4">
             {attendance.map((item) => (
-              <VSCard
-                key={item.id}
-                className="rounded-[1.75rem] border-border"
-              >
+              <VSCard key={item.id} className="rounded-[1.75rem] border-border">
                 <VSCardContent className="p-5 sm:p-6">
                   <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
                     {/* Event information */}

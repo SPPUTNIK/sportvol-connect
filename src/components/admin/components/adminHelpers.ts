@@ -19,15 +19,11 @@ export type AdminStatus =
   | "sent";
 
 export function normalizeStatus(status: string): AdminStatus {
-  return status
-    .toLowerCase()
-    .replace(/\s+/g, "_") as AdminStatus;
+  return status.toLowerCase().replace(/\s+/g, "_") as AdminStatus;
 }
 
 export function formatStatus(status: string) {
-  return status
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  return status.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 export function formatDate(value: string | null | undefined) {
@@ -46,9 +42,7 @@ export function formatDate(value: string | null | undefined) {
   }).format(date);
 }
 
-export function formatDateTime(
-  value: string | null | undefined,
-) {
+export function formatDateTime(value: string | null | undefined) {
   if (!value) return "—";
 
   const date = new Date(value);

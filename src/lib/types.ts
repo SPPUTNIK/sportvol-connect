@@ -81,33 +81,14 @@ export type VolunteerDashboard = {
  * ============================================================
  */
 
-export type EventStatus =
-  | "draft"
-  | "published"
-  | "closed"
-  | "completed"
-  | "cancelled";
+export type EventStatus = "draft" | "published" | "closed" | "completed" | "cancelled";
 
-export type ApplicationStatus =
-  | "pending"
-  | "accepted"
-  | "rejected"
-  | "withdrawn"
-  | "waitlisted";
+export type ApplicationStatus = "pending" | "accepted" | "rejected" | "withdrawn" | "waitlisted";
 
 export type NotificationCategory =
-  | "application"
-  | "training"
-  | "accreditation"
-  | "certificate"
-  | "event"
-  | "other";
+  "application" | "training" | "accreditation" | "certificate" | "event" | "other";
 
-export type TrainingResourceType =
-  | "video"
-  | "pdf"
-  | "text"
-  | "link";
+export type TrainingResourceType = "video" | "pdf" | "text" | "link";
 
 export interface EventRole {
   id: string;
@@ -147,7 +128,6 @@ export interface Event {
   event_roles?: EventRole[];
   registered_volunteers?: number;
 }
-
 
 export interface MyEvent {
   id: string;
@@ -212,9 +192,6 @@ export interface AccreditationRecord {
   assignment_status: string | null;
 }
 
-
-
-
 /*
  * ============================================================
  * APPLICATIONS
@@ -242,7 +219,6 @@ export interface Application {
 
   experience: string | null;
 }
-
 
 /*
  * ============================================================
@@ -557,4 +533,3 @@ export interface CommitteeFeedback {
   created_at: string;
   updated_at: string;
 }
-

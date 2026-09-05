@@ -1,79 +1,136 @@
-import React, { useEffect, useState } from "react";
-import { VSModal, VSModalContent, VSModalHeader, VSModalTitle, VSModalFooter, VSCard, VSCardContent, VSSectionHeader, VSButton, VSLoadingState, VSEmptyState } from "@/components/design-system";
-import type { Committee, CommitteeMember } from "@/types/domain";
-import committeeService from "@/services/committeeService";
-import FeedbackForm from "./FeedbackForm";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
-export default function LeaderCommitteeDetails({ committee, onClose }: { committee: Committee; onClose: () => void }) {
-  const [members, setMembers] = useState<Array<{ member: CommitteeMember; profile: { id: string; first_name: string | null; last_name: string | null; avatar_url: string | null }; eventRoleId: string | null }> | null>(null);
+import FeedbackForm from "./FeedbackForm";
+import {
+  VSAvatar,
+  VSButton,
+  VSCard,
+  VSCardContent,
+  VSEmptyState,
+  VSLoadingState,
+  VSModal,
+  VSModalContent,
+  VSModalFooter,
+  VSModalHeader,
+  VSModalTitle,
+  VSSectionHeader,
+  VSStatusBadge,
+} from "@/components/design-system";
+import { type LeaderMember } from "@/services/leader/leaderService";
+
+function formatMemberName(member: LeaderMember) {
+  return `${member.firstName} ${member.lastName}`;
+}
+
+export default function LeaderCommitteeDetails({
+  committee,
+  members,
+  onClose,
+}: {
+  committee?: {
+    id: string;
+    name: string;
+    description: string | null;
+    status: string;
+    leader: string;
+    memberCount: number;
+    eventId: string;
+  } | null;
+  members?: LeaderMember[];
+  onClose?: () => void;
+}) {
   const [loading, setLoading] = useState(true);
-  const [feedbackMember, setFeedbackMember] = useState<{ profileId: string } | null>(null);
+  const [feedbackMember, setFeedbackMember] = useState<LeaderMember | null>(null);
 
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const m = await committeeService.listMembersDetailed(committee.id);
-        if (mounted) setMembers(m.map((x) => ({ member: x.member, profile: x.profile, eventRoleId: x.eventRoleId })));
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-    return () => { mounted = false; };
-  }, [committee.id]);
+    setLoading(false);
+  }, [members]);
+
+  const itemList = members ?? [];
+
+  const handleFeedbackSave = () => {
+    toast.success("Feedback saved for this volunteer");
+    setFeedbackMember(null);
+    onClose?.();
+  };
+
+  const activeCommittee = committee ?? { id: "", name: "Committee", description: "No committee assigned", status: "active", leader: "Leader", memberCount: 0, eventId: "" };
 
   return (
-    <VSModal open onOpenChange={onClose}>
-      <VSModalContent>
-        <VSModalHeader>
-          <VSModalTitle>{committee.name}</VSModalTitle>
-        </VSModalHeader>
-        <div className="p-4 space-y-6">
-          <div>
-            <p className="text-sm text-muted-foreground">{committee.description}</p>
+    <div className="space-y-8">
+      <div className="overflow-hidden rounded-[2rem] border border-border bg-card shadow-[var(--shadow-float)]">
+        <div className="p-6 sm:p-8">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="eyebrow">My Committee</p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">{activeCommittee.name}</h2>
+              <p className="mt-3 text-sm text-muted-foreground">{activeCommittee.description ?? "No committee description."}</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <VSStatusBadge status={activeCommittee.status} />
+              <div className="rounded-full border border-border bg-background px-3 py-2 text-sm text-muted-foreground">{itemList.length} Members</div>
+            </div>
           </div>
 
-          <VSSectionHeader title="Members" description={`${members?.length ?? 0} members`} />
-
-          {loading && <VSLoadingState message="Loading members…" />}
-          {!loading && members && members.length === 0 && <VSEmptyState title="No members" description="No members assigned." />}
-
-          <div className="grid gap-3">
-            {members?.map((m) => (
-              <VSCard key={m.member.id} className="p-3">
-                <VSCardContent>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-medium">{m.profile.first_name ?? ""} {m.profile.last_name ?? ""}</div>
-                      <div className="text-xs text-muted-foreground">Role: {m.eventRoleId ?? "(none)"}</div>
-                    </div>
-                    <div className="flex gap-2">
-                      <VSButton onClick={() => setFeedbackMember({ profileId: m.profile.id })}>Add feedback</VSButton>
-                    </div>
-                  </div>
-                </VSCardContent>
-              </VSCard>
-            ))}
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl border border-border bg-background p-4"><p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Leader</p><p className="mt-3 text-base font-semibold text-foreground">{activeCommittee.leader}</p></div>
+            <div className="rounded-2xl border border-border bg-background p-4"><p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Status</p><p className="mt-3 text-base font-semibold text-foreground">{activeCommittee.status}</p></div>
+            <div className="rounded-2xl border border-border bg-background p-4"><p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Members</p><p className="mt-3 text-base font-semibold text-foreground">{itemList.length}</p></div>
           </div>
         </div>
-        <VSModalFooter>
-          <VSButton onClick={onClose}>Close</VSButton>
-        </VSModalFooter>
-      </VSModalContent>
+      </div>
+
+      <VSSectionHeader title="Committee members" description="Each volunteer below is part of your operational committee for this event." />
+
+      {loading ? (
+        <VSLoadingState message="Loading committee roster…" />
+      ) : itemList.length === 0 ? (
+        <VSEmptyState title="No members assigned" description="This committee does not have active volunteers yet." />
+      ) : (
+        <div className="grid gap-4">
+          {itemList.map((member) => (
+            <VSCard key={member.id} className="rounded-[1.75rem] border-border">
+              <VSCardContent className="p-5 sm:p-6">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                  <div className="flex items-center gap-4">
+                    <VSAvatar name={formatMemberName(member)} src={member.avatar ?? undefined} size="default" />
+                    <div>
+                      <p className="text-lg font-semibold text-foreground">{formatMemberName(member)}</p>
+                      <p className="text-sm text-muted-foreground">{member.role}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <VSStatusBadge status={member.status} />
+                    <VSStatusBadge status={member.feedbackStatus} />
+                  </div>
+                </div>
+
+                <div className="mt-5 grid gap-3 md:grid-cols-3">
+                  <div className="rounded-2xl border border-border bg-background p-4"><p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Assignment</p><p className="mt-2 text-sm font-medium text-foreground">{member.assignedShift}</p></div>
+                  <div className="rounded-2xl border border-border bg-background p-4"><p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Attendance</p><p className="mt-2 text-sm font-medium text-foreground">{member.attendance}</p></div>
+                  <div className="rounded-2xl border border-border bg-background p-4"><p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Feedback</p><p className="mt-2 text-sm font-medium text-foreground">{member.feedbackStatus}</p></div>
+                </div>
+
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <VSButton variant="secondary" className="h-9">View</VSButton>
+                  <VSButton className="h-9" onClick={() => setFeedbackMember(member)}>Add feedback</VSButton>
+                </div>
+              </VSCardContent>
+            </VSCard>
+          ))}
+        </div>
+      )}
 
       {feedbackMember && (
         <VSModal open onOpenChange={() => setFeedbackMember(null)}>
-          <VSModalContent>
-            <VSModalHeader>
-              <VSModalTitle>Feedback for member</VSModalTitle>
-            </VSModalHeader>
-            <div className="p-4">
-              <FeedbackForm committeeId={committee.id} eventId={committee.eventId} memberProfileId={feedbackMember.profileId} leaderProfileId={committee.leaderProfileId ?? ""} onSaved={async () => { setFeedbackMember(null); }} />
-            </div>
-            <VSModalFooter />
+          <VSModalContent className="max-w-2xl">
+            <VSModalHeader><VSModalTitle>Feedback for {formatMemberName(feedbackMember)}</VSModalTitle></VSModalHeader>
+            <div className="p-4"><FeedbackForm onSaved={handleFeedbackSave} /></div>
+            <VSModalFooter><VSButton variant="secondary" onClick={() => setFeedbackMember(null)}>Cancel</VSButton></VSModalFooter>
           </VSModalContent>
         </VSModal>
       )}
-    </VSModal>
+    </div>
   );
 }

@@ -12,7 +12,7 @@ import {
 } from "@/components/design-system";
 
 import { createSlug } from "./adminHelpers";
-import { adminEventService } from "@/services/adminEventService";
+import { adminEventService } from "@/services/admin/adminEventService";
 
 type EventFormState = {
   title: string;
@@ -71,10 +71,7 @@ export function AdminForm({
     description: initialData?.description ?? "",
   });
 
-  const set = <K extends keyof EventFormState>(
-    key: K,
-    value: EventFormState[K],
-  ) => {
+  const set = <K extends keyof EventFormState>(key: K, value: EventFormState[K]) => {
     setForm((previous) => ({
       ...previous,
       [key]: value,
@@ -142,11 +139,7 @@ export function AdminForm({
 
   return (
     <div className="mx-auto max-w-3xl">
-      <VSPageHeader
-        eyebrow={eyebrow}
-        title={title}
-        description={description}
-      />
+      <VSPageHeader eyebrow={eyebrow} title={title} description={description} />
 
       <VSCard className="mt-8 rounded-[2rem] border-border">
         <VSCardContent className="space-y-5 p-6 sm:p-8">
@@ -171,9 +164,7 @@ export function AdminForm({
           </label>
 
           <div>
-            <label className="block text-sm font-medium">
-              Event image
-            </label>
+            <label className="block text-sm font-medium">Event image</label>
             <div className="mt-2 overflow-hidden rounded-[1.5rem] border border-border bg-muted/30">
               {form.imageUrl ? (
                 <div className="relative">

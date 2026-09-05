@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CheckCircle2,
   Edit3,
@@ -28,13 +28,10 @@ import {
   VSStatusBadge,
 } from "@/components/design-system";
 
-import type {
-  Committee,
-  CommitteeFeedback,
-} from "@/types/domain";
+import type { Committee, CommitteeFeedback } from "@/types/domain";
 
-import committeeService from "@/services/committeeService";
-import { eventService } from "@/services/eventService";
+import committeeService from "@/services/admin/committeeService";
+import { eventService } from "@/services/shared/eventService";
 import MemberAddForm from "./MemberAddForm";
 import CommitteeForm from "./CommitteeForm";
 import { formatStatus } from "./components/adminHelpers";
@@ -63,11 +60,7 @@ type Props = {
   onUpdated?: () => void;
 };
 
-export default function CommitteeDetails({
-  committee,
-  onClose,
-  onUpdated,
-}: Props) {
+export default function CommitteeDetails({ committee, onClose, onUpdated }: Props) {
   const [members, setMembers] = useState<DetailedMember[]>([]);
   const [feedback, setFeedback] = useState<CommitteeFeedback[]>([]);
   const [roles, setRoles] = useState<Array<{ id: string; name: string }>>([]);
@@ -78,7 +71,7 @@ export default function CommitteeDetails({
   const [deleting, setDeleting] = useState(false);
   const [changingStatus, setChangingStatus] = useState(false);
 
-  const loadDetails = async () => {
+  const loadDetails = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -99,26 +92,23 @@ export default function CommitteeDetails({
       setFeedback(feedbackRows);
 
       setRoles(
-        (event?.event_roles ?? []).map((role: any) => ({
+        (event?.event_roles ?? []).map((role: { id: string; name: string }) => ({
           id: role.id,
           name: role.name,
         })),
       );
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to load committee details.";
+      const message = error instanceof Error ? error.message : "Failed to load committee details.";
 
       toast.error(message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [committee.eventId, committee.id]);
 
   useEffect(() => {
     void loadDetails();
-  }, [committee.id]);
+  }, [loadDetails]);
 
   const activeMembers = useMemo(
     () => members.filter((item) => item.member.status !== "removed"),
@@ -132,9 +122,7 @@ export default function CommitteeDetails({
     onUpdated?.();
   };
 
-  const handleStatusChange = async (
-    status: "draft" | "active" | "closed",
-  ) => {
+  const handleStatusChange = async (status: "draft" | "active" | "closed") => {
     if (status === committee.status) return;
 
     try {
@@ -147,10 +135,7 @@ export default function CommitteeDetails({
       toast.success(`Committee marked as ${status}.`);
       await refresh();
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to update committee status.";
+      const message = error instanceof Error ? error.message : "Failed to update committee status.";
 
       toast.error(message);
     } finally {
@@ -159,9 +144,7 @@ export default function CommitteeDetails({
   };
 
   const handleDelete = async () => {
-    const confirmed = window.confirm(
-      `Delete "${committee.name}"? This action cannot be undone.`,
-    );
+    const confirmed = window.confirm(`Delete "${committee.name}"? This action cannot be undone.`);
 
     if (!confirmed) return;
 
@@ -174,10 +157,7 @@ export default function CommitteeDetails({
       onClose();
       onUpdated?.();
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to delete committee.";
+      const message = error instanceof Error ? error.message : "Failed to delete committee.";
 
       toast.error(message);
     } finally {
@@ -185,10 +165,7 @@ export default function CommitteeDetails({
     }
   };
 
-  const handleMemberRoleChange = async (
-    memberId: string,
-    eventRoleId: string | null,
-  ) => {
+  const handleMemberRoleChange = async (memberId: string, eventRoleId: string | null) => {
     try {
       await committeeService.updateMember(memberId, {
         eventRoleId,
@@ -197,35 +174,24 @@ export default function CommitteeDetails({
       toast.success("Member role updated.");
       await refresh();
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to update member role.";
+      const message = error instanceof Error ? error.message : "Failed to update member role.";
 
       toast.error(message);
     }
   };
 
   const handleRemoveMember = async (profileId: string) => {
-    const confirmed = window.confirm(
-      "Remove this volunteer from the committee?",
-    );
+    const confirmed = window.confirm("Remove this volunteer from the committee?");
 
     if (!confirmed) return;
 
     try {
-      await committeeService.removeMember(
-        committee.id,
-        profileId,
-      );
+      await committeeService.removeMember(committee.id, profileId);
 
       toast.success("Member removed from committee.");
       await refresh();
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to remove member.";
+      const message = error instanceof Error ? error.message : "Failed to remove member.";
 
       toast.error(message);
     }
@@ -243,14 +209,10 @@ export default function CommitteeDetails({
                 </div>
 
                 <div className="min-w-0">
-                  <VSModalTitle className="truncate">
-                    {committee.name}
-                  </VSModalTitle>
+                  <VSModalTitle className="truncate">{committee.name}</VSModalTitle>
 
                   <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <VSStatusBadge
-                      status={formatStatus(committee.status)}
-                    />
+                    <VSStatusBadge status={formatStatus(committee.status)} />
 
                     {leader ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">
@@ -289,30 +251,18 @@ export default function CommitteeDetails({
 
                 <div className="mt-5 grid gap-3 border-t border-border pt-5 sm:grid-cols-3">
                   <div>
-                    <p className="text-xs text-muted-foreground">
-                      Members
-                    </p>
-                    <p className="mt-1 font-semibold">
-                      {activeMembers.length}
-                    </p>
+                    <p className="text-xs text-muted-foreground">Members</p>
+                    <p className="mt-1 font-semibold">{activeMembers.length}</p>
                   </div>
 
                   <div>
-                    <p className="text-xs text-muted-foreground">
-                      Leader
-                    </p>
-                    <p className="mt-1 font-semibold">
-                      {leader ? "Assigned" : "Not assigned"}
-                    </p>
+                    <p className="text-xs text-muted-foreground">Leader</p>
+                    <p className="mt-1 font-semibold">{leader ? "Assigned" : "Not assigned"}</p>
                   </div>
 
                   <div>
-                    <p className="text-xs text-muted-foreground">
-                      Feedback
-                    </p>
-                    <p className="mt-1 font-semibold">
-                      {feedback.length}
-                    </p>
+                    <p className="text-xs text-muted-foreground">Feedback</p>
+                    <p className="mt-1 font-semibold">{feedback.length}</p>
                   </div>
                 </div>
               </VSCardContent>
@@ -320,11 +270,7 @@ export default function CommitteeDetails({
 
             {/* Actions */}
             <div className="flex flex-wrap gap-2">
-              <VSButton
-                variant="outline"
-                size="sm"
-                onClick={() => setEditing(true)}
-              >
+              <VSButton variant="outline" size="sm" onClick={() => setEditing(true)}>
                 <Edit3 className="h-4 w-4" />
                 Edit committee
               </VSButton>
@@ -334,11 +280,7 @@ export default function CommitteeDetails({
                 size="sm"
                 disabled={changingStatus}
                 onClick={() =>
-                  void handleStatusChange(
-                    committee.status === "active"
-                      ? "closed"
-                      : "active",
-                  )
+                  void handleStatusChange(committee.status === "active" ? "closed" : "active")
                 }
               >
                 {committee.status === "active" ? (
@@ -371,16 +313,11 @@ export default function CommitteeDetails({
                 <VSSectionHeader
                   title="Members"
                   description={`${activeMembers.length} active ${
-                    activeMembers.length === 1
-                      ? "member"
-                      : "members"
+                    activeMembers.length === 1 ? "member" : "members"
                   }`}
                 />
 
-                <VSButton
-                  size="sm"
-                  onClick={() => setAdding((value) => !value)}
-                >
+                <VSButton size="sm" onClick={() => setAdding((value) => !value)}>
                   {adding ? (
                     <>
                       <X className="h-4 w-4" />
@@ -418,10 +355,7 @@ export default function CommitteeDetails({
                   title="No members yet"
                   description="Add volunteers to this committee."
                   action={
-                    <VSButton
-                      size="sm"
-                      onClick={() => setAdding(true)}
-                    >
+                    <VSButton size="sm" onClick={() => setAdding(true)}>
                       <Plus className="h-4 w-4" />
                       Add member
                     </VSButton>
@@ -431,15 +365,11 @@ export default function CommitteeDetails({
                 <div className="space-y-3">
                   {activeMembers.map((item) => {
                     const fullName =
-                      `${item.profile.first_name ?? ""} ${
-                        item.profile.last_name ?? ""
-                      }`.trim() || "Unnamed volunteer";
+                      `${item.profile.first_name ?? ""} ${item.profile.last_name ?? ""}`.trim() ||
+                      "Unnamed volunteer";
 
                     return (
-                      <VSCard
-                        key={item.member.id}
-                        className="rounded-[1.5rem] border-border"
-                      >
+                      <VSCard key={item.member.id} className="rounded-[1.5rem] border-border">
                         <VSCardContent className="p-4">
                           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex min-w-0 items-center gap-3">
@@ -451,24 +381,19 @@ export default function CommitteeDetails({
                                 />
                               ) : (
                                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-                                  {fullName
-                                    .charAt(0)
-                                    .toUpperCase()}
+                                  {fullName.charAt(0).toUpperCase()}
                                 </div>
                               )}
 
                               <div className="min-w-0">
-                                <p className="truncate text-sm font-medium">
-                                  {fullName}
-                                </p>
+                                <p className="truncate text-sm font-medium">{fullName}</p>
 
                                 <div className="mt-1 flex flex-wrap gap-2">
                                   <span className="text-xs text-muted-foreground">
                                     {item.member.status}
                                   </span>
 
-                                  {item.member.profileId ===
-                                    committee.leaderProfileId && (
+                                  {item.member.profileId === committee.leaderProfileId && (
                                     <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
                                       <Shield className="h-3 w-3" />
                                       Leader
@@ -480,9 +405,7 @@ export default function CommitteeDetails({
 
                             <div className="flex flex-wrap items-center gap-2">
                               <select
-                                value={
-                                  item.eventRoleId ?? ""
-                                }
+                                value={item.eventRoleId ?? ""}
                                 onChange={(event) =>
                                   void handleMemberRoleChange(
                                     item.member.id,
@@ -491,15 +414,10 @@ export default function CommitteeDetails({
                                 }
                                 className="h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-primary/20"
                               >
-                                <option value="">
-                                  No event role
-                                </option>
+                                <option value="">No event role</option>
 
                                 {roles.map((role) => (
-                                  <option
-                                    key={role.id}
-                                    value={role.id}
-                                  >
+                                  <option key={role.id} value={role.id}>
                                     {role.name}
                                   </option>
                                 ))}
@@ -508,11 +426,7 @@ export default function CommitteeDetails({
                               <VSButton
                                 variant="ghost"
                                 size="sm"
-                                onClick={() =>
-                                  void handleRemoveMember(
-                                    item.member.profileId,
-                                  )
-                                }
+                                onClick={() => void handleRemoveMember(item.member.profileId)}
                               >
                                 <UserMinus className="h-4 w-4" />
                                 Remove
@@ -532,9 +446,7 @@ export default function CommitteeDetails({
               <VSSectionHeader
                 title="Feedback"
                 description={`${feedback.length} ${
-                  feedback.length === 1
-                    ? "entry"
-                    : "entries"
+                  feedback.length === 1 ? "entry" : "entries"
                 } from committee evaluations`}
               />
 
@@ -545,28 +457,20 @@ export default function CommitteeDetails({
                       <MessageSquare className="h-5 w-5 text-muted-foreground" />
 
                       <div>
-                        <p className="text-sm font-medium">
-                          No feedback yet
-                        </p>
+                        <p className="text-sm font-medium">No feedback yet</p>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          Committee feedback will appear here
-                          once evaluations are submitted.
+                          Committee feedback will appear here once evaluations are submitted.
                         </p>
                       </div>
                     </VSCardContent>
                   </VSCard>
                 ) : (
                   feedback.map((item) => (
-                    <VSCard
-                      key={item.id}
-                      className="rounded-[1.5rem] border-border"
-                    >
+                    <VSCard key={item.id} className="rounded-[1.5rem] border-border">
                       <VSCardContent className="p-5">
                         <div className="flex items-start justify-between gap-4">
                           <div>
-                            <p className="text-sm font-medium">
-                              Volunteer evaluation
-                            </p>
+                            <p className="text-sm font-medium">Volunteer evaluation</p>
 
                             <p className="mt-1 text-xs text-muted-foreground">
                               Member ID: {item.memberProfileId}
@@ -579,22 +483,10 @@ export default function CommitteeDetails({
                         </div>
 
                         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                          <Rating
-                            label="Punctuality"
-                            value={item.punctuality}
-                          />
-                          <Rating
-                            label="Teamwork"
-                            value={item.teamwork}
-                          />
-                          <Rating
-                            label="Communication"
-                            value={item.communication}
-                          />
-                          <Rating
-                            label="Responsibility"
-                            value={item.responsibility}
-                          />
+                          <Rating label="Punctuality" value={item.punctuality} />
+                          <Rating label="Teamwork" value={item.teamwork} />
+                          <Rating label="Communication" value={item.communication} />
+                          <Rating label="Responsibility" value={item.responsibility} />
                         </div>
 
                         {item.comment && (
@@ -619,10 +511,7 @@ export default function CommitteeDetails({
       </VSModal>
 
       {/* Edit committee */}
-      <VSModal
-        open={editing}
-        onOpenChange={setEditing}
-      >
+      <VSModal open={editing} onOpenChange={setEditing}>
         <VSModalContent>
           <VSModalHeader>
             <VSModalTitle>Edit committee</VSModalTitle>
@@ -647,23 +536,12 @@ export default function CommitteeDetails({
   );
 }
 
-function Rating({
-  label,
-  value,
-}: {
-  label: string;
-  value: number | null;
-}) {
+function Rating({ label, value }: { label: string; value: number | null }) {
   return (
     <div className="rounded-xl bg-muted/50 p-3">
-      <p className="text-[11px] text-muted-foreground">
-        {label}
-      </p>
+      <p className="text-[11px] text-muted-foreground">{label}</p>
 
-      <p className="mt-1 text-sm font-semibold">
-        {value ?? "—"}/5
-      </p>
+      <p className="mt-1 text-sm font-semibold">{value ?? "—"}/5</p>
     </div>
   );
 }
-

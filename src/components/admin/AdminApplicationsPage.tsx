@@ -16,7 +16,7 @@ import {
   VSStatusBadge,
 } from "@/components/design-system";
 
-import { adminService } from "@/services/adminService";
+import { adminService } from "@/services/admin/adminService";
 
 export function AdminApplicationsPage() {
   const [status, setStatus] = useState("all");
@@ -33,23 +33,15 @@ export function AdminApplicationsPage() {
     const search = query.toLowerCase().trim();
 
     const matchesQuery =
-      !search ||
-      `${item.volunteer} ${item.event} ${item.role}`
-        .toLowerCase()
-        .includes(search);
+      !search || `${item.volunteer} ${item.event} ${item.role}`.toLowerCase().includes(search);
 
     const matchesStatus =
-      status === "all" ||
-      normalizeStatus(item.status) ===
-        normalizeStatus(status);
+      status === "all" || normalizeStatus(item.status) === normalizeStatus(status);
 
     return matchesQuery && matchesStatus;
   });
 
-  const update = (
-    id: string,
-    next: AdminStatus,
-  ) => {
+  const update = (id: string, next: AdminStatus) => {
     setItems((current) =>
       current.map((item) =>
         item.id === id
@@ -75,18 +67,14 @@ export function AdminApplicationsPage() {
           <div className="flex-1">
             <VSInput
               value={query}
-              onChange={(event) =>
-                setQuery(event.target.value)
-              }
+              onChange={(event) => setQuery(event.target.value)}
               placeholder="Search applicants, events, or roles"
             />
           </div>
 
           <select
             value={status}
-            onChange={(event) =>
-              setStatus(event.target.value)
-            }
+            onChange={(event) => setStatus(event.target.value)}
             className="h-11 rounded-2xl border border-border bg-card px-4 text-sm"
           >
             <option value="all">All statuses</option>
@@ -114,9 +102,7 @@ export function AdminApplicationsPage() {
                   className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between lg:p-6"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-foreground">
-                      {item.volunteer}
-                    </p>
+                    <p className="text-sm font-semibold text-foreground">{item.volunteer}</p>
 
                     <p className="mt-1 text-sm text-muted-foreground">
                       {item.event} · {item.role}
@@ -128,39 +114,24 @@ export function AdminApplicationsPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    <VSStatusBadge
-                      status={formatStatus(item.status)}
-                    />
+                    <VSStatusBadge status={formatStatus(item.status)} />
 
                     <VSButton variant="outline" size="sm">
                       Assign role
                     </VSButton>
 
-                    <VSButton
-                      size="sm"
-                      onClick={() =>
-                        update(item.id, "accepted")
-                      }
-                    >
+                    <VSButton size="sm" onClick={() => update(item.id, "accepted")}>
                       Accept
                     </VSButton>
 
-                    <VSButton
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        update(item.id, "rejected")
-                      }
-                    >
+                    <VSButton variant="ghost" size="sm" onClick={() => update(item.id, "rejected")}>
                       Reject
                     </VSButton>
 
                     <VSButton
                       variant="ghost"
                       size="sm"
-                      onClick={() =>
-                        update(item.id, "waitlisted")
-                      }
+                      onClick={() => update(item.id, "waitlisted")}
                     >
                       Waitlist
                     </VSButton>

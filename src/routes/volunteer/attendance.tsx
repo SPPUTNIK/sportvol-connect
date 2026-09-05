@@ -13,14 +13,9 @@ import {
 
 import { AppShell } from "@/components/app/AppShell";
 
-import {
-  VSBadge,
-  VSCard,
-  VSCardContent,
-  VSPageHeader,
-} from "@/components/design-system";
+import { VSBadge, VSCard, VSCardContent, VSPageHeader } from "@/components/design-system";
 
-import { attendanceService } from "@/services/attendanceService";
+import { attendanceService } from "@/services/volunteer/attendanceService";
 import type { AttendanceRecord } from "@/lib/types";
 
 export const Route = createFileRoute("/volunteer/attendance")({
@@ -32,8 +27,7 @@ export const Route = createFileRoute("/volunteer/attendance")({
       },
       {
         name: "description",
-        content:
-          "Review your VolunSport volunteer attendance and event check-in history.",
+        content: "Review your VolunSport volunteer attendance and event check-in history.",
       },
     ],
   }),
@@ -55,11 +49,7 @@ function Attendance() {
     } catch (err: unknown) {
       console.error("Failed to load attendance:", err);
 
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to load attendance.",
-      );
+      setError(err instanceof Error ? err.message : "Unable to load attendance.");
     } finally {
       setLoading(false);
     }
@@ -69,25 +59,15 @@ function Attendance() {
     loadAttendance();
   }, []);
 
-  const completedRecords = records.filter(
-    (record) =>
-      record.status === "checked-out",
-  ).length;
+  const completedRecords = records.filter((record) => record.status === "checked-out").length;
 
-  const checkedInRecords = records.filter(
-    (record) =>
-      record.status === "checked-in",
-  ).length;
+  const checkedInRecords = records.filter((record) => record.status === "checked-in").length;
 
-  const upcomingRecords = records.filter(
-    (record) =>
-      record.status === "pending",
-  ).length;
+  const upcomingRecords = records.filter((record) => record.status === "pending").length;
 
   return (
     <AppShell title="Attendance">
       <div className="mx-auto max-w-7xl space-y-8">
-
         {/* Header */}
         <VSPageHeader
           eyebrow="Event attendance"
@@ -108,19 +88,15 @@ function Attendance() {
           <VSCard className="rounded-[2rem] border-border">
             <VSCardContent className="flex min-h-[320px] items-center justify-center p-8">
               <div className="text-center">
-
                 <div className="mx-auto flex h-14 w-14 animate-pulse items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   <Clock3 className="h-6 w-6" />
                 </div>
 
-                <p className="mt-5 text-sm font-semibold text-foreground">
-                  Loading attendance…
-                </p>
+                <p className="mt-5 text-sm font-semibold text-foreground">Loading attendance…</p>
 
                 <p className="mt-2 text-xs text-muted-foreground">
                   Preparing your event attendance records.
                 </p>
-
               </div>
             </VSCardContent>
           </VSCard>
@@ -130,7 +106,6 @@ function Attendance() {
         {!loading && error && (
           <VSCard className="mx-auto max-w-2xl rounded-[2rem] border-border">
             <VSCardContent className="p-8 text-center sm:p-12">
-
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
                 <ShieldCheck className="h-7 w-7" />
               </div>
@@ -154,7 +129,6 @@ function Attendance() {
               >
                 Try again
               </button>
-
             </VSCardContent>
           </VSCard>
         )}
@@ -163,20 +137,15 @@ function Attendance() {
         {!loading && !error && records.length === 0 && (
           <VSCard className="mx-auto max-w-2xl rounded-[2rem] border-border">
             <VSCardContent className="p-8 text-center sm:p-12">
-
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <Clock3 className="h-7 w-7" />
               </div>
 
-              <h2 className="mt-6 text-2xl font-semibold text-foreground">
-                No attendance data
-              </h2>
+              <h2 className="mt-6 text-2xl font-semibold text-foreground">No attendance data</h2>
 
               <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted-foreground">
-                Your attendance history will appear after your
-                first event check-in.
+                Your attendance history will appear after your first event check-in.
               </p>
-
             </VSCardContent>
           </VSCard>
         )}
@@ -184,55 +153,32 @@ function Attendance() {
         {/* Content */}
         {!loading && !error && records.length > 0 && (
           <div className="space-y-6">
-
             {/* Summary */}
             <div className="grid gap-4 sm:grid-cols-3">
+              <SummaryCard icon={CalendarDays} label="Total records" value={records.length} />
 
-              <SummaryCard
-                icon={CalendarDays}
-                label="Total records"
-                value={records.length}
-              />
-
-              <SummaryCard
-                icon={CheckCircle2}
-                label="Completed"
-                value={completedRecords}
-                accent
-              />
+              <SummaryCard icon={CheckCircle2} label="Completed" value={completedRecords} accent />
 
               <SummaryCard
                 icon={Clock3}
                 label="Upcoming"
-                value={
-                  upcomingRecords + checkedInRecords
-                }
+                value={upcomingRecords + checkedInRecords}
               />
-
             </div>
 
             {/* Records */}
             <div className="space-y-4">
-
               {records.map((record) => {
-                const checkedOut =
-                  record.status === "checked-out";
+                const checkedOut = record.status === "checked-out";
 
-                const checkedIn =
-                  record.status === "checked-in";
+                const checkedIn = record.status === "checked-in";
 
                 return (
-                  <VSCard
-                    key={record.id}
-                    className="overflow-hidden rounded-[2rem] border-border"
-                  >
+                  <VSCard key={record.id} className="overflow-hidden rounded-[2rem] border-border">
                     <VSCardContent className="p-6 sm:p-8">
-
                       {/* Top */}
                       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-
                         <div className="min-w-0">
-
                           <p className="font-mono text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                             {record.event_title}
                           </p>
@@ -242,7 +188,6 @@ function Attendance() {
                           </h2>
 
                           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-
                             <span className="flex items-center gap-1.5">
                               <CalendarDays className="h-3.5 w-3.5" />
                               {record.date}
@@ -261,14 +206,11 @@ function Attendance() {
                                 {record.shift_title}
                               </span>
                             )}
-
                           </div>
-
                         </div>
 
                         {/* Status */}
                         <div className="shrink-0">
-
                           {checkedOut ? (
                             <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-600">
                               <CheckCircle2 className="h-3.5 w-3.5" />
@@ -285,25 +227,20 @@ function Attendance() {
                               Upcoming
                             </div>
                           )}
-
                         </div>
-
                       </div>
 
                       {/* Venue */}
-                      {(record.venue ||
-                        record.shift_location) && (
+                      {(record.venue || record.shift_location) && (
                         <div className="mt-6 flex items-center gap-2 rounded-2xl bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
                           <MapPin className="h-4 w-4 shrink-0 text-primary" />
 
                           <span>
-                            {record.shift_location ||
-                              record.venue}
+                            {record.shift_location || record.venue}
 
                             {record.shift_location &&
                               record.venue &&
-                              record.shift_location !==
-                                record.venue && (
+                              record.shift_location !== record.venue && (
                                 <>
                                   {" · "}
                                   {record.venue}
@@ -314,56 +251,41 @@ function Attendance() {
                       )}
 
                       {/* Shift */}
-                      {(record.shift_start_time ||
-                        record.shift_end_time) && (
+                      {(record.shift_start_time || record.shift_end_time) && (
                         <div className="mt-4 rounded-2xl border border-border bg-background p-4">
-
                           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-
                             <div>
                               <p className="text-xs uppercase tracking-wider text-muted-foreground">
                                 Shift
                               </p>
 
                               <p className="mt-1 text-sm font-semibold text-foreground">
-                                {record.shift_title ||
-                                  "Volunteer shift"}
+                                {record.shift_title || "Volunteer shift"}
                               </p>
                             </div>
 
                             <div className="text-sm font-semibold text-foreground">
-                              {formatTime(
-                                record.shift_start_time,
-                              )}
+                              {formatTime(record.shift_start_time)}
 
                               {" — "}
 
-                              {formatTime(
-                                record.shift_end_time,
-                              )}
+                              {formatTime(record.shift_end_time)}
                             </div>
-
                           </div>
-
                         </div>
                       )}
 
                       {/* Times */}
                       <div className="mt-7 grid gap-4 sm:grid-cols-2">
-
                         <AttendanceTimeCard
                           icon={LogIn}
                           label="Check-in"
                           value={
                             record.check_in_time
-                              ? formatDateTime(
-                                  record.check_in_time,
-                                )
+                              ? formatDateTime(record.check_in_time)
                               : "Not recorded"
                           }
-                          active={Boolean(
-                            record.check_in_time,
-                          )}
+                          active={Boolean(record.check_in_time)}
                         />
 
                         <AttendanceTimeCard
@@ -371,16 +293,11 @@ function Attendance() {
                           label="Check-out"
                           value={
                             record.check_out_time
-                              ? formatDateTime(
-                                  record.check_out_time,
-                                )
+                              ? formatDateTime(record.check_out_time)
                               : "Not recorded"
                           }
-                          active={Boolean(
-                            record.check_out_time,
-                          )}
+                          active={Boolean(record.check_out_time)}
                         />
-
                       </div>
 
                       {/* Notes */}
@@ -390,32 +307,24 @@ function Attendance() {
                             Notes
                           </p>
 
-                          <p className="mt-2 text-sm leading-6 text-foreground">
-                            {record.notes}
-                          </p>
+                          <p className="mt-2 text-sm leading-6 text-foreground">{record.notes}</p>
                         </div>
                       )}
-
                     </VSCardContent>
                   </VSCard>
                 );
               })}
-
             </div>
 
             {/* Privacy */}
             <div className="flex items-start gap-3 rounded-2xl border border-primary/10 bg-primary/[0.04] p-4">
-
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
 
               <p className="text-xs leading-5 text-muted-foreground">
-                Attendance records are linked to your volunteer
-                assignments and are used to verify participation
-                and completed event hours.
+                Attendance records are linked to your volunteer assignments and are used to verify
+                participation and completed event hours.
               </p>
-
             </div>
-
           </div>
         )}
       </div>
@@ -441,31 +350,23 @@ function SummaryCard({
   return (
     <VSCard className="rounded-[1.75rem] border-border">
       <VSCardContent className="p-5">
-
         <div
           className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-            accent
-              ? "bg-emerald-500/10 text-emerald-600"
-              : "bg-muted text-muted-foreground"
+            accent ? "bg-emerald-500/10 text-emerald-600" : "bg-muted text-muted-foreground"
           }`}
         >
           <Icon className="h-4 w-4" />
         </div>
 
-        <p className="mt-5 text-xs font-medium text-muted-foreground">
-          {label}
-        </p>
+        <p className="mt-5 text-xs font-medium text-muted-foreground">{label}</p>
 
         <p
           className={`mt-1 text-2xl font-semibold ${
-            accent
-              ? "text-emerald-600"
-              : "text-foreground"
+            accent ? "text-emerald-600" : "text-foreground"
           }`}
         >
           {value}
         </p>
-
       </VSCardContent>
     </VSCard>
   );
@@ -488,33 +389,25 @@ function AttendanceTimeCard({
 }) {
   return (
     <div className="flex items-center gap-4 rounded-2xl border border-border bg-background p-4">
-
       <div
         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-          active
-            ? "bg-primary/10 text-primary"
-            : "bg-muted text-muted-foreground"
+          active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
         }`}
       >
         <Icon className="h-4 w-4" />
       </div>
 
       <div className="min-w-0">
-        <p className="text-xs text-muted-foreground">
-          {label}
-        </p>
+        <p className="text-xs text-muted-foreground">{label}</p>
 
         <p
           className={`mt-1 text-sm font-semibold ${
-            active
-              ? "text-foreground"
-              : "text-muted-foreground"
+            active ? "text-foreground" : "text-muted-foreground"
           }`}
         >
           {value}
         </p>
       </div>
-
     </div>
   );
 }

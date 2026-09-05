@@ -2,15 +2,9 @@ import { Save } from "lucide-react";
 
 import { AdminGate } from "./components/AdminGate";
 
-import {
-  VSButton,
-  VSCard,
-  VSCardContent,
-  VSInput,
-  VSPageHeader,
-} from "@/components/design-system";
+import { VSButton, VSCard, VSCardContent, VSInput, VSPageHeader } from "@/components/design-system";
 
-import { adminService } from "@/services/adminService";
+import { adminService } from "@/services/admin/adminService";
 
 export function AdminProfilePage() {
   const profile = adminService.getAdminProfile();
@@ -41,38 +35,24 @@ export function AdminProfilePage() {
                   {firstName} {lastName}
                 </p>
 
-                <p className="text-sm text-muted-foreground">
-                  Admin access · VolunSport Morocco
-                </p>
+                <p className="text-sm text-muted-foreground">Admin access · VolunSport Morocco</p>
               </div>
             </div>
 
             <div className="mt-8 grid gap-5 sm:grid-cols-2">
               <label className="text-sm font-medium">
                 First name
-
-                <VSInput
-                  className="mt-2"
-                  defaultValue={firstName}
-                />
+                <VSInput className="mt-2" defaultValue={firstName} />
               </label>
 
               <label className="text-sm font-medium">
                 Last name
-
-                <VSInput
-                  className="mt-2"
-                  defaultValue={lastName}
-                />
+                <VSInput className="mt-2" defaultValue={lastName} />
               </label>
 
               <label className="text-sm font-medium sm:col-span-2">
                 Email
-
-                <VSInput
-                  className="mt-2"
-                  defaultValue={email}
-                />
+                <VSInput className="mt-2" defaultValue={email} />
               </label>
             </div>
 

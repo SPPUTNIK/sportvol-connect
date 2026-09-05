@@ -68,7 +68,6 @@ export function Gallery() {
               </figure>
             </Reveal>
           ))}
-
         </div>
       </div>
     </section>

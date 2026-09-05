@@ -1,31 +1,16 @@
 import { AdminGate } from "./components/AdminGate";
 import { formatStatus } from "./components/adminHelpers";
 
-import {
-  VSButton,
-  VSEmptyState,
-  VSPageHeader,
-  VSStatusBadge,
-} from "@/components/design-system";
+import { VSButton, VSEmptyState, VSPageHeader, VSStatusBadge } from "@/components/design-system";
 
-import { adminService } from "@/services/adminService";
+import { adminService } from "@/services/admin/adminService";
 
-function Info({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number | null;
-}) {
+function Info({ label, value }: { label: string; value: string | number | null }) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">
-        {label}
-      </p>
+      <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
 
-      <p className="mt-1 text-sm font-semibold text-foreground">
-        {value ?? "—"}
-      </p>
+      <p className="mt-1 text-sm font-semibold text-foreground">{value ?? "—"}</p>
     </div>
   );
 }
@@ -58,37 +43,20 @@ export function AdminAttendancePage() {
                   className="grid gap-4 p-5 md:grid-cols-[1.2fr_1fr_1fr_0.6fr_0.6fr_auto] md:items-center md:p-6"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-foreground">
-                      {item.volunteer}
-                    </p>
+                    <p className="text-sm font-semibold text-foreground">{item.volunteer}</p>
 
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {item.event}
-                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">{item.event}</p>
                   </div>
 
-                  <p className="text-sm text-muted-foreground">
-                    {item.shift}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{item.shift}</p>
 
-                  <Info
-                    label="Check-in"
-                    value={item.checkIn}
-                  />
+                  <Info label="Check-in" value={item.checkIn} />
 
-                  <Info
-                    label="Check-out"
-                    value={item.checkOut}
-                  />
+                  <Info label="Check-out" value={item.checkOut} />
 
-                  <VSStatusBadge
-                    status={formatStatus(item.status)}
-                  />
+                  <VSStatusBadge status={formatStatus(item.status)} />
 
-                  <VSButton
-                    variant="outline"
-                    size="sm"
-                  >
+                  <VSButton variant="outline" size="sm">
                     Edit
                   </VSButton>
                 </div>

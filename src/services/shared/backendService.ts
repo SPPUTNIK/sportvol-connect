@@ -57,9 +57,7 @@ export async function getAllEvents(): Promise<Event[]> {
   return data ?? [];
 }
 
-export async function getEventBySlug(
-  slug: string,
-): Promise<Event | null> {
+export async function getEventBySlug(slug: string): Promise<Event | null> {
   const { data, error } = await db
     .from("events")
     .select("*, event_roles(*)")
@@ -87,7 +85,8 @@ export async function getApplications(): Promise<Application[]> {
 
   const { data, error } = await db
     .from("applications")
-    .select(`
+    .select(
+      `
       id,
       status,
       applied_at,
@@ -98,7 +97,8 @@ export async function getApplications(): Promise<Application[]> {
       role_id,
       event:events(title),
       role:event_roles(name)
-    `)
+    `,
+    )
     .eq("profile_id", userId)
     .order("applied_at", { ascending: false });
 
@@ -114,13 +114,7 @@ export async function getApplications(): Promise<Application[]> {
     submitted_at: formatDate(row.applied_at),
     status: row.status,
     message:
-      [
-        row.motivation,
-        row.experience,
-        row.availability,
-      ]
-        .filter(Boolean)
-        .join("\n\n") || null,
+      [row.motivation, row.experience, row.availability].filter(Boolean).join("\n\n") || null,
   }));
 }
 
@@ -133,12 +127,14 @@ export async function getAcceptedEvents(): Promise<Event[]> {
 
   const { data, error } = await db
     .from("applications")
-    .select(`
+    .select(
+      `
       event:events(
         *,
         event_roles(*)
       )
-    `)
+    `,
+    )
     .eq("profile_id", userId)
     .eq("status", "accepted")
     .order("applied_at", { ascending: false });
@@ -147,9 +143,7 @@ export async function getAcceptedEvents(): Promise<Event[]> {
     throw error;
   }
 
-  return (data ?? [])
-    .map((row: any) => row.event as Event)
-    .filter(Boolean);
+  return (data ?? []).map((row: any) => row.event as Event).filter(Boolean);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -165,7 +159,8 @@ export async function getShifts(): Promise<Shift[]> {
 
   const { data, error } = await db
     .from("shift_assignments")
-    .select(`
+    .select(
+      `
       id,
       status,
       assigned_at,
@@ -188,7 +183,8 @@ export async function getShifts(): Promise<Shift[]> {
         ),
         role:event_roles(name)
       )
-    `)
+    `,
+    )
     .eq("profile_id", userId)
     .order("date", {
       ascending: true,
@@ -219,13 +215,12 @@ export async function getShifts(): Promise<Shift[]> {
 export async function getTraining(): Promise<Training[]> {
   const userId = await getCurrentUserId();
 
-  const [
-    { data: modules, error: moduleError },
-    { data: progress, error: progressError },
-  ] = await Promise.all([
-    db
-      .from("training_modules")
-      .select(`
+  const [{ data: modules, error: moduleError }, { data: progress, error: progressError }] =
+    await Promise.all([
+      db
+        .from("training_modules")
+        .select(
+          `
         id,
         title,
         description,
@@ -233,33 +228,33 @@ export async function getTraining(): Promise<Training[]> {
         required,
         event_id,
         role_id
-      `)
-      .order("title", { ascending: true }),
+      `,
+        )
+        .order("title", { ascending: true }),
 
-    userId
-      ? db
-          .from("training_progress")
-          .select(`
+      userId
+        ? db
+            .from("training_progress")
+            .select(
+              `
             training_id,
             completed,
             completed_at
-          `)
-          .eq("profile_id", userId)
-      : Promise.resolve({
-          data: [],
-          error: null,
-        }),
-  ]);
+          `,
+            )
+            .eq("profile_id", userId)
+        : Promise.resolve({
+            data: [],
+            error: null,
+          }),
+    ]);
 
   if (moduleError || progressError) {
     throw moduleError ?? progressError;
   }
 
   const progressMap = new Map(
-    (progress ?? []).map((item: any) => [
-      item.training_id,
-      Boolean(item.completed),
-    ]),
+    (progress ?? []).map((item: any) => [item.training_id, Boolean(item.completed)]),
   );
 
   return (modules ?? []).map((module: any) => ({
@@ -284,7 +279,8 @@ export async function getAttendance(): Promise<AttendanceRecord[]> {
 
   const { data, error } = await db
     .from("attendance_records")
-    .select(`
+    .select(
+      `
       id,
       event_id,
       role_id,
@@ -310,7 +306,8 @@ export async function getAttendance(): Promise<AttendanceRecord[]> {
         end_time,
         location
       )
-    `)
+    `,
+    )
     .eq("profile_id", userId)
     .order("date", { ascending: false });
 
@@ -323,44 +320,31 @@ export async function getAttendance(): Promise<AttendanceRecord[]> {
 
     event_id: row.event_id,
 
-    event_title:
-      row.event?.title ?? "Unknown event",
+    event_title: row.event?.title ?? "Unknown event",
 
-    role_name:
-      row.role?.name ?? "Unknown role",
+    role_name: row.role?.name ?? "Unknown role",
 
-    date:
-      formatDate(row.date),
+    date: formatDate(row.date),
 
-    status:
-      row.status,
+    status: row.status,
 
-    check_in_time:
-      row.check_in_time ?? null,
+    check_in_time: row.check_in_time ?? null,
 
-    check_out_time:
-      row.check_out_time ?? null,
+    check_out_time: row.check_out_time ?? null,
 
-    notes:
-      row.notes ?? null,
+    notes: row.notes ?? null,
 
-    venue:
-      row.event?.venue ?? null,
+    venue: row.event?.venue ?? null,
 
-    city:
-      row.event?.city ?? null,
+    city: row.event?.city ?? null,
 
-    shift_title:
-      row.shift?.title ?? null,
+    shift_title: row.shift?.title ?? null,
 
-    shift_start_time:
-      row.shift?.start_time ?? null,
+    shift_start_time: row.shift?.start_time ?? null,
 
-    shift_end_time:
-      row.shift?.end_time ?? null,
+    shift_end_time: row.shift?.end_time ?? null,
 
-    shift_location:
-      row.shift?.location ?? null,
+    shift_location: row.shift?.location ?? null,
   }));
 }
 
@@ -377,7 +361,8 @@ export async function getCertificates(): Promise<Certificate[]> {
 
   const { data, error } = await db
     .from("certificates")
-    .select(`
+    .select(
+      `
       id,
       hours,
       date,
@@ -385,7 +370,8 @@ export async function getCertificates(): Promise<Certificate[]> {
       issued_at,
       event:events(title),
       role:event_roles(name)
-    `)
+    `,
+    )
     .eq("profile_id", userId)
     .order("date", { ascending: false });
 
@@ -416,7 +402,8 @@ export async function getNotifications(): Promise<Notification[]> {
 
   const { data, error } = await db
     .from("notifications")
-    .select(`
+    .select(
+      `
       id,
       title,
       body,
@@ -425,7 +412,8 @@ export async function getNotifications(): Promise<Notification[]> {
       created_at,
       event_id,
       application_id
-    `)
+    `,
+    )
     .eq("profile_id", userId)
     .order("created_at", { ascending: false });
 
@@ -475,7 +463,8 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
 
   const { data: hoursData, error: hoursError } = await db
     .from("volunteer_hours")
-    .select(`
+    .select(
+      `
       hours,
       year,
       event_id,
@@ -486,7 +475,8 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
         end_date,
         end_time
       )
-    `)
+    `,
+    )
     .eq("profile_id", userId);
 
   if (hoursError) {
@@ -521,21 +511,13 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
       volunteerEventIds.add(row.event_id);
     }
 
-    const eventTitle =
-      row.event?.title ?? "Unknown event";
+    const eventTitle = row.event?.title ?? "Unknown event";
 
-    const sport =
-      row.event?.sport ?? "Unknown sport";
+    const sport = row.event?.sport ?? "Unknown sport";
 
-    byEvent.set(
-      eventTitle,
-      (byEvent.get(eventTitle) ?? 0) + hours,
-    );
+    byEvent.set(eventTitle, (byEvent.get(eventTitle) ?? 0) + hours);
 
-    bySport.set(
-      sport,
-      (bySport.get(sport) ?? 0) + hours,
-    );
+    bySport.set(sport, (bySport.get(sport) ?? 0) + hours);
   });
 
   /*
@@ -559,10 +541,10 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
   if (volunteerEventIds.size > 0) {
     const eventIds = Array.from(volunteerEventIds);
 
-    const { data: attendanceData, error: attendanceError } =
-      await db
-        .from("attendance_records")
-        .select(`
+    const { data: attendanceData, error: attendanceError } = await db
+      .from("attendance_records")
+      .select(
+        `
           event_id,
           date,
           check_in_time,
@@ -575,9 +557,10 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
             end_date,
             end_time
           )
-        `)
-        .eq("profile_id", userId)
-        .in("event_id", eventIds);
+        `,
+      )
+      .eq("profile_id", userId)
+      .in("event_id", eventIds);
 
     if (attendanceError) {
       throw attendanceError;
@@ -588,27 +571,18 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
     /*
      * Group attendance records by event.
      */
-    const attendanceByEvent = new Map<
-      string,
-      any[]
-    >();
+    const attendanceByEvent = new Map<string, any[]>();
 
     attendanceRows.forEach((attendance: any) => {
       if (!attendance.event_id) {
         return;
       }
 
-      const existing =
-        attendanceByEvent.get(
-          attendance.event_id,
-        ) ?? [];
+      const existing = attendanceByEvent.get(attendance.event_id) ?? [];
 
       existing.push(attendance);
 
-      attendanceByEvent.set(
-        attendance.event_id,
-        existing,
-      );
+      attendanceByEvent.set(attendance.event_id, existing);
     });
 
     /*
@@ -618,15 +592,9 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
      */
 
     const parseDateOnly = (value: string): Date => {
-      const [year, month, day] = value
-        .split("-")
-        .map(Number);
+      const [year, month, day] = value.split("-").map(Number);
 
-      return new Date(
-        year,
-        month - 1,
-        day,
-      );
+      return new Date(year, month - 1, day);
     };
 
     /*
@@ -638,13 +606,9 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
     const formatDateOnly = (date: Date): string => {
       const year = date.getFullYear();
 
-      const month = String(
-        date.getMonth() + 1,
-      ).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
 
-      const day = String(
-        date.getDate(),
-      ).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
 
       return `${year}-${month}-${day}`;
     };
@@ -665,26 +629,17 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
      * ==========================================================
      */
 
-    const getEventDates = (
-      startDate: string,
-      endDate: string,
-    ): string[] => {
+    const getEventDates = (startDate: string, endDate: string): string[] => {
       const dates: string[] = [];
 
-      const current =
-        parseDateOnly(startDate);
+      const current = parseDateOnly(startDate);
 
-      const end =
-        parseDateOnly(endDate);
+      const end = parseDateOnly(endDate);
 
       while (current <= end) {
-        dates.push(
-          formatDateOnly(current),
-        );
+        dates.push(formatDateOnly(current));
 
-        current.setDate(
-          current.getDate() + 1,
-        );
+        current.setDate(current.getDate() + 1);
       }
 
       return dates;
@@ -697,18 +652,14 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
      */
 
     for (const eventId of eventIds) {
-      const attendance =
-        attendanceByEvent.get(eventId) ?? [];
+      const attendance = attendanceByEvent.get(eventId) ?? [];
 
       /*
        * We need the event information.
        *
        * It is available through the attendance relation.
        */
-      const event =
-        attendance.find(
-          (record) => record.event,
-        )?.event;
+      const event = attendance.find((record) => record.event)?.event;
 
       /*
        * If there is no attendance record at all,
@@ -718,11 +669,9 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
         continue;
       }
 
-      const startDate =
-        event.start_date;
+      const startDate = event.start_date;
 
-      const endDate =
-        event.end_date;
+      const endDate = event.end_date;
 
       if (!startDate || !endDate) {
         continue;
@@ -750,40 +699,23 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
       let eventEndDateTime: Date;
 
       if (event.end_time) {
-        const [hours, minutes, seconds = 0] =
-          String(event.end_time)
-            .split(":")
-            .map(Number);
+        const [hours, minutes, seconds = 0] = String(event.end_time).split(":").map(Number);
 
-        const endDateObject =
-          parseDateOnly(endDate);
+        const endDateObject = parseDateOnly(endDate);
 
-        endDateObject.setHours(
-          hours,
-          minutes,
-          seconds,
-          0,
-        );
+        endDateObject.setHours(hours, minutes, seconds, 0);
 
-        eventEndDateTime =
-          endDateObject;
+        eventEndDateTime = endDateObject;
       } else {
         /*
          * If end_time is NULL, consider the event
          * finished at the end of the end date.
          */
-        const endDateObject =
-          parseDateOnly(endDate);
+        const endDateObject = parseDateOnly(endDate);
 
-        endDateObject.setHours(
-          23,
-          59,
-          59,
-          999,
-        );
+        endDateObject.setHours(23, 59, 59, 999);
 
-        eventEndDateTime =
-          endDateObject;
+        eventEndDateTime = endDateObject;
       }
 
       /*
@@ -799,11 +731,7 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
        * ========================================================
        */
 
-      const eventDates =
-        getEventDates(
-          startDate,
-          endDate,
-        );
+      const eventDates = getEventDates(startDate, endDate);
 
       /*
        * ========================================================
@@ -834,42 +762,26 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
        * ========================================================
        */
 
-      const allDaysCompleted =
-        eventDates.every(
-          (eventDate) => {
-            const dayAttendance =
-              attendance.filter(
-                (record) =>
-                  record.date ===
-                  eventDate,
-              );
+      const allDaysCompleted = eventDates.every((eventDate) => {
+        const dayAttendance = attendance.filter((record) => record.date === eventDate);
 
-            /*
-             * There must be at least one attendance
-             * record for this day.
-             */
-            if (
-              dayAttendance.length === 0
-            ) {
-              return false;
-            }
+        /*
+         * There must be at least one attendance
+         * record for this day.
+         */
+        if (dayAttendance.length === 0) {
+          return false;
+        }
 
-            /*
-             * At least one attendance record
-             * for this day must have BOTH
-             * check-in and check-out.
-             */
-            return dayAttendance.some(
-              (record) =>
-                Boolean(
-                  record.check_in_time,
-                ) &&
-                Boolean(
-                  record.check_out_time,
-                ),
-            );
-          },
+        /*
+         * At least one attendance record
+         * for this day must have BOTH
+         * check-in and check-out.
+         */
+        return dayAttendance.some(
+          (record) => Boolean(record.check_in_time) && Boolean(record.check_out_time),
         );
+      });
 
       if (allDaysCompleted) {
         eventsCompleted += 1;
@@ -886,39 +798,23 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
   return {
     total,
 
-    current_year:
-      currentYearTotal,
+    current_year: currentYearTotal,
 
-    events_completed:
-      eventsCompleted,
+    events_completed: eventsCompleted,
 
-    by_sport:
-      Array.from(
-        bySport.entries(),
-      )
-        .sort(
-          (a, b) => b[1] - a[1],
-        )
-        .map(
-          ([label, value]) => ({
-            label,
-            value,
-          }),
-        ),
+    by_sport: Array.from(bySport.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([label, value]) => ({
+        label,
+        value,
+      })),
 
-    by_event:
-      Array.from(
-        byEvent.entries(),
-      )
-        .sort(
-          (a, b) => b[1] - a[1],
-        )
-        .map(
-          ([label, value]) => ({
-            label,
-            value,
-          }),
-        ),
+    by_event: Array.from(byEvent.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([label, value]) => ({
+        label,
+        value,
+      })),
   };
 }
 
@@ -943,11 +839,13 @@ export async function applyForRole(
 
   const { data: event, error: eventError } = await db
     .from("events")
-    .select(`
+    .select(
+      `
       id,
       status,
       application_deadline
-    `)
+    `,
+    )
     .eq("id", eventId)
     .maybeSingle();
 
@@ -959,10 +857,7 @@ export async function applyForRole(
     throw new Error("Applications are closed for this event.");
   }
 
-  if (
-    event.application_deadline &&
-    new Date(event.application_deadline) < new Date()
-  ) {
+  if (event.application_deadline && new Date(event.application_deadline) < new Date()) {
     throw new Error("The application deadline has passed.");
   }
 
@@ -970,11 +865,13 @@ export async function applyForRole(
 
   const { data: role, error: roleError } = await db
     .from("event_roles")
-    .select(`
+    .select(
+      `
       id,
       positions,
       filled_positions
-    `)
+    `,
+    )
     .eq("id", roleId)
     .maybeSingle();
 
@@ -982,19 +879,13 @@ export async function applyForRole(
     throw new Error("Selected role not found.");
   }
 
-  if (
-    Number(role.filled_positions ?? 0) >=
-    Number(role.positions ?? 0)
-  ) {
+  if (Number(role.filled_positions ?? 0) >= Number(role.positions ?? 0)) {
     throw new Error("This role is already full.");
   }
 
   /* -------------------------- Existing application ---------------------- */
 
-  const {
-    data: existing,
-    error: existingError,
-  } = await db
+  const { data: existing, error: existingError } = await db
     .from("applications")
     .select("id")
     .eq("profile_id", userId)
@@ -1007,9 +898,7 @@ export async function applyForRole(
   }
 
   if (existing) {
-    throw new Error(
-      "You have already applied for this role.",
-    );
+    throw new Error("You have already applied for this role.");
   }
 
   /* -------------------------------- Insert ------------------------------- */
@@ -1024,9 +913,7 @@ export async function applyForRole(
     motivation,
   };
 
-  const { error: insertError } = await db
-    .from("applications")
-    .insert(payload);
+  const { error: insertError } = await db.from("applications").insert(payload);
 
   if (insertError) {
     throw insertError;
@@ -1069,7 +956,8 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
     // --------------------------------
     db
       .from("profiles")
-      .select(`
+      .select(
+        `
         id,
         first_name,
         last_name,
@@ -1084,7 +972,8 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
         languages,
         experience,
         avatar_url
-      `)
+      `,
+      )
       .eq("id", userId)
       .single(),
 
@@ -1093,7 +982,8 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
     // --------------------------------
     db
       .from("applications")
-      .select(`
+      .select(
+        `
         id,
         status,
         applied_at,
@@ -1110,7 +1000,8 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
           venue
         ),
         role:event_roles(name)
-      `)
+      `,
+      )
       .eq("profile_id", userId)
       .order("applied_at", { ascending: false }),
 
@@ -1119,7 +1010,8 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
     // --------------------------------
     db
       .from("volunteer_hours")
-      .select(`
+      .select(
+        `
         id,
         hours,
         year,
@@ -1127,7 +1019,8 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
         event_id,
         shift_id,
         attendance_id
-      `)
+      `,
+      )
       .eq("profile_id", userId),
 
     // --------------------------------
@@ -1135,7 +1028,8 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
     // --------------------------------
     db
       .from("shift_assignments")
-      .select(`
+      .select(
+        `
         id,
         status,
         assigned_at,
@@ -1157,7 +1051,8 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
           ),
           role:event_roles(name)
         )
-      `)
+      `,
+      )
       .eq("profile_id", userId)
       .eq("status", "assigned")
       .order("assigned_at", { ascending: true }),
@@ -1165,38 +1060,31 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
     // --------------------------------
     // Certificates
     // --------------------------------
-    db
-      .from("certificates")
-      .select("id, hours")
-      .eq("profile_id", userId),
+    db.from("certificates").select("id, hours").eq("profile_id", userId),
 
     // --------------------------------
     // Attendance
     // --------------------------------
-    db
-      .from("attendance_records")
-      .select("id, status")
-      .eq("profile_id", userId),
+    db.from("attendance_records").select("id, status").eq("profile_id", userId),
 
     // --------------------------------
     // Training progress
     // --------------------------------
-    db
-      .from("training_progress")
-      .select("training_id, completed")
-      .eq("profile_id", userId),
+    db.from("training_progress").select("training_id, completed").eq("profile_id", userId),
 
     // --------------------------------
     // Accreditations
     // --------------------------------
     db
       .from("accreditations")
-      .select(`
+      .select(
+        `
         id,
         status,
         event_id,
         role_id
-      `)
+      `,
+      )
       .eq("profile_id", userId),
 
     // --------------------------------
@@ -1204,7 +1092,8 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
     // --------------------------------
     db
       .from("events")
-      .select(`
+      .select(
+        `
         id,
         title,
         cover_url,
@@ -1213,7 +1102,8 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
         start_date,
         end_date,
         status
-      `)
+      `,
+      )
       .eq("status", "published")
       .order("created_at", { ascending: false })
       .limit(3),
@@ -1245,8 +1135,7 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
   const profile = profileResult.data;
 
   const applications = applicationsResult.data ?? [];
-  const volunteerHoursRows =
-    volunteerHoursResult.data ?? [];
+  const volunteerHoursRows = volunteerHoursResult.data ?? [];
   const shifts = shiftsResult.data ?? [];
   const certificates = certificatesResult.data ?? [];
   const attendance = attendanceResult.data ?? [];
@@ -1258,46 +1147,39 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
   // APPLICATIONS
   // ========================================
 
-  const formattedApplications: Application[] =
-    applications.map((row: any) => ({
-      id: row.id,
-      event_id: row.event_id,
-      role_id: row.role_id,
-      event_title: row.event?.title ?? "",
-      role_name: row.role?.name ?? "",
-      submitted_at: formatDate(row.applied_at),
-      status: row.status,
-      message:
-        [row.motivation, row.experience, row.availability]
-          .filter(Boolean)
-          .join("\n\n") || null,
-      availability: row.availability ?? null,
-      experience: row.experience ?? null,
-    }));
+  const formattedApplications: Application[] = applications.map((row: any) => ({
+    id: row.id,
+    event_id: row.event_id,
+    role_id: row.role_id,
+    event_title: row.event?.title ?? "",
+    role_name: row.role?.name ?? "",
+    submitted_at: formatDate(row.applied_at),
+    status: row.status,
+    message:
+      [row.motivation, row.experience, row.availability].filter(Boolean).join("\n\n") || null,
+    availability: row.availability ?? null,
+    experience: row.experience ?? null,
+  }));
 
   // ========================================
   // LATEST 3 PLATFORM EVENTS
   // ========================================
 
-  const upcomingEventsList: DashboardUpcomingEvent[] =
-    latestEvents.map((event: any) => ({
-      id: event.id,
-      event_id: event.id,
-      title: event.title ?? "",
-      status: "available",
-      date: formatDate(event.start_date),
-      role: "Volunteer",
-      shift: event.end_date
-        ? `${formatDate(event.start_date)} - ${formatDate(event.end_date)}`
-        : formatDate(event.start_date),
-      location:
-        [event.city, event.venue]
-          .filter(Boolean)
-          .join(" • ") || "",
-      training: "Required",
-      accreditation: "Pending",
-      cover_url: event.cover_url ?? null,
-    }));
+  const upcomingEventsList: DashboardUpcomingEvent[] = latestEvents.map((event: any) => ({
+    id: event.id,
+    event_id: event.id,
+    title: event.title ?? "",
+    status: "available",
+    date: formatDate(event.start_date),
+    role: "Volunteer",
+    shift: event.end_date
+      ? `${formatDate(event.start_date)} - ${formatDate(event.end_date)}`
+      : formatDate(event.start_date),
+    location: [event.city, event.venue].filter(Boolean).join(" • ") || "",
+    training: "Required",
+    accreditation: "Pending",
+    cover_url: event.cover_url ?? null,
+  }));
 
   // ========================================
   // UPCOMING EVENT
@@ -1308,9 +1190,7 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
   const firstEvent = latestEvents[0];
 
   if (firstEvent) {
-    const accreditation = accreditations.find(
-      (item: any) => item.event_id === firstEvent.id,
-    );
+    const accreditation = accreditations.find((item: any) => item.event_id === firstEvent.id);
 
     const trainingRequiredResult = await db
       .from("training_modules")
@@ -1321,20 +1201,15 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
       throw trainingRequiredResult.error;
     }
 
-    const requiredTraining =
-      trainingRequiredResult.data ?? [];
+    const requiredTraining = trainingRequiredResult.data ?? [];
 
     const completedTrainingIds = new Set(
-      training
-        .filter((item: any) => item.completed)
-        .map((item: any) => item.training_id),
+      training.filter((item: any) => item.completed).map((item: any) => item.training_id),
     );
 
     const trainingComplete =
       requiredTraining.length === 0 ||
-      requiredTraining.every((item: any) =>
-        completedTrainingIds.has(item.id),
-      );
+      requiredTraining.every((item: any) => completedTrainingIds.has(item.id));
 
     upcomingEvent = {
       title: firstEvent.title ?? "",
@@ -1342,14 +1217,9 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
       date: formatDate(firstEvent.start_date),
       role: "Volunteer",
       shift: firstEvent.end_date
-        ? `${formatDate(firstEvent.start_date)} - ${formatDate(
-            firstEvent.end_date,
-          )}`
+        ? `${formatDate(firstEvent.start_date)} - ${formatDate(firstEvent.end_date)}`
         : formatDate(firstEvent.start_date),
-      location:
-        [firstEvent.city, firstEvent.venue]
-          .filter(Boolean)
-          .join(" • ") || "",
+      location: [firstEvent.city, firstEvent.venue].filter(Boolean).join(" • ") || "",
       training: trainingComplete ? "Complete" : "Required",
       accreditation: accreditation?.status ?? "Pending",
     };
@@ -1360,31 +1230,25 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
   // ========================================
 
   const volunteerHours = volunteerHoursRows.reduce(
-    (total: number, row: any) =>
-      total + Number(row.hours ?? 0),
+    (total: number, row: any) => total + Number(row.hours ?? 0),
     0,
   );
 
-  const attendanceRate = Number(
-    profile?.attendance_rate ?? 0,
-  );
+  const attendanceRate = Number(profile?.attendance_rate ?? 0);
 
   const certificatesCount = certificates.length;
 
   const now = new Date();
 
-  const upcomingAssignedShifts = shifts.filter(
-    (row: any) => {
-      const date = row.shift?.date;
+  const upcomingAssignedShifts = shifts.filter((row: any) => {
+    const date = row.shift?.date;
 
-      if (!date) return false;
+    if (!date) return false;
 
-      return new Date(`${date}T23:59:59`) >= now;
-    },
-  );
+    return new Date(`${date}T23:59:59`) >= now;
+  });
 
-  const upcomingEvents =
-    upcomingAssignedShifts.length;
+  const upcomingEvents = upcomingAssignedShifts.length;
 
   // ========================================
   // PROFILE COMPLETION
@@ -1402,27 +1266,14 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
   ];
 
   const filledFields = profileFields.filter(
-    (value) =>
-      value !== null &&
-      value !== undefined &&
-      String(value).trim() !== "",
+    (value) => value !== null && value !== undefined && String(value).trim() !== "",
   ).length;
 
-  const interestsCount = Array.isArray(
-    profile?.interests,
-  )
-    ? profile.interests.length
-    : 0;
+  const interestsCount = Array.isArray(profile?.interests) ? profile.interests.length : 0;
 
-  const skillsCount = Array.isArray(profile?.skills)
-    ? profile.skills.length
-    : 0;
+  const skillsCount = Array.isArray(profile?.skills) ? profile.skills.length : 0;
 
-  const languagesCount = Array.isArray(
-    profile?.languages,
-  )
-    ? profile.languages.length
-    : 0;
+  const languagesCount = Array.isArray(profile?.languages) ? profile.languages.length : 0;
 
   let profileCompletion = Math.round(
     (filledFields / profileFields.length) * 70 +
@@ -1431,10 +1282,7 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
       (Math.min(languagesCount, 2) / 2) * 10,
   );
 
-  profileCompletion = Math.min(
-    100,
-    Math.max(0, profileCompletion),
-  );
+  profileCompletion = Math.min(100, Math.max(0, profileCompletion));
 
   // ========================================
   // ACHIEVEMENTS
@@ -1448,18 +1296,12 @@ export async function getVolunteerDashboard(): Promise<VolunteerDashboard> {
     },
     {
       title: "10 Volunteer Hours",
-      progress: Math.min(
-        100,
-        Math.round((volunteerHours / 10) * 100),
-      ),
+      progress: Math.min(100, Math.round((volunteerHours / 10) * 100)),
       unlocked: volunteerHours >= 10,
     },
     {
       title: "Perfect Attendance",
-      progress: Math.min(
-        100,
-        Math.round(attendanceRate),
-      ),
+      progress: Math.min(100, Math.round(attendanceRate)),
       unlocked: attendanceRate >= 100,
     },
   ];

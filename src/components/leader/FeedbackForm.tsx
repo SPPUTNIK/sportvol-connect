@@ -1,9 +1,17 @@
-import React, { useState } from "react";
-import { VSButton, VSInput, VSTextarea } from "@/components/design-system";
-import committeeService from "@/services/committeeService";
+import { useState } from "react";
 import { toast } from "sonner";
 
-export default function FeedbackForm({ committeeId, eventId, memberProfileId, leaderProfileId, onSaved }: { committeeId: string; eventId: string; memberProfileId: string; leaderProfileId: string; onSaved?: () => void }) {
+import { VSButton, VSTextarea } from "@/components/design-system";
+
+export default function FeedbackForm({
+  onSaved,
+}: {
+  committeeId?: string;
+  eventId?: string;
+  memberProfileId?: string;
+  leaderProfileId?: string;
+  onSaved?: () => void;
+}) {
   const [punctuality, setPunctuality] = useState(5);
   const [teamwork, setTeamwork] = useState(5);
   const [communication, setCommunication] = useState(5);
@@ -12,69 +20,77 @@ export default function FeedbackForm({ committeeId, eventId, memberProfileId, le
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  function getErrorMessage(err: unknown) {
-    if (err instanceof Error) return err.message;
-    return String(err);
-  }
-
   async function handleSubmit() {
-    // basic validation
-    if (overall < 1 || overall > 5) return toast.error("Overall rating required");
-    setSubmitting(true);
-    try {
-      await committeeService.addFeedback(committeeId, eventId, memberProfileId, leaderProfileId, { punctuality, teamwork, communication, responsibility, overall_rating: overall }, comment || undefined);
-      toast.success("Feedback submitted");
-      onSaved?.();
-    } catch (err: unknown) {
-      toast.error(getErrorMessage(err) || "Failed to submit feedback");
-    } finally {
-      setSubmitting(false);
+    if (overall < 1 || overall > 5) {
+      toast.error("Overall rating is required");
+      return;
     }
+
+    setSubmitting(true);
+
+    window.setTimeout(() => {
+      toast.success("Mock feedback submitted successfully");
+      setSubmitting(false);
+      onSaved?.();
+    }, 600);
   }
 
   function RatingSelect({ value, onChange }: { value: number; onChange: (v: number) => void }) {
     return (
-      <select value={value} onChange={(e) => onChange(Number(e.target.value))} className="border rounded px-2 py-1">
+      <select
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
+        className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground"
+      >
         {[1, 2, 3, 4, 5].map((n) => (
-          <option key={n} value={n}>{n}</option>
+          <option key={n} value={n}>
+            {n}
+          </option>
         ))}
       </select>
     );
   }
 
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-2">
+    <div className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm">Punctuality</label>
+          <label className="mb-2 block text-sm font-medium text-foreground">Punctuality</label>
           <RatingSelect value={punctuality} onChange={setPunctuality} />
         </div>
         <div>
-          <label className="block text-sm">Teamwork</label>
+          <label className="mb-2 block text-sm font-medium text-foreground">Teamwork</label>
           <RatingSelect value={teamwork} onChange={setTeamwork} />
         </div>
         <div>
-          <label className="block text-sm">Communication</label>
+          <label className="mb-2 block text-sm font-medium text-foreground">Communication</label>
           <RatingSelect value={communication} onChange={setCommunication} />
         </div>
         <div>
-          <label className="block text-sm">Responsibility</label>
+          <label className="mb-2 block text-sm font-medium text-foreground">Responsibility</label>
           <RatingSelect value={responsibility} onChange={setResponsibility} />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm">Overall rating</label>
+        <label className="mb-2 block text-sm font-medium text-foreground">Overall rating</label>
         <RatingSelect value={overall} onChange={setOverall} />
       </div>
 
       <div>
-        <label className="block text-sm">Comment</label>
-        <VSTextarea value={comment} onChange={(e) => setComment(e.target.value)} />
+        <label className="mb-2 block text-sm font-medium text-foreground">Comment</label>
+        <VSTextarea
+          value={comment}
+          onChange={(event) => setComment(event.target.value)}
+          placeholder="Share a short update..."
+          className="min-h-28"
+        />
       </div>
 
-      <div className="flex justify-end">
-        <VSButton onClick={handleSubmit} disabled={submitting}>{submitting ? "Submitting…" : "Submit feedback"}</VSButton>
+      <div className="flex justify-end pt-2">
+        <VSButton onClick={handleSubmit} disabled={submitting}>
+          {submitting ? "Submitting…" : "Submit feedback"}
+        </VSButton>
       </div>
     </div>
   );

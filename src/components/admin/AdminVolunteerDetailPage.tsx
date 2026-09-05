@@ -1,11 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  BarChart3,
-  CalendarDays,
-  Mail,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowLeft, BarChart3, CalendarDays, Mail, ShieldCheck } from "lucide-react";
 
 import { AdminGate } from "./components/AdminGate";
 import {
@@ -19,19 +13,12 @@ import {
   VSStatusBadge,
 } from "@/components/design-system";
 
-import { adminService } from "@/services/adminService";
+import { adminService } from "@/services/admin/adminService";
 
-export function AdminVolunteerDetailPage({
-  volunteerId,
-}: {
-  volunteerId: string;
-}) {
+export function AdminVolunteerDetailPage({ volunteerId }: { volunteerId: string }) {
   const volunteers = adminService.getVolunteers();
 
-  const volunteer =
-    volunteers.find(
-      (item) => item.id === volunteerId,
-    ) ?? null;
+  const volunteer = volunteers.find((item) => item.id === volunteerId) ?? null;
 
   if (!volunteer) {
     return (
@@ -63,25 +50,16 @@ export function AdminVolunteerDetailPage({
    */
   const volunteerEventIds = new Set(
     applications
-      .filter(
-        (application) =>
-          application.volunteerId === volunteer.id,
-      )
+      .filter((application) => application.volunteerId === volunteer.id)
       .map((application) => application.eventId),
   );
 
-  const events = allEvents.filter((event) =>
-    volunteerEventIds.has(event.id),
-  );
+  const events = allEvents.filter((event) => volunteerEventIds.has(event.id));
 
   return (
     <AdminGate title="Volunteer profile">
       <div className="mx-auto max-w-6xl">
-        <VSButton
-          asChild
-          variant="ghost"
-          className="mb-5"
-        >
+        <VSButton asChild variant="ghost" className="mb-5">
           <Link to="/admin/volunteers">
             <ArrowLeft className="h-4 w-4" />
             Back to volunteers
@@ -123,10 +101,7 @@ export function AdminVolunteerDetailPage({
 
         <VSCard className="mt-6 rounded-[2rem] border-border">
           <VSCardContent className="p-6 sm:p-8">
-            <VSSectionHeader
-              eyebrow="Volunteer history"
-              title="Event participation"
-            />
+            <VSSectionHeader eyebrow="Volunteer history" title="Event participation" />
 
             <div className="mt-5 space-y-3">
               {events.map((event) => (
@@ -135,9 +110,7 @@ export function AdminVolunteerDetailPage({
                   className="flex items-center justify-between gap-4 rounded-2xl border border-border p-4"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-foreground">
-                      {event.title}
-                    </p>
+                    <p className="text-sm font-semibold text-foreground">{event.title}</p>
 
                     <p className="mt-1 text-xs text-muted-foreground">
                       {event.startDate} · {event.sport}
@@ -149,9 +122,7 @@ export function AdminVolunteerDetailPage({
               ))}
 
               {events.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  No event participation recorded.
-                </p>
+                <p className="text-sm text-muted-foreground">No event participation recorded.</p>
               )}
             </div>
           </VSCardContent>

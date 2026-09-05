@@ -1,5 +1,13 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { CreditCard as Edit3, LoaderCircle, Plus, Search, ShieldCheck, Trash2, Users } from "lucide-react";
+import {
+  CreditCard as Edit3,
+  LoaderCircle,
+  Plus,
+  Search,
+  ShieldCheck,
+  Trash2,
+  Users,
+} from "lucide-react";
 
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import {
@@ -19,7 +27,7 @@ import {
   VSModalFooter,
 } from "@/components/design-system";
 
-import { adminEventService } from "@/services/adminEventService";
+import { adminEventService } from "@/services/admin/adminEventService";
 import { supabase } from "@/integrations/supabase/client";
 
 type RoleRow = {
@@ -64,10 +72,7 @@ export function AdminRolesPage() {
     setError(null);
     try {
       const [rolesRes, eventsRes] = await Promise.all([
-        supabase
-          .from("event_roles")
-          .select("*")
-          .order("created_at", { ascending: false }),
+        supabase.from("event_roles").select("*").order("created_at", { ascending: false }),
         supabase.from("events").select("id, title").order("title", { ascending: true }),
       ]);
 
@@ -232,9 +237,7 @@ export function AdminRolesPage() {
                       </div>
                       <div>
                         <h2 className="text-lg font-semibold">{role.name}</h2>
-                        <p className="mt-1 text-sm text-primary">
-                          {eventTitle(role.event_id)}
-                        </p>
+                        <p className="mt-1 text-sm text-primary">{eventTitle(role.event_id)}</p>
                         {role.description && (
                           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
                             {role.description}

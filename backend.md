@@ -33,14 +33,14 @@ The backend must support the complete sports-event volunteer lifecycle.
 
 Before implementing:
 
-* Inspect frontend
-* Inspect existing Supabase client
-* Inspect existing services
-* Inspect existing types
-* Inspect routes
-* Inspect authentication
-* Inspect existing API/service functions
-* Inspect existing mock data
+- Inspect frontend
+- Inspect existing Supabase client
+- Inspect existing services
+- Inspect existing types
+- Inspect routes
+- Inspect authentication
+- Inspect existing API/service functions
+- Inspect existing mock data
 
 Reuse existing architecture where possible.
 
@@ -52,20 +52,20 @@ Do not duplicate existing functionality.
 
 Implement secure business logic for:
 
-* Authentication integration
-* Profiles
-* Events
-* Event roles
-* Applications
-* Volunteer assignments
-* Shifts
-* Training
-* Accreditation
-* Attendance
-* Volunteer hours
-* Certificates
-* Notifications
-* Admin operations
+- Authentication integration
+- Profiles
+- Events
+- Event roles
+- Applications
+- Volunteer assignments
+- Shifts
+- Training
+- Accreditation
+- Attendance
+- Volunteer hours
+- Certificates
+- Notifications
+- Admin operations
 
 ---
 
@@ -75,12 +75,12 @@ Integrate with Supabase Auth.
 
 Support:
 
-* Sign up
-* Login
-* Logout
-* Password reset
-* Session handling
-* Auth state
+- Sign up
+- Login
+- Logout
+- Password reset
+- Session handling
+- Auth state
 
 Do not expose service-role credentials to the client.
 
@@ -99,20 +99,20 @@ Implement secure authorization.
 
 Volunteer:
 
-* Own profile
-* Published events
-* Own applications
-* Own schedule
-* Own training
-* Own accreditation
-* Own attendance
-* Own hours
-* Own certificates
-* Own notifications
+- Own profile
+- Published events
+- Own applications
+- Own schedule
+- Own training
+- Own accreditation
+- Own attendance
+- Own hours
+- Own certificates
+- Own notifications
 
 Admin:
 
-* Full platform management
+- Full platform management
 
 Never trust a client-supplied role.
 
@@ -122,13 +122,13 @@ Never trust a client-supplied role.
 
 Implement services for:
 
-* Get profile
-* Create profile
-* Update profile
-* Upload avatar
-* Update skills
-* Update sports interests
-* Update languages
+- Get profile
+- Create profile
+- Update profile
+- Upload avatar
+- Update skills
+- Update sports interests
+- Update languages
 
 Handle missing profiles gracefully.
 
@@ -138,23 +138,23 @@ Handle missing profiles gracefully.
 
 Implement:
 
-* List published events
-* Get event
-* Search
-* Filter
-* Get event roles
-* Get event availability
+- List published events
+- Get event
+- Search
+- Filter
+- Get event roles
+- Get event availability
 
 Admin:
 
-* Create event
-* Update event
-* Delete event
-* Publish
-* Unpublish
-* Close
-* Complete
-* Cancel
+- Create event
+- Update event
+- Delete event
+- Publish
+- Unpublish
+- Close
+- Complete
+- Cancel
 
 Validate all inputs.
 
@@ -164,12 +164,12 @@ Validate all inputs.
 
 Implement:
 
-* Create role
-* Update role
-* Delete role
-* Get roles
-* Capacity validation
-* Remaining positions
+- Create role
+- Update role
+- Delete role
+- Get roles
+- Capacity validation
+- Remaining positions
 
 Prevent capacity from being exceeded.
 
@@ -179,22 +179,22 @@ Prevent capacity from being exceeded.
 
 Implement:
 
-* Create application
-* Get volunteer applications
-* Get application details
-* Withdraw application
-* Admin list applications
-* Accept
-* Reject
-* Waitlist
-* Assign/reassign role
+- Create application
+- Get volunteer applications
+- Get application details
+- Withdraw application
+- Admin list applications
+- Accept
+- Reject
+- Waitlist
+- Assign/reassign role
 
 Enforce:
 
-* No duplicate application
-* No application after deadline
-* No application to closed event
-* No application if role is full
+- No duplicate application
+- No application after deadline
+- No application to closed event
+- No application if role is full
 
 Do not rely only on frontend validation.
 
@@ -204,13 +204,13 @@ Do not rely only on frontend validation.
 
 Implement:
 
-* Create shift
-* Update shift
-* Delete shift
-* Assign volunteer
-* Remove assignment
-* Get volunteer schedule
-* Get event schedule
+- Create shift
+- Update shift
+- Delete shift
+- Assign volunteer
+- Remove assignment
+- Get volunteer schedule
+- Get event schedule
 
 Prevent overbooking.
 
@@ -220,18 +220,18 @@ Prevent overbooking.
 
 Implement:
 
-* Create training
-* Update training
-* Delete training
-* Assign training
-* Mark completed
-* Track progress
+- Create training
+- Update training
+- Delete training
+- Assign training
+- Mark completed
+- Track progress
 
 Support:
 
-* Video
-* PDF
-* Text/resource
+- Video
+- PDF
+- Text/resource
 
 ---
 
@@ -239,11 +239,11 @@ Support:
 
 Implement:
 
-* Create accreditation
-* Update accreditation
-* Get volunteer accreditation
-* Generate unique volunteer/event identification
-* QR code data if required
+- Create accreditation
+- Update accreditation
+- Get volunteer accreditation
+- Generate unique volunteer/event identification
+- QR code data if required
 
 ---
 
@@ -251,18 +251,18 @@ Implement:
 
 Implement:
 
-* Check-in
-* Check-out
-* Manual admin correction
-* Attendance status
-* Late/no-show handling
+- Check-in
+- Check-out
+- Manual admin correction
+- Attendance status
+- Late/no-show handling
 
 Validate:
 
-* Correct event
-* Correct shift
-* Authorized volunteer
-* Valid event timing where applicable
+- Correct event
+- Correct shift
+- Authorized volunteer
+- Valid event timing where applicable
 
 ---
 
@@ -272,10 +272,10 @@ Calculate hours from attendance.
 
 Support:
 
-* Total hours
-* Event hours
-* Sport hours
-* Current year hours
+- Total hours
+- Event hours
+- Sport hours
+- Current year hours
 
 Admin must be able to correct official hours.
 
@@ -289,20 +289,20 @@ Implement certificate generation logic.
 
 Certificate should contain:
 
-* Volunteer
-* Event
-* Role
-* Hours
-* Event date
-* Certificate ID
-* Issue date
+- Volunteer
+- Event
+- Role
+- Hours
+- Event date
+- Certificate ID
+- Issue date
 
 Support:
 
-* Generate
-* Bulk generate
-* Retrieve
-* Download
+- Generate
+- Bulk generate
+- Retrieve
+- Download
 
 ---
 
@@ -312,15 +312,15 @@ Implement notification creation and retrieval.
 
 Triggers should include:
 
-* Application submitted
-* Application accepted
-* Application rejected
-* Role changed
-* Shift assigned
-* Training assigned
-* Accreditation approved
-* Event reminder
-* Certificate issued
+- Application submitted
+- Application accepted
+- Application rejected
+- Role changed
+- Shift assigned
+- Training assigned
+- Accreditation approved
+- Event reminder
+- Certificate issued
 
 Support read/unread state.
 
@@ -347,14 +347,14 @@ Use consistent backend errors.
 
 Handle:
 
-* Authentication errors
-* Authorization errors
-* Validation errors
-* Not found
-* Capacity errors
-* Duplicate applications
-* Database errors
-* Storage errors
+- Authentication errors
+- Authorization errors
+- Validation errors
+- Not found
+- Capacity errors
+- Duplicate applications
+- Database errors
+- Storage errors
 
 Do not leak sensitive database details.
 
@@ -366,14 +366,14 @@ Validate all important operations server-side/backend-side.
 
 Examples:
 
-* Event date
-* Application deadline
-* Role capacity
-* User permissions
-* Application state
-* Shift capacity
-* Attendance
-* Certificate eligibility
+- Event date
+- Application deadline
+- Role capacity
+- User permissions
+- Application state
+- Shift capacity
+- Attendance
+- Certificate eligibility
 
 ---
 
@@ -401,10 +401,10 @@ UI
 
 Do NOT rely on:
 
-* localStorage role
-* frontend-only route protection
-* client-provided admin role
-* hidden buttons
+- localStorage role
+- frontend-only route protection
+- client-provided admin role
+- hidden buttons
 
 Use secure authorization and database policies.
 
@@ -458,10 +458,10 @@ Check-in
 
 Run available:
 
-* build
-* lint
-* typecheck
-* tests
+- build
+- lint
+- typecheck
+- tests
 
 Fix backend-related errors.
 
@@ -476,10 +476,10 @@ BACKEND_REMAINING.md
 
 Document:
 
-* Completed backend features
-* Remaining backend features
-* Known issues
-* Verification results
+- Completed backend features
+- Remaining backend features
+- Known issues
+- Verification results
 
 Only mark something DONE after verifying the actual behavior.
 

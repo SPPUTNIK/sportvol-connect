@@ -1,15 +1,6 @@
 import { useEffect, useState } from "react";
-import {
-  Link,
-  createFileRoute,
-  useNavigate,
-} from "@tanstack/react-router";
-import {
-  ArrowRight,
-  CheckCircle2,
-  LoaderCircle,
-  Mail,
-} from "lucide-react";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ArrowRight, CheckCircle2, LoaderCircle, Mail } from "lucide-react";
 
 import { useAuth } from "@/lib/auth";
 import { I18nProvider } from "@/lib/i18n";
@@ -23,19 +14,10 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-import {
-  Country,
-  City,
-  type ICountry,
-  type ICity,
-} from "country-state-city";
+import { Country, City, type ICountry, type ICity } from "country-state-city";
 
 function safeNext(value: unknown): string | null {
-  return (
-    typeof value === "string" &&
-    value.startsWith("/") &&
-    !value.startsWith("//")
-  )
+  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//")
     ? value
     : null;
 }
@@ -43,9 +25,7 @@ function safeNext(value: unknown): string | null {
 export const Route = createFileRoute("/register")({
   component: Register,
 
-  validateSearch: (
-    search: Record<string, unknown>,
-  ): { next?: string } => {
+  validateSearch: (search: Record<string, unknown>): { next?: string } => {
     const next = safeNext(search["next"]);
 
     return next ? { next } : {};
@@ -58,8 +38,7 @@ export const Route = createFileRoute("/register")({
       },
       {
         name: "description",
-        content:
-          "Create your VolunSport Morocco volunteer account.",
+        content: "Create your VolunSport Morocco volunteer account.",
       },
     ],
   }),
@@ -69,7 +48,6 @@ function Register() {
   const { signUp } = useAuth();
   const navigate = useNavigate();
   const { next } = Route.useSearch();
-
 
   const [form, setForm] = useState({
     firstName: "",
@@ -82,27 +60,19 @@ function Register() {
     country: "",
   });
 
-  const [selectedCountry, setSelectedCountry] =
-    useState<ICountry | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<ICountry | null>(null);
 
   const [cities, setCities] = useState<ICity[]>([]);
 
-  const [error, setError] =
-    useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const [submitting, setSubmitting] =
-    useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const [success, setSuccess] =
-    useState(false);
+  const [success, setSuccess] = useState(false);
 
-  const [
-    needsEmailConfirmation,
-    setNeedsEmailConfirmation,
-  ] = useState(false);
+  const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false);
 
-  const [countdown, setCountdown] =
-    useState(5);
+  const [countdown, setCountdown] = useState(5);
 
   /**
    * Redirect after successful registration.
@@ -117,9 +87,7 @@ function Register() {
 
           navigate({
             to: "/login",
-            search: next
-              ? { next }
-              : undefined,
+            search: next ? { next } : undefined,
           });
 
           return 0;
@@ -129,23 +97,17 @@ function Register() {
       });
     }, 1000);
 
-    return () =>
-      window.clearInterval(timer);
+    return () => window.clearInterval(timer);
   }, [success, navigate, next]);
 
-  const updateField = (
-    field: keyof typeof form,
-    value: string,
-  ) => {
+  const updateField = (field: keyof typeof form, value: string) => {
     setForm((previous) => ({
       ...previous,
       [field]: value,
     }));
   };
 
-  const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement>,
-  ) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     setError(null);
@@ -158,40 +120,29 @@ function Register() {
       return;
     }
 
-    const selectedDate = new Date(
-      `${form.dateOfBirth}T00:00:00`,
-    );
+    const selectedDate = new Date(`${form.dateOfBirth}T00:00:00`);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    if (
-      Number.isNaN(selectedDate.getTime()) ||
-      selectedDate > today
-    ) {
-      setError(
-        "Date of birth cannot be in the future.",
-      );
+    if (Number.isNaN(selectedDate.getTime()) || selectedDate > today) {
+      setError("Date of birth cannot be in the future.");
       return;
     }
 
     setSubmitting(true);
 
-    const result = await signUp(
-      form.email,
-      form.password,
-      {
-        first_name: form.firstName,
-        last_name: form.lastName,
+    const result = await signUp(form.email, form.password, {
+      first_name: form.firstName,
+      last_name: form.lastName,
 
-        // NEW
-        date_of_birth: form.dateOfBirth,
+      // NEW
+      date_of_birth: form.dateOfBirth,
 
-        phone: form.phone,
-        city: form.city,
-        country: form.country,
-      },
-    );
+      phone: form.phone,
+      city: form.city,
+      country: form.country,
+    });
 
     setSubmitting(false);
 
@@ -200,9 +151,7 @@ function Register() {
       return;
     }
 
-    setNeedsEmailConfirmation(
-      result.needsEmailConfirmation,
-    );
+    setNeedsEmailConfirmation(result.needsEmailConfirmation);
 
     setSuccess(true);
   };
@@ -215,40 +164,28 @@ function Register() {
             <div className="rounded-[2rem] border border-border bg-card p-6 shadow-[var(--shadow-lift)] sm:p-9">
               {/* Header */}
               <div className="text-center">
-                <p className="eyebrow">
-                  Join VolunSport
-                </p>
+                <p className="eyebrow">Join VolunSport</p>
 
                 <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
                   Create your account
                 </h1>
 
                 <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted-foreground">
-                  Join the Moroccan sports
-                  volunteering community, discover
-                  events and build your experience.
+                  Join the Moroccan sports volunteering community, discover events and build your
+                  experience.
                 </p>
               </div>
 
               {/* Form */}
-              <form
-                onSubmit={handleSubmit}
-                className="mt-8 space-y-5"
-              >
+              <form onSubmit={handleSubmit} className="mt-8 space-y-5">
                 {/* Name */}
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="block text-sm font-medium text-foreground">
                     First name
-
                     <input
                       type="text"
                       value={form.firstName}
-                      onChange={(event) =>
-                        updateField(
-                          "firstName",
-                          event.target.value,
-                        )
-                      }
+                      onChange={(event) => updateField("firstName", event.target.value)}
                       required
                       autoComplete="given-name"
                       className="mt-2 h-12 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
@@ -257,16 +194,10 @@ function Register() {
 
                   <label className="block text-sm font-medium text-foreground">
                     Last name
-
                     <input
                       type="text"
                       value={form.lastName}
-                      onChange={(event) =>
-                        updateField(
-                          "lastName",
-                          event.target.value,
-                        )
-                      }
+                      onChange={(event) => updateField("lastName", event.target.value)}
                       required
                       autoComplete="family-name"
                       className="mt-2 h-12 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
@@ -277,26 +208,15 @@ function Register() {
                 {/* Date of Birth */}
                 <label className="block text-sm font-medium text-foreground">
                   Date of birth
-
                   <input
                     type="date"
                     value={form.dateOfBirth}
-                    onChange={(event) =>
-                      updateField(
-                        "dateOfBirth",
-                        event.target.value,
-                      )
-                    }
+                    onChange={(event) => updateField("dateOfBirth", event.target.value)}
                     required
-                    max={
-                      new Date()
-                        .toISOString()
-                        .split("T")[0]
-                    }
+                    max={new Date().toISOString().split("T")[0]}
                     autoComplete="bday"
                     className="mt-2 h-12 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
                   />
-
                   <span className="mt-2 block text-xs text-muted-foreground">
                     Please enter your real date of birth.
                   </span>
@@ -305,16 +225,10 @@ function Register() {
                 {/* Email */}
                 <label className="block text-sm font-medium text-foreground">
                   Email
-
                   <input
                     type="email"
                     value={form.email}
-                    onChange={(event) =>
-                      updateField(
-                        "email",
-                        event.target.value,
-                      )
-                    }
+                    onChange={(event) => updateField("email", event.target.value)}
                     required
                     autoComplete="email"
                     placeholder="you@example.com"
@@ -325,23 +239,16 @@ function Register() {
                 {/* Password */}
                 <label className="block text-sm font-medium text-foreground">
                   Password
-
                   <input
                     type="password"
                     value={form.password}
-                    onChange={(event) =>
-                      updateField(
-                        "password",
-                        event.target.value,
-                      )
-                    }
+                    onChange={(event) => updateField("password", event.target.value)}
                     required
                     minLength={8}
                     autoComplete="new-password"
                     placeholder="At least 8 characters"
                     className="mt-2 h-12 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
                   />
-
                   <span className="mt-2 block text-xs text-muted-foreground">
                     Use at least 8 characters.
                   </span>
@@ -350,19 +257,11 @@ function Register() {
                 {/* Phone */}
                 <label className="block text-sm font-medium text-foreground">
                   Phone
-                  <span className="ml-1 text-xs font-normal text-muted-foreground">
-                    Optional
-                  </span>
-
+                  <span className="ml-1 text-xs font-normal text-muted-foreground">Optional</span>
                   <input
                     type="tel"
                     value={form.phone}
-                    onChange={(event) =>
-                      updateField(
-                        "phone",
-                        event.target.value,
-                      )
-                    }
+                    onChange={(event) => updateField("phone", event.target.value)}
                     autoComplete="tel"
                     placeholder="+212 ..."
                     className="mt-2 h-12 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
@@ -374,12 +273,9 @@ function Register() {
                   {/* City */}
                   <label className="block text-sm font-medium text-foreground">
                     City
-
                     <select
                       value={form.city}
-                      onChange={(event) =>
-                        updateField("city", event.target.value)
-                      }
+                      onChange={(event) => updateField("city", event.target.value)}
                       disabled={!selectedCountry}
                       autoComplete="address-level2"
                       className="mt-2 h-12 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
@@ -387,10 +283,7 @@ function Register() {
                       <option value="">Select city</option>
 
                       {cities.map((city) => (
-                        <option
-                          key={`${city.name}-${city.stateCode ?? ""}`}
-                          value={city.name}
-                        >
+                        <option key={`${city.name}-${city.stateCode ?? ""}`} value={city.name}>
                           {city.name}
                         </option>
                       ))}
@@ -400,17 +293,15 @@ function Register() {
                   {/* Country */}
                   <label className="block text-sm font-medium text-foreground">
                     Country
-
                     <select
                       value={selectedCountry?.isoCode ?? ""}
                       onChange={(event) => {
-                        const country =
-                          Country.getCountryByCode(event.target.value);
+                        const country = Country.getCountryByCode(event.target.value);
 
                         setSelectedCountry(country ?? null);
 
                         const nextCities = country
-                          ? City.getCitiesOfCountry(country.isoCode) ?? []
+                          ? (City.getCitiesOfCountry(country.isoCode) ?? [])
                           : [];
 
                         setCities(nextCities);
@@ -427,18 +318,13 @@ function Register() {
                       <option value="">Select country</option>
 
                       {Country.getAllCountries().map((country) => (
-                        <option
-                          key={country.isoCode}
-                          value={country.isoCode}
-                        >
+                        <option key={country.isoCode} value={country.isoCode}>
                           {country.name}
                         </option>
                       ))}
                     </select>
                   </label>
                 </div>
-
-                
 
                 {/* Error */}
                 {error && (
@@ -475,11 +361,7 @@ function Register() {
                 Already have an account?{" "}
                 <Link
                   to="/login"
-                  search={
-                    next
-                      ? { next }
-                      : undefined
-                  }
+                  search={next ? { next } : undefined}
                   className="font-semibold text-primary hover:underline"
                 >
                   Sign in
@@ -490,10 +372,7 @@ function Register() {
         </div>
 
         {/* Success dialog */}
-        <Dialog
-          open={success}
-          onOpenChange={() => {}}
-        >
+        <Dialog open={success} onOpenChange={() => {}}>
           <DialogContent className="max-w-md [&>button]:hidden">
             <DialogHeader>
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
@@ -505,31 +384,21 @@ function Register() {
               </div>
 
               <DialogTitle className="mt-4 text-center text-2xl font-semibold">
-                {needsEmailConfirmation
-                  ? "Check your email"
-                  : "Account created successfully"}
+                {needsEmailConfirmation ? "Check your email" : "Account created successfully"}
               </DialogTitle>
 
               <DialogDescription className="mt-3 text-center text-sm leading-6 text-muted-foreground">
                 {needsEmailConfirmation ? (
                   <>
-                    We sent a confirmation link
-                    to{" "}
-                    <strong className="text-foreground">
-                      {form.email}
-                    </strong>
-                    . Confirm your email before
-                    signing in.
+                    We sent a confirmation link to{" "}
+                    <strong className="text-foreground">{form.email}</strong>. Confirm your email
+                    before signing in.
                   </>
                 ) : (
                   <>
-                    Your volunteer account is ready.
-                    You will be redirected to the
-                    sign-in page in{" "}
+                    Your volunteer account is ready. You will be redirected to the sign-in page in{" "}
                     {countdown} second
-                    {countdown !== 1
-                      ? "s"
-                      : ""}.
+                    {countdown !== 1 ? "s" : ""}.
                   </>
                 )}
               </DialogDescription>
@@ -541,9 +410,7 @@ function Register() {
                 onClick={() =>
                   navigate({
                     to: "/login",
-                    search: next
-                      ? { next }
-                      : undefined,
+                    search: next ? { next } : undefined,
                   })
                 }
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"

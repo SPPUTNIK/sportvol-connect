@@ -86,7 +86,8 @@ export const notificationService = {
 
     const { data, error } = await supabase
       .from("notifications")
-      .select(`
+      .select(
+        `
         id,
         profile_id,
         event_id,
@@ -98,7 +99,8 @@ export const notificationService = {
         read_at,
         created_at,
         updated_at
-      `)
+      `,
+      )
       .eq("profile_id", profileId)
       .order("created_at", { ascending: false });
 

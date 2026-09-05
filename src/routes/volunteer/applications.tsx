@@ -1,14 +1,9 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  Check,
-  Pencil,
-  X,
-} from "lucide-react";
+import { ArrowRight, Check, Pencil, X } from "lucide-react";
 
 import { AppShell } from "@/components/app/AppShell";
-import { applicationService } from "@/services/applicationService";
+import { applicationService } from "@/services/volunteer/applicationService";
 
 import {
   VSButton,
@@ -22,10 +17,7 @@ import {
 
 import { StatusPill } from "@/components/ui/status-pill";
 
-import type {
-  Application,
-  EventRole,
-} from "@/lib/types";
+import type { Application, EventRole } from "@/lib/types";
 
 export const Route = createFileRoute("/volunteer/applications")({
   component: MyApplications,
@@ -66,8 +58,7 @@ function MyApplications() {
    * ============================================================
    */
 
-  const [editingApplication, setEditingApplication] =
-    useState<Application | null>(null);
+  const [editingApplication, setEditingApplication] = useState<Application | null>(null);
 
   const [roles, setRoles] = useState<EventRole[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(false);
@@ -95,11 +86,7 @@ function MyApplications() {
 
       setApplications(data);
     } catch (err: unknown) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to load your applications.",
-      );
+      setError(err instanceof Error ? err.message : "Unable to load your applications.");
     } finally {
       setLoading(false);
     }
@@ -128,17 +115,11 @@ function MyApplications() {
     try {
       setLoadingRoles(true);
 
-      const eventRoles = await applicationService.getEventRoles(
-        application.event_id,
-      );
+      const eventRoles = await applicationService.getEventRoles(application.event_id);
 
       setRoles(eventRoles);
     } catch (err: unknown) {
-      setEditError(
-        err instanceof Error
-          ? err.message
-          : "Unable to load event roles.",
-      );
+      setEditError(err instanceof Error ? err.message : "Unable to load event roles.");
     } finally {
       setLoadingRoles(false);
     }
@@ -192,11 +173,7 @@ function MyApplications() {
 
       closeEditModal();
     } catch (err: unknown) {
-      setEditError(
-        err instanceof Error
-          ? err.message
-          : "Unable to save your changes.",
-      );
+      setEditError(err instanceof Error ? err.message : "Unable to save your changes.");
     } finally {
       setSaving(false);
     }
@@ -225,9 +202,7 @@ function MyApplications() {
             LOADING
         ====================================================== */}
 
-        {loading && (
-          <VSLoadingState message="Loading your applications…" />
-        )}
+        {loading && <VSLoadingState message="Loading your applications…" />}
 
         {/* =====================================================
             ERROR
@@ -245,221 +220,203 @@ function MyApplications() {
             EMPTY
         ====================================================== */}
 
-        {!loading &&
-          !error &&
-          applications.length === 0 && (
-            <VSEmptyState
-              title="No applications yet"
-              description="Apply for an event to see your application status here."
-            />
-          )}
+        {!loading && !error && applications.length === 0 && (
+          <VSEmptyState
+            title="No applications yet"
+            description="Apply for an event to see your application status here."
+          />
+        )}
 
         {/* =====================================================
             APPLICATIONS
         ====================================================== */}
 
-        {!loading &&
-          !error &&
-          applications.length > 0 && (
-            <>
-              {/* -------------------------------------------------
+        {!loading && !error && applications.length > 0 && (
+          <>
+            {/* -------------------------------------------------
                   DESKTOP TABLE
               -------------------------------------------------- */}
 
-              <VSCard className="hidden overflow-hidden rounded-[2rem] border-border md:block">
-                <VSCardContent className="p-0">
-                  <div className="w-full overflow-x-auto">
-                    <table className="w-full min-w-[800px]">
-                      <thead>
-                        <tr className="border-b border-border bg-muted/40">
-                          <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:px-6">
-                            Event
-                          </th>
+            <VSCard className="hidden overflow-hidden rounded-[2rem] border-border md:block">
+              <VSCardContent className="p-0">
+                <div className="w-full overflow-x-auto">
+                  <table className="w-full min-w-[800px]">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/40">
+                        <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:px-6">
+                          Event
+                        </th>
 
-                          <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:px-6">
-                            Role
-                          </th>
+                        <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:px-6">
+                          Role
+                        </th>
 
-                          <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:px-6">
-                            Status
-                          </th>
+                        <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:px-6">
+                          Status
+                        </th>
 
-                          <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:px-6">
-                            Applied
-                          </th>
+                        <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:px-6">
+                          Applied
+                        </th>
 
-                          <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:px-6">
-                            Action
-                          </th>
-                        </tr>
-                      </thead>
+                        <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:px-6">
+                          Action
+                        </th>
+                      </tr>
+                    </thead>
 
-                      <tbody>
-                        {applications.map((application) => {
-                          const editable =
-                            application.status === "pending" ||
-                            application.status === "waitlisted";
+                    <tbody>
+                      {applications.map((application) => {
+                        const editable =
+                          application.status === "pending" || application.status === "waitlisted";
 
-                          return (
-                            <tr
-                              key={application.id}
-                              className="border-b border-border last:border-0 transition hover:bg-muted/30"
-                            >
-                              {/* EVENT */}
+                        return (
+                          <tr
+                            key={application.id}
+                            className="border-b border-border last:border-0 transition hover:bg-muted/30"
+                          >
+                            {/* EVENT */}
 
-                              <td className="px-5 py-5 lg:px-6">
-                                <div className="min-w-0">
-                                  <p className="max-w-[260px] truncate font-semibold text-foreground">
-                                    {application.event_title}
-                                  </p>
-
-                                </div>
-                              </td>
-
-                              {/* ROLE */}
-
-                              <td className="px-5 py-5 lg:px-6">
-                                <p className="max-w-[180px] truncate text-sm text-foreground">
-                                  {application.role_name}
+                            <td className="px-5 py-5 lg:px-6">
+                              <div className="min-w-0">
+                                <p className="max-w-[260px] truncate font-semibold text-foreground">
+                                  {application.event_title}
                                 </p>
-                              </td>
+                              </div>
+                            </td>
 
-                              {/* STATUS */}
+                            {/* ROLE */}
 
-                              <td className="px-5 py-5 lg:px-6">
-                                <StatusPill
-                                  status={application.status}
-                                />
-                              </td>
+                            <td className="px-5 py-5 lg:px-6">
+                              <p className="max-w-[180px] truncate text-sm text-foreground">
+                                {application.role_name}
+                              </p>
+                            </td>
 
-                              {/* DATE */}
+                            {/* STATUS */}
 
-                              <td className="px-5 py-5 lg:px-6">
-                                <p className="whitespace-nowrap text-sm text-muted-foreground">
-                                  {formatApplicationDate(application.submitted_at)}
-                                </p>
-                              </td>
+                            <td className="px-5 py-5 lg:px-6">
+                              <StatusPill status={application.status} />
+                            </td>
 
-                              {/* ACTION */}
+                            {/* DATE */}
 
-                              <td className="px-5 py-5 text-right lg:px-6">
-                                {editable ? (
-                                  <VSButton
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                      openEditModal(application)
-                                    }
-                                    className="rounded-xl"
-                                  >
-                                    <Pencil className="h-4 w-4" />
-                                    Edit
-                                  </VSButton>
-                                ) : (
-                                  <span className="text-xs text-muted-foreground">
-                                    No changes
-                                  </span>
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </VSCardContent>
-              </VSCard>
+                            <td className="px-5 py-5 lg:px-6">
+                              <p className="whitespace-nowrap text-sm text-muted-foreground">
+                                {formatApplicationDate(application.submitted_at)}
+                              </p>
+                            </td>
 
-              {/* -------------------------------------------------
+                            {/* ACTION */}
+
+                            <td className="px-5 py-5 text-right lg:px-6">
+                              {editable ? (
+                                <VSButton
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openEditModal(application)}
+                                  className="rounded-xl"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                  Edit
+                                </VSButton>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">No changes</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </VSCardContent>
+            </VSCard>
+
+            {/* -------------------------------------------------
                   MOBILE CARDS
               -------------------------------------------------- */}
 
-              <div className="space-y-4 md:hidden">
-                {applications.map((application) => {
-                  const editable =
-                    application.status === "pending" ||
-                    application.status === "waitlisted";
+            <div className="space-y-4 md:hidden">
+              {applications.map((application) => {
+                const editable =
+                  application.status === "pending" || application.status === "waitlisted";
 
-                  return (
-                    <VSCard
-                      key={application.id}
-                      className="overflow-hidden rounded-[1.5rem] border-border"
-                    >
-                      <VSCardContent className="p-5">
-                        {/* EVENT HEADER */}
+                return (
+                  <VSCard
+                    key={application.id}
+                    className="overflow-hidden rounded-[1.5rem] border-border"
+                  >
+                    <VSCardContent className="p-5">
+                      {/* EVENT HEADER */}
 
-                        <div className="flex min-w-0 items-start justify-between gap-3">
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                              Event
-                            </p>
+                      <div className="flex min-w-0 items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                            Event
+                          </p>
 
-                            <h3 className="mt-1 break-words text-base font-semibold leading-6 text-foreground">
-                              {application.event_title}
-                            </h3>
-
-                          </div>
-
-                          <div className="shrink-0">
-                            <StatusPill
-                              status={application.status}
-                            />
-                          </div>
+                          <h3 className="mt-1 break-words text-base font-semibold leading-6 text-foreground">
+                            {application.event_title}
+                          </h3>
                         </div>
 
-                        {/* DETAILS */}
+                        <div className="shrink-0">
+                          <StatusPill status={application.status} />
+                        </div>
+                      </div>
 
-                        <div className="mt-5 grid grid-cols-1 gap-3 rounded-2xl bg-muted/30 p-4">
-                          <div className="min-w-0">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                              Role
-                            </p>
+                      {/* DETAILS */}
 
-                            <p className="mt-1 break-words text-sm font-medium text-foreground">
-                              {application.role_name}
-                            </p>
-                          </div>
+                      <div className="mt-5 grid grid-cols-1 gap-3 rounded-2xl bg-muted/30 p-4">
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                            Role
+                          </p>
 
-                          <div className="min-w-0">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                              Applied
-                            </p>
-
-                            <p className="mt-1 text-sm text-muted-foreground">
-                              {formatApplicationDate(application.submitted_at)}
-                            </p>
-                          </div>
+                          <p className="mt-1 break-words text-sm font-medium text-foreground">
+                            {application.role_name}
+                          </p>
                         </div>
 
-                        {/* ACTION */}
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                            Applied
+                          </p>
 
-                        <div className="mt-4">
-                          {editable ? (
-                            <VSButton
-                              type="button"
-                              variant="outline"
-                              onClick={() =>
-                                openEditModal(application)
-                              }
-                              className="w-full rounded-xl"
-                            >
-                              <Pencil className="h-4 w-4" />
-                              Edit application
-                            </VSButton>
-                          ) : (
-                            <div className="flex items-center justify-center rounded-xl bg-muted/40 px-4 py-3 text-xs font-medium text-muted-foreground">
-                              No changes available
-                            </div>
-                          )}
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {formatApplicationDate(application.submitted_at)}
+                          </p>
                         </div>
-                      </VSCardContent>
-                    </VSCard>
-                  );
-                })}
-              </div>
-            </>
-          )}
+                      </div>
+
+                      {/* ACTION */}
+
+                      <div className="mt-4">
+                        {editable ? (
+                          <VSButton
+                            type="button"
+                            variant="outline"
+                            onClick={() => openEditModal(application)}
+                            className="w-full rounded-xl"
+                          >
+                            <Pencil className="h-4 w-4" />
+                            Edit application
+                          </VSButton>
+                        ) : (
+                          <div className="flex items-center justify-center rounded-xl bg-muted/40 px-4 py-3 text-xs font-medium text-muted-foreground">
+                            No changes available
+                          </div>
+                        )}
+                      </div>
+                    </VSCardContent>
+                  </VSCard>
+                );
+              })}
+            </div>
+          </>
+        )}
 
         {/* =====================================================
             EDIT MODAL
@@ -481,9 +438,7 @@ function MyApplications() {
 
               <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border p-5 sm:p-6">
                 <div className="min-w-0 flex-1">
-                  <p className="eyebrow">
-                    Edit application
-                  </p>
+                  <p className="eyebrow">Edit application</p>
 
                   <h2 className="mt-2 text-xl font-semibold leading-tight text-foreground sm:text-2xl">
                     Update your application
@@ -515,43 +470,28 @@ function MyApplications() {
 
                   <label className="block text-sm font-medium text-foreground">
                     Volunteer role
-
                     <select
                       value={selectedRoleId}
-                      onChange={(event) =>
-                        setSelectedRoleId(event.target.value)
-                      }
+                      onChange={(event) => setSelectedRoleId(event.target.value)}
                       disabled={loadingRoles || saving}
                       className="mt-2 h-12 w-full min-w-0 rounded-2xl border border-border bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4"
                     >
                       {loadingRoles ? (
-                        <option value="">
-                          Loading roles…
-                        </option>
+                        <option value="">Loading roles…</option>
                       ) : (
                         <>
-                          <option value="">
-                            Select a role
-                          </option>
+                          <option value="">Select a role</option>
 
                           {roles.map((role) => {
-                            const remaining =
-                              role.positions -
-                              role.filled_positions;
+                            const remaining = role.positions - role.filled_positions;
 
                             return (
                               <option
                                 key={role.id}
                                 value={role.id}
-                                disabled={
-                                  remaining <= 0 &&
-                                  role.id !==
-                                    editingApplication.role_id
-                                }
+                                disabled={remaining <= 0 && role.id !== editingApplication.role_id}
                               >
-                                {role.name} —{" "}
-                                {Math.max(remaining, 0)} spots
-                                available
+                                {role.name} — {Math.max(remaining, 0)} spots available
                               </option>
                             );
                           })}
@@ -564,39 +504,24 @@ function MyApplications() {
 
                   <label className="block text-sm font-medium text-foreground">
                     Availability
-
                     <select
                       value={availability}
-                      onChange={(event) =>
-                        setAvailability(event.target.value)
-                      }
+                      onChange={(event) => setAvailability(event.target.value)}
                       disabled={saving}
                       required
                       className="mt-2 h-12 w-full min-w-0 rounded-2xl border border-border bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:opacity-60 sm:px-4"
                     >
-                      <option value="">
-                        Select your availability
-                      </option>
+                      <option value="">Select your availability</option>
 
-                      <option value="Fully available">
-                        Fully available
-                      </option>
+                      <option value="Fully available">Fully available</option>
 
-                      <option value="Mornings only">
-                        Mornings only
-                      </option>
+                      <option value="Mornings only">Mornings only</option>
 
-                      <option value="Afternoons only">
-                        Afternoons only
-                      </option>
+                      <option value="Afternoons only">Afternoons only</option>
 
-                      <option value="Evenings only">
-                        Evenings only
-                      </option>
+                      <option value="Evenings only">Evenings only</option>
 
-                      <option value="Flexible">
-                        Flexible
-                      </option>
+                      <option value="Flexible">Flexible</option>
                     </select>
                   </label>
 
@@ -604,12 +529,9 @@ function MyApplications() {
 
                   <label className="block text-sm font-medium text-foreground">
                     Experience
-
                     <textarea
                       value={experience}
-                      onChange={(event) =>
-                        setExperience(event.target.value)
-                      }
+                      onChange={(event) => setExperience(event.target.value)}
                       rows={5}
                       disabled={saving}
                       placeholder="What experience would you bring?"
@@ -621,12 +543,9 @@ function MyApplications() {
 
                   <label className="block text-sm font-medium text-foreground">
                     Motivation
-
                     <textarea
                       value={motivation}
-                      onChange={(event) =>
-                        setMotivation(event.target.value)
-                      }
+                      onChange={(event) => setMotivation(event.target.value)}
                       rows={4}
                       disabled={saving}
                       placeholder="What excites you about this event?"
@@ -663,12 +582,7 @@ function MyApplications() {
                   <VSButton
                     type="button"
                     onClick={handleSaveChanges}
-                    disabled={
-                      saving ||
-                      loadingRoles ||
-                      !selectedRoleId ||
-                      !availability
-                    }
+                    disabled={saving || loadingRoles || !selectedRoleId || !availability}
                     className="w-full rounded-xl sm:w-auto"
                   >
                     {saving ? (
@@ -689,4 +603,3 @@ function MyApplications() {
     </AppShell>
   );
 }
-

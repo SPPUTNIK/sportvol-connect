@@ -5,7 +5,5 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminRoute() {
-  return (
-      <Outlet />
-  );
+  return <Outlet />;
 }

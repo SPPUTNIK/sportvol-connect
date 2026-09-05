@@ -14,6 +14,7 @@ import { Route as R404RouteImport } from './routes/404'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as LeaderRouteImport } from './routes/leader'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as RegisterRouteImport } from './routes/register'
@@ -35,6 +36,15 @@ import { Route as AdminReportsRouteImport } from './routes/admin/reports'
 import { Route as AdminRolesRouteImport } from './routes/admin/roles'
 import { Route as AdminShiftsRouteImport } from './routes/admin/shifts'
 import { Route as AdminTrainingRouteImport } from './routes/admin/training'
+import { Route as LeaderIndexRouteImport } from './routes/leader/index'
+import { Route as LeaderCommitteeRouteImport } from './routes/leader/committee'
+import { Route as LeaderDashboardRouteImport } from './routes/leader/dashboard'
+import { Route as LeaderEventRouteImport } from './routes/leader/event'
+import { Route as LeaderNotificationsRouteImport } from './routes/leader/notifications'
+import { Route as LeaderProfileRouteImport } from './routes/leader/profile'
+import { Route as LeaderScannerRouteImport } from './routes/leader/scanner'
+import { Route as LeaderShiftsRouteImport } from './routes/leader/shifts'
+import { Route as LeaderVolunteersRouteImport } from './routes/leader/volunteers'
 import { Route as VolunteerAccreditationRouteImport } from './routes/volunteer/accreditation'
 import { Route as VolunteerAchievementsRouteImport } from './routes/volunteer/achievements'
 import { Route as VolunteerApplicationsRouteImport } from './routes/volunteer/applications'
@@ -82,6 +92,11 @@ const AdminRoute = AdminRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderRoute = LeaderRouteImport.update({
+  id: '/leader',
+  path: '/leader',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -190,6 +205,51 @@ const AdminTrainingRoute = AdminTrainingRouteImport.update({
   id: '/training',
   path: '/training',
   getParentRoute: () => AdminRoute,
+} as any)
+const LeaderIndexRoute = LeaderIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LeaderRoute,
+} as any)
+const LeaderCommitteeRoute = LeaderCommitteeRouteImport.update({
+  id: '/committee',
+  path: '/committee',
+  getParentRoute: () => LeaderRoute,
+} as any)
+const LeaderDashboardRoute = LeaderDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => LeaderRoute,
+} as any)
+const LeaderEventRoute = LeaderEventRouteImport.update({
+  id: '/event',
+  path: '/event',
+  getParentRoute: () => LeaderRoute,
+} as any)
+const LeaderNotificationsRoute = LeaderNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => LeaderRoute,
+} as any)
+const LeaderProfileRoute = LeaderProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => LeaderRoute,
+} as any)
+const LeaderScannerRoute = LeaderScannerRouteImport.update({
+  id: '/scanner',
+  path: '/scanner',
+  getParentRoute: () => LeaderRoute,
+} as any)
+const LeaderShiftsRoute = LeaderShiftsRouteImport.update({
+  id: '/shifts',
+  path: '/shifts',
+  getParentRoute: () => LeaderRoute,
+} as any)
+const LeaderVolunteersRoute = LeaderVolunteersRouteImport.update({
+  id: '/volunteers',
+  path: '/volunteers',
+  getParentRoute: () => LeaderRoute,
 } as any)
 const VolunteerAccreditationRoute = VolunteerAccreditationRouteImport.update({
   id: '/volunteer/accreditation',
@@ -317,6 +377,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
+  '/leader': typeof LeaderRouteWithChildren
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/register': typeof RegisterRoute
@@ -337,6 +398,14 @@ export interface FileRoutesByFullPath {
   '/admin/roles': typeof AdminRolesRoute
   '/admin/shifts': typeof AdminShiftsRoute
   '/admin/training': typeof AdminTrainingRoute
+  '/leader/committee': typeof LeaderCommitteeRoute
+  '/leader/dashboard': typeof LeaderDashboardRoute
+  '/leader/event': typeof LeaderEventRoute
+  '/leader/notifications': typeof LeaderNotificationsRoute
+  '/leader/profile': typeof LeaderProfileRoute
+  '/leader/scanner': typeof LeaderScannerRoute
+  '/leader/shifts': typeof LeaderShiftsRoute
+  '/leader/volunteers': typeof LeaderVolunteersRoute
   '/volunteer/accreditation': typeof VolunteerAccreditationRoute
   '/volunteer/achievements': typeof VolunteerAchievementsRoute
   '/volunteer/applications': typeof VolunteerApplicationsRoute
@@ -350,6 +419,7 @@ export interface FileRoutesByFullPath {
   '/volunteer/schedule': typeof VolunteerScheduleRoute
   '/volunteer/training': typeof VolunteerTrainingRouteWithChildren
   '/admin/': typeof AdminIndexRoute
+  '/leader/': typeof LeaderIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/events/$eventId': typeof AdminEventsEventIdRoute
@@ -387,6 +457,14 @@ export interface FileRoutesByTo {
   '/admin/roles': typeof AdminRolesRoute
   '/admin/shifts': typeof AdminShiftsRoute
   '/admin/training': typeof AdminTrainingRoute
+  '/leader/committee': typeof LeaderCommitteeRoute
+  '/leader/dashboard': typeof LeaderDashboardRoute
+  '/leader/event': typeof LeaderEventRoute
+  '/leader/notifications': typeof LeaderNotificationsRoute
+  '/leader/profile': typeof LeaderProfileRoute
+  '/leader/scanner': typeof LeaderScannerRoute
+  '/leader/shifts': typeof LeaderShiftsRoute
+  '/leader/volunteers': typeof LeaderVolunteersRoute
   '/volunteer/accreditation': typeof VolunteerAccreditationRoute
   '/volunteer/achievements': typeof VolunteerAchievementsRoute
   '/volunteer/applications': typeof VolunteerApplicationsRoute
@@ -400,6 +478,7 @@ export interface FileRoutesByTo {
   '/volunteer/schedule': typeof VolunteerScheduleRoute
   '/volunteer/training': typeof VolunteerTrainingRouteWithChildren
   '/admin': typeof AdminIndexRoute
+  '/leader': typeof LeaderIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/events/$eventId': typeof AdminEventsEventIdRoute
@@ -419,6 +498,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
+  '/leader': typeof LeaderRouteWithChildren
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/register': typeof RegisterRoute
@@ -439,6 +519,14 @@ export interface FileRoutesById {
   '/admin/roles': typeof AdminRolesRoute
   '/admin/shifts': typeof AdminShiftsRoute
   '/admin/training': typeof AdminTrainingRoute
+  '/leader/committee': typeof LeaderCommitteeRoute
+  '/leader/dashboard': typeof LeaderDashboardRoute
+  '/leader/event': typeof LeaderEventRoute
+  '/leader/notifications': typeof LeaderNotificationsRoute
+  '/leader/profile': typeof LeaderProfileRoute
+  '/leader/scanner': typeof LeaderScannerRoute
+  '/leader/shifts': typeof LeaderShiftsRoute
+  '/leader/volunteers': typeof LeaderVolunteersRoute
   '/volunteer/accreditation': typeof VolunteerAccreditationRoute
   '/volunteer/achievements': typeof VolunteerAchievementsRoute
   '/volunteer/applications': typeof VolunteerApplicationsRoute
@@ -452,6 +540,7 @@ export interface FileRoutesById {
   '/volunteer/schedule': typeof VolunteerScheduleRoute
   '/volunteer/training': typeof VolunteerTrainingRouteWithChildren
   '/admin/': typeof AdminIndexRoute
+  '/leader/': typeof LeaderIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/events/$eventId': typeof AdminEventsEventIdRoute
@@ -472,6 +561,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/forgot-password'
+    | '/leader'
     | '/login'
     | '/mcp'
     | '/register'
@@ -492,6 +582,14 @@ export interface FileRouteTypes {
     | '/admin/roles'
     | '/admin/shifts'
     | '/admin/training'
+    | '/leader/committee'
+    | '/leader/dashboard'
+    | '/leader/event'
+    | '/leader/notifications'
+    | '/leader/profile'
+    | '/leader/scanner'
+    | '/leader/shifts'
+    | '/leader/volunteers'
     | '/volunteer/accreditation'
     | '/volunteer/achievements'
     | '/volunteer/applications'
@@ -505,6 +603,7 @@ export interface FileRouteTypes {
     | '/volunteer/schedule'
     | '/volunteer/training'
     | '/admin/'
+    | '/leader/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/events/$eventId'
@@ -542,6 +641,14 @@ export interface FileRouteTypes {
     | '/admin/roles'
     | '/admin/shifts'
     | '/admin/training'
+    | '/leader/committee'
+    | '/leader/dashboard'
+    | '/leader/event'
+    | '/leader/notifications'
+    | '/leader/profile'
+    | '/leader/scanner'
+    | '/leader/shifts'
+    | '/leader/volunteers'
     | '/volunteer/accreditation'
     | '/volunteer/achievements'
     | '/volunteer/applications'
@@ -555,6 +662,7 @@ export interface FileRouteTypes {
     | '/volunteer/schedule'
     | '/volunteer/training'
     | '/admin'
+    | '/leader'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/events/$eventId'
@@ -573,6 +681,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/forgot-password'
+    | '/leader'
     | '/login'
     | '/mcp'
     | '/register'
@@ -593,6 +702,14 @@ export interface FileRouteTypes {
     | '/admin/roles'
     | '/admin/shifts'
     | '/admin/training'
+    | '/leader/committee'
+    | '/leader/dashboard'
+    | '/leader/event'
+    | '/leader/notifications'
+    | '/leader/profile'
+    | '/leader/scanner'
+    | '/leader/shifts'
+    | '/leader/volunteers'
     | '/volunteer/accreditation'
     | '/volunteer/achievements'
     | '/volunteer/applications'
@@ -606,6 +723,7 @@ export interface FileRouteTypes {
     | '/volunteer/schedule'
     | '/volunteer/training'
     | '/admin/'
+    | '/leader/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/events/$eventId'
@@ -625,6 +743,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  LeaderRoute: typeof LeaderRouteWithChildren
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   RegisterRoute: typeof RegisterRoute
@@ -684,6 +803,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leader': {
+      id: '/leader'
+      path: '/leader'
+      fullPath: '/leader'
+      preLoaderRoute: typeof LeaderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -832,6 +958,69 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/training'
       preLoaderRoute: typeof AdminTrainingRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/leader/': {
+      id: '/leader/'
+      path: '/'
+      fullPath: '/leader/'
+      preLoaderRoute: typeof LeaderIndexRouteImport
+      parentRoute: typeof LeaderRoute
+    }
+    '/leader/committee': {
+      id: '/leader/committee'
+      path: '/committee'
+      fullPath: '/leader/committee'
+      preLoaderRoute: typeof LeaderCommitteeRouteImport
+      parentRoute: typeof LeaderRoute
+    }
+    '/leader/dashboard': {
+      id: '/leader/dashboard'
+      path: '/dashboard'
+      fullPath: '/leader/dashboard'
+      preLoaderRoute: typeof LeaderDashboardRouteImport
+      parentRoute: typeof LeaderRoute
+    }
+    '/leader/event': {
+      id: '/leader/event'
+      path: '/event'
+      fullPath: '/leader/event'
+      preLoaderRoute: typeof LeaderEventRouteImport
+      parentRoute: typeof LeaderRoute
+    }
+    '/leader/notifications': {
+      id: '/leader/notifications'
+      path: '/notifications'
+      fullPath: '/leader/notifications'
+      preLoaderRoute: typeof LeaderNotificationsRouteImport
+      parentRoute: typeof LeaderRoute
+    }
+    '/leader/profile': {
+      id: '/leader/profile'
+      path: '/profile'
+      fullPath: '/leader/profile'
+      preLoaderRoute: typeof LeaderProfileRouteImport
+      parentRoute: typeof LeaderRoute
+    }
+    '/leader/scanner': {
+      id: '/leader/scanner'
+      path: '/scanner'
+      fullPath: '/leader/scanner'
+      preLoaderRoute: typeof LeaderScannerRouteImport
+      parentRoute: typeof LeaderRoute
+    }
+    '/leader/shifts': {
+      id: '/leader/shifts'
+      path: '/shifts'
+      fullPath: '/leader/shifts'
+      preLoaderRoute: typeof LeaderShiftsRouteImport
+      parentRoute: typeof LeaderRoute
+    }
+    '/leader/volunteers': {
+      id: '/leader/volunteers'
+      path: '/volunteers'
+      fullPath: '/leader/volunteers'
+      preLoaderRoute: typeof LeaderVolunteersRouteImport
+      parentRoute: typeof LeaderRoute
     }
     '/volunteer/accreditation': {
       id: '/volunteer/accreditation'
@@ -1045,6 +1234,33 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface LeaderRouteChildren {
+  LeaderCommitteeRoute: typeof LeaderCommitteeRoute
+  LeaderDashboardRoute: typeof LeaderDashboardRoute
+  LeaderEventRoute: typeof LeaderEventRoute
+  LeaderNotificationsRoute: typeof LeaderNotificationsRoute
+  LeaderProfileRoute: typeof LeaderProfileRoute
+  LeaderScannerRoute: typeof LeaderScannerRoute
+  LeaderShiftsRoute: typeof LeaderShiftsRoute
+  LeaderVolunteersRoute: typeof LeaderVolunteersRoute
+  LeaderIndexRoute: typeof LeaderIndexRoute
+}
+
+const LeaderRouteChildren: LeaderRouteChildren = {
+  LeaderCommitteeRoute: LeaderCommitteeRoute,
+  LeaderDashboardRoute: LeaderDashboardRoute,
+  LeaderEventRoute: LeaderEventRoute,
+  LeaderNotificationsRoute: LeaderNotificationsRoute,
+  LeaderProfileRoute: LeaderProfileRoute,
+  LeaderScannerRoute: LeaderScannerRoute,
+  LeaderShiftsRoute: LeaderShiftsRoute,
+  LeaderVolunteersRoute: LeaderVolunteersRoute,
+  LeaderIndexRoute: LeaderIndexRoute,
+}
+
+const LeaderRouteWithChildren =
+  LeaderRoute._addFileChildren(LeaderRouteChildren)
+
 interface VolunteerCertificatesRouteChildren {
   VolunteerCertificatesCertificateIdRoute: typeof VolunteerCertificatesCertificateIdRoute
 }
@@ -1076,6 +1292,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  LeaderRoute: LeaderRouteWithChildren,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   RegisterRoute: RegisterRoute,

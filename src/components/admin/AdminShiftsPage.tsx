@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { CalendarDays, Clock3, CreditCard as Edit3, LoaderCircle, MapPin, Plus, Trash2, Users } from "lucide-react";
+import {
+  CalendarDays,
+  Clock3,
+  CreditCard as Edit3,
+  LoaderCircle,
+  MapPin,
+  Plus,
+  Trash2,
+  Users,
+} from "lucide-react";
 
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import {
@@ -19,7 +28,7 @@ import {
   VSModalFooter,
 } from "@/components/design-system";
 
-import { adminEventService } from "@/services/adminEventService";
+import { adminEventService } from "@/services/admin/adminEventService";
 import { supabase } from "@/integrations/supabase/client";
 
 type ShiftRow = {
@@ -104,8 +113,7 @@ export function AdminShiftsPage() {
   const eventTitle = (eventId: string) =>
     events.find((e) => e.id === eventId)?.title ?? "Unknown event";
 
-  const rolesForEvent = (eventId: string) =>
-    roles.filter((r) => r.event_id === eventId);
+  const rolesForEvent = (eventId: string) => roles.filter((r) => r.event_id === eventId);
 
   const openAdd = () => {
     if (roles.length === 0) {
@@ -234,9 +242,7 @@ export function AdminShiftsPage() {
                       <p className="text-sm font-medium text-primary">
                         {eventTitle(shift.event_id)}
                       </p>
-                      <h2 className="mt-1 text-lg font-semibold">
-                        {shift.title}
-                      </h2>
+                      <h2 className="mt-1 text-lg font-semibold">{shift.title}</h2>
                       <p className="mt-1 text-sm text-muted-foreground">
                         {shift.event_roles?.name ?? "Unassigned role"}
                       </p>
@@ -411,7 +417,9 @@ export function AdminShiftsPage() {
             </VSButton>
             <VSButton
               onClick={submit}
-              disabled={submitting || !form.title || !form.date || !form.start_time || !form.end_time}
+              disabled={
+                submitting || !form.title || !form.date || !form.start_time || !form.end_time
+              }
             >
               {submitting ? (
                 <LoaderCircle className="h-4 w-4 animate-spin" />

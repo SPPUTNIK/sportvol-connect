@@ -1,5 +1,5 @@
-// import { getCertificates } from "@/services/mockService";
-// import type { CertificateService } from "@/services/contracts";
+// import { getCertificates } from "@/services/shared/mockService";
+// import type { CertificateService } from "@/services/shared/contracts";
 
 // export const certificateService: CertificateService = {
 //   getCertificates,
@@ -8,7 +8,6 @@
 //     return certificates.find((item) => item.id === id) ?? null;
 //   },
 // };
-
 
 import { demoCertificates } from "@/mocks/frontendDemo";
 import type { Certificate } from "@/lib/types";
@@ -36,8 +35,6 @@ export const certificateService = {
     }
 
     // Supabase implementation will be added later.
-    throw new Error(
-      "Supabase certificate service is not connected yet.",
-    );
+    throw new Error("Supabase certificate service is not connected yet.");
   },
 };

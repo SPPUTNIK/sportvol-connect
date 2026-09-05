@@ -37,58 +37,24 @@ export interface Volunteer {
 // Common enums
 // ============================================================
 
-export type EventStatus =
-  | "draft"
-  | "published"
-  | "closed"
-  | "completed"
-  | "cancelled";
+export type EventStatus = "draft" | "published" | "closed" | "completed" | "cancelled";
 
-export type ApplicationStatus =
-  | "pending"
-  | "accepted"
-  | "rejected"
-  | "withdrawn"
-  | "waitlisted";
+export type ApplicationStatus = "pending" | "accepted" | "rejected" | "withdrawn" | "waitlisted";
 
-export type AttendanceStatus =
-  | "scheduled"
-  | "checked_in"
-  | "complete"
-  | "absent"
-  | "excused";
+export type AttendanceStatus = "scheduled" | "checked_in" | "complete" | "absent" | "excused";
 
-export type CertificateStatus =
-  | "queued"
-  | "issued";
+export type CertificateStatus = "queued" | "issued";
 
-export type TrainingStatus =
-  | "draft"
-  | "published";
+export type TrainingStatus = "draft" | "published";
 
-export type NotificationStatus =
-  | "draft"
-  | "sent";
+export type NotificationStatus = "draft" | "sent";
 
 export type NotificationCategory =
-  | "application"
-  | "training"
-  | "accreditation"
-  | "certificate"
-  | "event"
-  | "general"
-  | "other";
+  "application" | "training" | "accreditation" | "certificate" | "event" | "general" | "other";
 
-export type NotificationAudienceType =
-  | "all_volunteers"
-  | "accepted_volunteers"
-  | "event_team";
+export type NotificationAudienceType = "all_volunteers" | "accepted_volunteers" | "event_team";
 
-export type TrainingResourceType =
-  | "video"
-  | "pdf"
-  | "text"
-  | "link";
+export type TrainingResourceType = "video" | "pdf" | "text" | "link";
 
 // ============================================================
 // Sport

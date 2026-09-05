@@ -36,7 +36,7 @@ import {
   VSModalFooter,
 } from "@/components/design-system";
 
-import { adminEventService } from "@/services/adminEventService";
+import { adminEventService } from "@/services/admin/adminEventService";
 
 type RoleRow = {
   id: string;
@@ -65,13 +65,7 @@ type ShiftRow = {
   event_roles: { name: string } | null;
 };
 
-function Info({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) {
+function Info({ label, value }: { label: string; value: string | number }) {
   return (
     <div>
       <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
@@ -80,9 +74,21 @@ function Info({
   );
 }
 
+type EventDetail = {
+  id: string;
+  title: string;
+  slug: string;
+  city: string;
+  venue: string;
+  description: string | null;
+  start_date: string;
+  end_date: string;
+  event_roles?: Array<{ id: string; name: string }>;
+};
+
 export function AdminEventDetailPage({ eventId }: { eventId: string }) {
   const navigate = useNavigate();
-  const [event, setEvent] = useState<any>(null);
+  const [event, setEvent] = useState<EventDetail | null>(null);
   const [roles, setRoles] = useState<RoleRow[]>([]);
   const [shifts, setShifts] = useState<ShiftRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -137,7 +143,7 @@ export function AdminEventDetailPage({ eventId }: { eventId: string }) {
     setLoading(true);
     setError(null);
     try {
-      const [ eventData, rolesData, shiftsData ] = await Promise.all([
+      const [eventData, rolesData, shiftsData] = await Promise.all([
         adminEventService.getEventById(eventId),
         adminEventService.getRolesForEvent(eventId),
         adminEventService.getShiftsForEvent(eventId),
@@ -432,10 +438,7 @@ export function AdminEventDetailPage({ eventId }: { eventId: string }) {
                   />
                 ) : (
                   roles.map((role) => (
-                    <div
-                      key={role.id}
-                      className="rounded-2xl border border-border p-4"
-                    >
+                    <div key={role.id} className="rounded-2xl border border-border p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <p className="text-sm font-semibold text-foreground">{role.name}</p>
@@ -469,11 +472,7 @@ export function AdminEventDetailPage({ eventId }: { eventId: string }) {
                           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                             Shifts
                           </p>
-                          <VSButton
-                            size="sm"
-                            variant="outline"
-                            onClick={openAddShift}
-                          >
+                          <VSButton size="sm" variant="outline" onClick={openAddShift}>
                             <Plus className="h-3.5 w-3.5" />
                             Add shift
                           </VSButton>
@@ -630,9 +629,7 @@ export function AdminEventDetailPage({ eventId }: { eventId: string }) {
               <input
                 type="checkbox"
                 checked={roleForm.mandatoryTraining}
-                onChange={(e) =>
-                  setRoleForm({ ...roleForm, mandatoryTraining: e.target.checked })
-                }
+                onChange={(e) => setRoleForm({ ...roleForm, mandatoryTraining: e.target.checked })}
               />
               Mandatory training required
             </label>
@@ -759,7 +756,13 @@ export function AdminEventDetailPage({ eventId }: { eventId: string }) {
             </VSButton>
             <VSButton
               onClick={submitShift}
-              disabled={shiftSubmitting || !shiftForm.title || !shiftForm.date || !shiftForm.start_time || !shiftForm.end_time}
+              disabled={
+                shiftSubmitting ||
+                !shiftForm.title ||
+                !shiftForm.date ||
+                !shiftForm.start_time ||
+                !shiftForm.end_time
+              }
             >
               {shiftSubmitting ? (
                 <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -860,11 +863,7 @@ export function AdminEventDetailPage({ eventId }: { eventId: string }) {
               Cancel
             </VSButton>
             <VSButton onClick={submitEventEdit} disabled={eventSubmitting}>
-              {eventSubmitting ? (
-                <LoaderCircle className="h-4 w-4 animate-spin" />
-              ) : (
-                "Save changes"
-              )}
+              {eventSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : "Save changes"}
             </VSButton>
           </VSModalFooter>
         </VSModalContent>

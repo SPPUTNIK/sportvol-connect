@@ -29,7 +29,8 @@ export const scheduleService = {
 
     const { data, error } = await supabase
       .from("shift_assignments")
-      .select(`
+      .select(
+        `
         id,
         status,
         assigned_at,
@@ -53,7 +54,8 @@ export const scheduleService = {
             name
           )
         )
-      `)
+      `,
+      )
       .eq("profile_id", user.id)
       .eq("status", "assigned");
 
@@ -75,38 +77,28 @@ export const scheduleService = {
           return null;
         }
 
-        const event = Array.isArray(shift.events)
-          ? shift.events[0]
-          : shift.events;
+        const event = Array.isArray(shift.events) ? shift.events[0] : shift.events;
 
-        const role = Array.isArray(shift.event_roles)
-          ? shift.event_roles[0]
-          : shift.event_roles;
+        const role = Array.isArray(shift.event_roles) ? shift.event_roles[0] : shift.event_roles;
 
         return {
           id: shift.id,
 
           event_id: shift.event_id,
 
-          event_title:
-            event?.title ?? "Unknown event",
+          event_title: event?.title ?? "Unknown event",
 
-          role_name:
-            role?.name ?? "Volunteer",
+          role_name: role?.name ?? "Volunteer",
 
           date: shift.date,
 
-          start_time:
-            shift.start_time ?? "",
+          start_time: shift.start_time ?? "",
 
-          end_time:
-            shift.end_time ?? "",
+          end_time: shift.end_time ?? "",
 
-          location:
-            shift.location ?? "",
+          location: shift.location ?? "",
 
-          instructions:
-            shift.instructions ?? "",
+          instructions: shift.instructions ?? "",
         } as Shift;
       })
       .filter((shift): shift is Shift => shift !== null)

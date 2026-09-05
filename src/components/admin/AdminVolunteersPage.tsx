@@ -3,10 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 
 import { AdminGate } from "./components/AdminGate";
-import {
-  formatStatus,
-  getInitials,
-} from "./components/adminHelpers";
+import { formatStatus, getInitials } from "./components/adminHelpers";
 
 import {
   VSButton,
@@ -18,24 +15,14 @@ import {
   VSStatusBadge,
 } from "@/components/design-system";
 
-import { adminService } from "@/services/adminService";
+import { adminService } from "@/services/admin/adminService";
 
-function Stat({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) {
+function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">
-        {label}
-      </p>
+      <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
 
-      <p className="mt-1 text-sm font-semibold text-foreground">
-        {value}
-      </p>
+      <p className="mt-1 text-sm font-semibold text-foreground">{value}</p>
     </div>
   );
 }
@@ -46,9 +33,7 @@ export function AdminVolunteersPage() {
   const rows = adminService
     .getVolunteers()
     .filter((item) =>
-      `${item.name} ${item.city} ${item.id}`
-        .toLowerCase()
-        .includes(query.toLowerCase()),
+      `${item.name} ${item.city} ${item.id}`.toLowerCase().includes(query.toLowerCase()),
     );
 
   return (
@@ -63,9 +48,7 @@ export function AdminVolunteersPage() {
         <div className="mt-8 max-w-xl">
           <VSInput
             value={query}
-            onChange={(event) =>
-              setQuery(event.target.value)
-            }
+            onChange={(event) => setQuery(event.target.value)}
             placeholder="Search by name, city, or volunteer ID"
           />
         </div>
@@ -80,10 +63,7 @@ export function AdminVolunteersPage() {
             </div>
           ) : (
             rows.map((item) => (
-              <VSCard
-                key={item.id}
-                className="rounded-[1.75rem] border-border"
-              >
+              <VSCard key={item.id} className="rounded-[1.75rem] border-border">
                 <VSCardContent className="p-6">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
@@ -92,9 +72,7 @@ export function AdminVolunteersPage() {
                       </div>
 
                       <div>
-                        <h2 className="text-lg font-semibold text-foreground">
-                          {item.name}
-                        </h2>
+                        <h2 className="text-lg font-semibold text-foreground">{item.name}</h2>
 
                         <p className="mt-1 text-xs text-muted-foreground">
                           {item.id} · {item.city}
@@ -102,33 +80,18 @@ export function AdminVolunteersPage() {
                       </div>
                     </div>
 
-                    <VSStatusBadge
-                      status={formatStatus(item.status)}
-                    />
+                    <VSStatusBadge status={formatStatus(item.status)} />
                   </div>
 
                   <div className="mt-6 grid grid-cols-3 gap-4">
-                    <Stat
-                      label="Events"
-                      value={item.events}
-                    />
+                    <Stat label="Events" value={item.events} />
 
-                    <Stat
-                      label="Hours"
-                      value={item.hours}
-                    />
+                    <Stat label="Hours" value={item.hours} />
 
-                    <Stat
-                      label="Attendance"
-                      value={item.attendance}
-                    />
+                    <Stat label="Attendance" value={item.attendance} />
                   </div>
 
-                  <VSButton
-                    asChild
-                    variant="outline"
-                    size="sm"
-                  >
+                  <VSButton asChild variant="outline" size="sm">
                     <Link
                       to="/admin/volunteers/$volunteerId"
                       params={{

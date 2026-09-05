@@ -41,7 +41,7 @@ export type AdminLayoutProps = {
   eyebrow?: string;
 };
 
-export const adminNavigation: AdminNavGroup[] = [
+const adminNavigation: AdminNavGroup[] = [
   {
     label: "Overview",
     items: [
@@ -185,13 +185,9 @@ function AdminNavigation({
 }) {
   const { profile } = useAuth();
 
-  const name =
-    profile?.first_name || "Administrator";
+  const name = profile?.first_name || "Administrator";
 
-  const currentPath =
-    typeof window === "undefined"
-      ? ""
-      : window.location.pathname;
+  const currentPath = typeof window === "undefined" ? "" : window.location.pathname;
 
   return (
     <div className="relative flex h-full min-h-0 flex-col overflow-hidden">
@@ -202,11 +198,7 @@ function AdminNavigation({
         {/* Logo */}
         <div className="shrink-0 px-4 pt-6">
           <div className="mb-8 flex items-center justify-between px-3">
-            <Link
-              to="/"
-              className="flex items-center gap-3"
-              onClick={onNavigate}
-            >
+            <Link to="/" className="flex items-center gap-3" onClick={onNavigate}>
               <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl">
                 <img
                   src="/logo.png"
@@ -216,13 +208,9 @@ function AdminNavigation({
               </div>
 
               <div>
-                <p className="font-display text-lg font-semibold">
-                  VOLUNSPORT
-                </p>
+                <p className="font-display text-lg font-semibold">VOLUNSPORT</p>
 
-                <p className="text-[0.58rem] uppercase tracking-[0.3em] text-primary">
-                  Morocco
-                </p>
+                <p className="text-[0.58rem] uppercase tracking-[0.3em] text-primary">Morocco</p>
               </div>
             </Link>
 
@@ -247,34 +235,29 @@ function AdminNavigation({
                 </p>
 
                 <div className="space-y-1">
-                  {group.items.map(
-                    ({ label, href, icon: Icon }) => {
-                      const active =
-                        currentPath === href;
+                  {group.items.map(({ label, href, icon: Icon }) => {
+                    const active = currentPath === href;
 
-                      return (
-                        <Link
-                          key={href}
-                          to={href}
-                          onClick={onNavigate}
-                          className={cn(
-                            "group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition",
-                            active
-                              ? "bg-primary text-primary-foreground shadow-sm"
-                              : "text-foreground/70 hover:bg-muted hover:text-foreground",
-                          )}
-                        >
-                          <Icon className="h-4 w-4 shrink-0" />
+                    return (
+                      <Link
+                        key={href}
+                        to={href}
+                        onClick={onNavigate}
+                        className={cn(
+                          "group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition",
+                          active
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-foreground/70 hover:bg-muted hover:text-foreground",
+                        )}
+                      >
+                        <Icon className="h-4 w-4 shrink-0" />
 
-                          <span>{label}</span>
+                        <span>{label}</span>
 
-                          {active && (
-                            <ChevronRight className="ml-auto h-4 w-4" />
-                          )}
-                        </Link>
-                      );
-                    },
-                  )}
+                        {active && <ChevronRight className="ml-auto h-4 w-4" />}
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -294,19 +277,13 @@ function AdminNavigation({
               </div>
 
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-foreground">
-                  {name}
-                </p>
+                <p className="truncate text-sm font-semibold text-foreground">{name}</p>
 
-                <p className="truncate text-xs text-muted-foreground">
-                  Administrator
-                </p>
+                <p className="truncate text-xs text-muted-foreground">Administrator</p>
               </div>
             </div>
 
-            <p className="mt-3 text-xs font-semibold text-primary">
-              View profile
-            </p>
+            <p className="mt-3 text-xs font-semibold text-primary">View profile</p>
           </Link>
 
           {/* Sidebar logout */}
@@ -325,19 +302,14 @@ function AdminNavigation({
   );
 }
 
-export function AdminLayout({
-  children,
-  title,
-  eyebrow = "Platform control",
-}: AdminLayoutProps) {
+export function AdminLayout({ children, title, eyebrow = "Platform control" }: AdminLayoutProps) {
   const [open, setOpen] = useState(false);
 
   const { profile, signOut } = useAuth();
 
   const navigate = useNavigate();
 
-  const name =
-    profile?.first_name || "Administrator";
+  const name = profile?.first_name || "Administrator";
 
   async function handleSignOut() {
     setOpen(false);
@@ -357,10 +329,7 @@ export function AdminLayout({
       ===================================================== */}
 
       <aside className="fixed inset-y-0 left-0 z-40 hidden h-screen w-[272px] border-r border-border bg-card/95 lg:block">
-        <AdminNavigation
-          onNavigate={() => setOpen(false)}
-          onSignOut={handleSignOut}
-        />
+        <AdminNavigation onNavigate={() => setOpen(false)} onSignOut={handleSignOut} />
       </aside>
 
       {/* =====================================================
@@ -377,10 +346,7 @@ export function AdminLayout({
           />
 
           <aside className="fixed inset-y-0 left-0 z-50 h-screen w-[min(86vw,320px)] border-r border-border bg-card">
-            <AdminNavigation
-              onNavigate={() => setOpen(false)}
-              onSignOut={handleSignOut}
-            />
+            <AdminNavigation onNavigate={() => setOpen(false)} onSignOut={handleSignOut} />
           </aside>
         </>
       )}
@@ -409,9 +375,7 @@ export function AdminLayout({
                   {eyebrow}
                 </p>
 
-                <h1 className="text-lg font-semibold text-foreground sm:text-xl">
-                  {title}
-                </h1>
+                <h1 className="text-lg font-semibold text-foreground sm:text-xl">{title}</h1>
               </div>
             </div>
 
@@ -435,9 +399,7 @@ export function AdminLayout({
                   {name.slice(0, 1).toUpperCase()}
                 </span>
 
-                <span className="hidden text-sm font-medium text-foreground sm:block">
-                  {name}
-                </span>
+                <span className="hidden text-sm font-medium text-foreground sm:block">{name}</span>
               </Link>
 
               {/* Header logout */}
@@ -455,9 +417,7 @@ export function AdminLayout({
         </header>
 
         {/* Page content */}
-        <main className="px-5 py-8 sm:px-8 lg:px-10">
-          {children}
-        </main>
+        <main className="px-5 py-8 sm:px-8 lg:px-10">{children}</main>
       </div>
     </div>
   );

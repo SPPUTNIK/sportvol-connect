@@ -9,9 +9,7 @@ import { supabase } from "@/lib/supabase";
 export const Route = createFileRoute("/reset-password")({
   component: ResetPassword,
 
-  validateSearch: (
-    search: Record<string, unknown>,
-  ): { next?: string } => {
+  validateSearch: (search: Record<string, unknown>): { next?: string } => {
     const next =
       typeof search.next === "string" &&
       search.next.startsWith("/") &&
@@ -25,8 +23,7 @@ export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
       {
-        title:
-          "Reset Password | VolunSport Morocco",
+        title: "Reset Password | VolunSport Morocco",
       },
     ],
   }),
@@ -36,28 +33,23 @@ function ResetPassword() {
   const { next } = Route.useSearch();
 
   const destination = next ?? "/login";
-  
+
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [success, setSuccess] = useState(false);
-  const [error, setError] =
-    useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(false);
-  const [checkingSession, setCheckingSession] =
-    useState(true);
+  const [checkingSession, setCheckingSession] = useState(true);
 
-  const [hasRecoverySession, setHasRecoverySession] =
-    useState(false);
+  const [hasRecoverySession, setHasRecoverySession] = useState(false);
 
   useEffect(() => {
     let mounted = true;
 
     async function checkRecoverySession() {
-      const { data, error } =
-        await supabase.auth.getSession();
+      const { data, error } = await supabase.auth.getSession();
 
       if (!mounted) return;
 
@@ -75,18 +67,13 @@ function ResetPassword() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!mounted) return;
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
 
-        if (
-          event === "PASSWORD_RECOVERY" &&
-          session
-        ) {
-          setHasRecoverySession(true);
-        }
-      },
-    );
+      if (event === "PASSWORD_RECOVERY" && session) {
+        setHasRecoverySession(true);
+      }
+    });
 
     return () => {
       mounted = false;
@@ -94,18 +81,14 @@ function ResetPassword() {
     };
   }, []);
 
-  async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>,
-  ) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setError(null);
     setSuccess(false);
 
     if (password.length < 8) {
-      setError(
-        "Password must be at least 8 characters.",
-      );
+      setError("Password must be at least 8 characters.");
       return;
     }
 
@@ -116,16 +99,12 @@ function ResetPassword() {
 
     setLoading(true);
 
-    const { error: updateError } =
-      await supabase.auth.updateUser({
-        password,
-      });
+    const { error: updateError } = await supabase.auth.updateUser({
+      password,
+    });
 
     if (updateError) {
-      setError(
-        updateError.message ||
-          "Unable to update your password.",
-      );
+      setError(updateError.message || "Unable to update your password.");
 
       setLoading(false);
       return;
@@ -142,40 +121,28 @@ function ResetPassword() {
           <div className="mx-auto max-w-md rounded-[2rem] border border-hairline-invert bg-card p-10 shadow-[var(--shadow-lift)]">
             {/* Icon */}
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              {success ? (
-                <CheckCircle2 className="h-5 w-5" />
-              ) : (
-                <LockKeyhole className="h-5 w-5" />
-              )}
+              {success ? <CheckCircle2 className="h-5 w-5" /> : <LockKeyhole className="h-5 w-5" />}
             </div>
 
-            <h1 className="mt-6 text-3xl font-semibold text-foreground">
-              Reset your password
-            </h1>
+            <h1 className="mt-6 text-3xl font-semibold text-foreground">Reset your password</h1>
 
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Enter a new password for your VolunSport
-              account. Your password must contain at
-              least 8 characters.
+              Enter a new password for your VolunSport account. Your password must contain at least
+              8 characters.
             </p>
 
             {checkingSession ? (
               <div className="mt-8 rounded-3xl border border-border bg-muted/30 p-5">
-                <p className="text-sm text-muted-foreground">
-                  Checking your recovery session...
-                </p>
+                <p className="text-sm text-muted-foreground">Checking your recovery session...</p>
               </div>
             ) : success ? (
               <div className="mt-8">
                 <div className="rounded-3xl border border-primary/20 bg-primary/5 p-6">
-                  <p className="text-lg font-semibold text-foreground">
-                    Password updated
-                  </p>
+                  <p className="text-lg font-semibold text-foreground">Password updated</p>
 
                   <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                    Your password has been successfully
-                    reset. You can now sign in with your
-                    new password.
+                    Your password has been successfully reset. You can now sign in with your new
+                    password.
                   </p>
                 </div>
 
@@ -194,8 +161,7 @@ function ResetPassword() {
                   </p>
 
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    Please request a new password reset
-                    email and use the latest link.
+                    Please request a new password reset email and use the latest link.
                   </p>
                 </div>
 
@@ -207,19 +173,13 @@ function ResetPassword() {
                 </Link>
               </div>
             ) : (
-              <form
-                onSubmit={handleSubmit}
-                className="mt-8 space-y-5"
-              >
+              <form onSubmit={handleSubmit} className="mt-8 space-y-5">
                 <label className="block text-sm font-medium text-foreground">
                   New password
-
                   <input
                     type="password"
                     value={password}
-                    onChange={(event) =>
-                      setPassword(event.target.value)
-                    }
+                    onChange={(event) => setPassword(event.target.value)}
                     placeholder="Enter new password"
                     autoComplete="new-password"
                     disabled={loading}
@@ -231,15 +191,10 @@ function ResetPassword() {
 
                 <label className="block text-sm font-medium text-foreground">
                   Confirm password
-
                   <input
                     type="password"
                     value={confirmPassword}
-                    onChange={(event) =>
-                      setConfirmPassword(
-                        event.target.value,
-                      )
-                    }
+                    onChange={(event) => setConfirmPassword(event.target.value)}
                     placeholder="Confirm new password"
                     autoComplete="new-password"
                     disabled={loading}
@@ -256,16 +211,10 @@ function ResetPassword() {
 
                 <button
                   type="submit"
-                  disabled={
-                    loading ||
-                    !password ||
-                    !confirmPassword
-                  }
+                  disabled={loading || !password || !confirmPassword}
                   className="flex h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {loading
-                    ? "Updating password..."
-                    : "Reset password"}
+                  {loading ? "Updating password..." : "Reset password"}
                 </button>
               </form>
             )}

@@ -159,11 +159,7 @@ export function Nav() {
               aria-controls="mobile-navigation"
               className="flex size-10 items-center justify-center rounded-full border border-hairline-invert/70 bg-white/[0.03] text-ink-foreground transition-all duration-300 hover:border-primary/60 hover:bg-white/[0.06] sm:size-11 lg:hidden"
             >
-              {open ? (
-                <X className="size-5" />
-              ) : (
-                <Menu className="size-5" />
-              )}
+              {open ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
           </div>
         </nav>

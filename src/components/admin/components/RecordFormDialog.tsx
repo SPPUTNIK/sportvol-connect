@@ -71,9 +71,7 @@ export function RecordFormDialog({
   };
 
   const handleSubmit = () => {
-    const missing = fields.find(
-      (field) => field.required && !(values[field.name] ?? "").trim(),
-    );
+    const missing = fields.find((field) => field.required && !(values[field.name] ?? "").trim());
 
     if (missing) {
       setError(`${missing.label} is required.`);

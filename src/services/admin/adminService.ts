@@ -107,8 +107,7 @@ export const adminService = {
 
       description: event.description,
 
-      status:
-        event.status.toLowerCase() as AdminEventSummary["status"],
+      status: event.status.toLowerCase() as AdminEventSummary["status"],
 
       roles: event.roles,
       volunteers: event.volunteers,
@@ -140,8 +139,7 @@ export const adminService = {
 
       date: item.applied_at,
 
-      status:
-        item.status.toLowerCase() as AdminApplicationSummary["status"],
+      status: item.status.toLowerCase() as AdminApplicationSummary["status"],
     }));
   },
 
@@ -197,8 +195,7 @@ export const adminService = {
       assigned: item.assigned,
       completed: item.completed,
 
-      status:
-        item.status.toLowerCase() as AdminTrainingSummary["status"],
+      status: item.status.toLowerCase() as AdminTrainingSummary["status"],
 
       createdAt: item.created_at,
       publishedAt: item.published_at,
@@ -227,8 +224,7 @@ export const adminService = {
       checkIn: item.check_in,
       checkOut: item.check_out,
 
-      status:
-        item.status.toLowerCase() as AdminAttendanceSummary["status"],
+      status: item.status.toLowerCase() as AdminAttendanceSummary["status"],
     }));
   },
 
@@ -253,8 +249,7 @@ export const adminService = {
       date: item.date,
       issuedAt: item.issued_at,
 
-      status:
-        item.status.toLowerCase() as AdminCertificateSummary["status"],
+      status: item.status.toLowerCase() as AdminCertificateSummary["status"],
     }));
   },
 
@@ -273,8 +268,7 @@ export const adminService = {
       audienceType: item.audience_type,
       audience: item.audience,
 
-      category:
-        item.category.toLowerCase() as AdminNotificationSummary["category"],
+      category: item.category.toLowerCase() as AdminNotificationSummary["category"],
 
       eventId: item.event_id,
       event: item.event,
@@ -283,8 +277,7 @@ export const adminService = {
 
       sentAt: item.sent_at,
 
-      status:
-        item.status.toLowerCase() as AdminNotificationSummary["status"],
+      status: item.status.toLowerCase() as AdminNotificationSummary["status"],
     }));
   },
 
@@ -317,7 +310,6 @@ export const adminService = {
     }));
   },
 
-
   getAccreditations() {
     return adminAccreditations;
   },
@@ -334,4 +326,3 @@ export const adminService = {
     return adminShifts;
   },
 };
-

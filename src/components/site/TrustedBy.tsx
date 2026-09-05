@@ -59,8 +59,7 @@ export function TrustedBy() {
           className="relative overflow-hidden"
           dir="ltr"
           style={{
-            maskImage:
-              "linear-gradient(to right, transparent, black 5%, black 95%, transparent)",
+            maskImage: "linear-gradient(to right, transparent, black 5%, black 95%, transparent)",
             WebkitMaskImage:
               "linear-gradient(to right, transparent, black 5%, black 95%, transparent)",
           }}

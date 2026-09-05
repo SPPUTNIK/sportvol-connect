@@ -48,11 +48,7 @@ function normalizeArray(value: unknown): string[] {
     return [];
   }
 
-  return value.filter(
-    (item): item is string =>
-      typeof item === "string" &&
-      item.trim().length > 0,
-  );
+  return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
 }
 
 function mapProfile(row: ProfileRow): VolunteerProfile {
@@ -87,13 +83,9 @@ function mapProfile(row: ProfileRow): VolunteerProfile {
     skills: normalizeArray(row.skills),
     languages: normalizeArray(row.languages),
 
-    volunteer_hours: Number(
-      row.volunteer_hours ?? 0,
-    ),
+    volunteer_hours: Number(row.volunteer_hours ?? 0),
 
-    attendance_rate: Number(
-      row.attendance_rate ?? 0,
-    ),
+    attendance_rate: Number(row.attendance_rate ?? 0),
   };
 }
 
@@ -163,10 +155,7 @@ export const profileService = {
   async getProfile(): Promise<VolunteerProfile> {
     const userId = await getCurrentUserId();
 
-    const {
-      data,
-      error,
-    } = await supabase
+    const { data, error } = await supabase
       .from("profiles")
       .select(PROFILE_COLUMNS)
       .eq("id", userId)
@@ -177,9 +166,7 @@ export const profileService = {
     }
 
     if (!data) {
-      throw new Error(
-        "Your volunteer profile could not be found.",
-      );
+      throw new Error("Your volunteer profile could not be found.");
     }
 
     return mapProfile(data as ProfileRow);
@@ -191,9 +178,7 @@ export const profileService = {
    * ==========================================================
    */
 
-  async updateProfile(
-    updates: Partial<VolunteerProfile>,
-  ): Promise<VolunteerProfile> {
+  async updateProfile(updates: Partial<VolunteerProfile>): Promise<VolunteerProfile> {
     const userId = await getCurrentUserId();
 
     /*
@@ -205,63 +190,45 @@ export const profileService = {
      */
 
     const payload = {
-      first_name:
-        updates.first_name?.trim() ?? null,
+      first_name: updates.first_name?.trim() ?? null,
 
-      last_name:
-        updates.last_name?.trim() ?? null,
+      last_name: updates.last_name?.trim() ?? null,
 
-      phone:
-        updates.phone?.trim() ?? null,
+      phone: updates.phone?.trim() ?? null,
 
-      city:
-        updates.city?.trim() ?? null,
+      city: updates.city?.trim() ?? null,
 
-      country:
-        updates.country?.trim() ?? null,
+      country: updates.country?.trim() ?? null,
 
-      nationality:
-        updates.nationality?.trim() ?? null,
+      nationality: updates.nationality?.trim() ?? null,
 
-      cin_or_passport:
-        updates.cin_or_passport?.trim() ?? null,
+      cin_or_passport: updates.cin_or_passport?.trim() ?? null,
 
-      bio:
-        updates.bio?.trim() ?? null,
+      bio: updates.bio?.trim() ?? null,
 
-      date_of_birth:
-        updates.date_of_birth || null,
+      date_of_birth: updates.date_of_birth || null,
 
-      experience:
-        updates.experience?.trim() || null,
+      experience: updates.experience?.trim() || null,
 
-      interests:
-        normalizeArray(updates.interests),
+      interests: normalizeArray(updates.interests),
 
-      skills:
-        normalizeArray(updates.skills),
+      skills: normalizeArray(updates.skills),
 
-      languages:
-        normalizeArray(updates.languages),
+      languages: normalizeArray(updates.languages),
 
       /*
        * Avatar URL is only updated when explicitly provided.
        */
       ...(updates.avatar_url !== undefined
         ? {
-            avatar_url:
-              updates.avatar_url || null,
+            avatar_url: updates.avatar_url || null,
           }
         : {}),
 
-      updated_at:
-        new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
-    const {
-      data,
-      error,
-    } = await supabase
+    const { data, error } = await supabase
       .from("profiles")
       .update(payload)
       .eq("id", userId)
@@ -273,9 +240,7 @@ export const profileService = {
     }
 
     if (!data) {
-      throw new Error(
-        "Unable to update your profile.",
-      );
+      throw new Error("Unable to update your profile.");
     }
 
     return mapProfile(data as ProfileRow);
@@ -293,9 +258,7 @@ export const profileService = {
    * The returned public URL is then saved in profiles.avatar_url.
    */
 
-  async uploadProfilePhoto(
-    file: File,
-  ): Promise<VolunteerProfile> {
+  async uploadProfilePhoto(file: File): Promise<VolunteerProfile> {
     const userId = await getCurrentUserId();
 
     /*
@@ -303,9 +266,7 @@ export const profileService = {
      */
 
     if (!file.type.startsWith("image/")) {
-      throw new Error(
-        "Please select a valid image.",
-      );
+      throw new Error("Please select a valid image.");
     }
 
     /*
@@ -315,42 +276,28 @@ export const profileService = {
     const MAX_SIZE = 2 * 1024 * 1024;
 
     if (file.size > MAX_SIZE) {
-      throw new Error(
-        "Profile photo must be smaller than 2 MB.",
-      );
+      throw new Error("Profile photo must be smaller than 2 MB.");
     }
 
     /*
      * Get file extension.
      */
 
-    const extension =
-      file.name
-        .split(".")
-        .pop()
-        ?.toLowerCase() || "jpg";
+    const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
 
-    const safeExtension =
-      ["jpg", "jpeg", "png", "webp"].includes(
-        extension,
-      )
-        ? extension
-        : "jpg";
+    const safeExtension = ["jpg", "jpeg", "png", "webp"].includes(extension) ? extension : "jpg";
 
     /*
      * Create unique path.
      */
 
-    const filePath =
-      `${userId}/avatar-${Date.now()}.${safeExtension}`;
+    const filePath = `${userId}/avatar-${Date.now()}.${safeExtension}`;
 
     /*
      * Upload.
      */
 
-    const {
-      error: uploadError,
-    } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from(PROFILE_PHOTOS_BUCKET)
       .upload(filePath, file, {
         cacheControl: "3600",
@@ -366,23 +313,17 @@ export const profileService = {
      * Get public URL.
      */
 
-    const {
-      data: publicUrlData,
-    } = supabase.storage
+    const { data: publicUrlData } = supabase.storage
       .from(PROFILE_PHOTOS_BUCKET)
       .getPublicUrl(filePath);
 
-    const avatarUrl =
-      publicUrlData.publicUrl;
+    const avatarUrl = publicUrlData.publicUrl;
 
     /*
      * Save URL in profile.
      */
 
-    const {
-      data,
-      error,
-    } = await supabase
+    const { data, error } = await supabase
       .from("profiles")
       .update({
         avatar_url: avatarUrl,
@@ -398,21 +339,15 @@ export const profileService = {
        * so we don't leave an orphan file.
        */
 
-      await supabase.storage
-        .from(PROFILE_PHOTOS_BUCKET)
-        .remove([filePath]);
+      await supabase.storage.from(PROFILE_PHOTOS_BUCKET).remove([filePath]);
 
       throw error;
     }
 
     if (!data) {
-      await supabase.storage
-        .from(PROFILE_PHOTOS_BUCKET)
-        .remove([filePath]);
+      await supabase.storage.from(PROFILE_PHOTOS_BUCKET).remove([filePath]);
 
-      throw new Error(
-        "Unable to save your profile photo.",
-      );
+      throw new Error("Unable to save your profile photo.");
     }
 
     return mapProfile(data as ProfileRow);
@@ -432,10 +367,7 @@ export const profileService = {
      * existing Storage path.
      */
 
-    const {
-      data: profileData,
-      error: profileError,
-    } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from("profiles")
       .select("avatar_url")
       .eq("id", userId)
@@ -445,8 +377,7 @@ export const profileService = {
       throw profileError;
     }
 
-    const avatarUrl =
-      profileData?.avatar_url;
+    const avatarUrl = profileData?.avatar_url;
 
     /*
      * Remove the storage file if it belongs
@@ -457,28 +388,15 @@ export const profileService = {
       try {
         const url = new URL(avatarUrl);
 
-        const marker =
-          `/storage/v1/object/public/${PROFILE_PHOTOS_BUCKET}/`;
+        const marker = `/storage/v1/object/public/${PROFILE_PHOTOS_BUCKET}/`;
 
-        const markerIndex =
-          url.pathname.indexOf(marker);
+        const markerIndex = url.pathname.indexOf(marker);
 
         if (markerIndex !== -1) {
-          const filePath =
-            decodeURIComponent(
-              url.pathname.slice(
-                markerIndex + marker.length,
-              ),
-            );
+          const filePath = decodeURIComponent(url.pathname.slice(markerIndex + marker.length));
 
-          if (
-            filePath.startsWith(
-              `${userId}/`,
-            )
-          ) {
-            await supabase.storage
-              .from(PROFILE_PHOTOS_BUCKET)
-              .remove([filePath]);
+          if (filePath.startsWith(`${userId}/`)) {
+            await supabase.storage.from(PROFILE_PHOTOS_BUCKET).remove([filePath]);
           }
         }
       } catch {
@@ -493,10 +411,7 @@ export const profileService = {
      * Remove URL from profile.
      */
 
-    const {
-      data,
-      error,
-    } = await supabase
+    const { data, error } = await supabase
       .from("profiles")
       .update({
         avatar_url: null,
@@ -511,9 +426,7 @@ export const profileService = {
     }
 
     if (!data) {
-      throw new Error(
-        "Unable to remove your profile photo.",
-      );
+      throw new Error("Unable to remove your profile photo.");
     }
 
     return mapProfile(data as ProfileRow);
@@ -532,19 +445,22 @@ export const profileService = {
   async deleteProfile(): Promise<void> {
     const userId = await getCurrentUserId();
 
-    const {
-      error,
-    } = await supabase
-      .from("profiles")
-      .delete()
-      .eq("id", userId);
+    const { error } = await supabase.from("profiles").delete().eq("id", userId);
 
     if (error) {
       throw error;
     }
   },
 
-  async searchProfiles(query: string): Promise<Array<{ id: string; first_name: string | null; last_name: string | null; avatar_url: string | null; email: string | null }>> {
+  async searchProfiles(query: string): Promise<
+    Array<{
+      id: string;
+      first_name: string | null;
+      last_name: string | null;
+      avatar_url: string | null;
+      email: string | null;
+    }>
+  > {
     const q = query.trim();
     if (!q) return [];
 
@@ -558,6 +474,20 @@ export const profileService = {
 
     if (error) throw error;
 
-    return (data ?? []).map((r: any) => ({ id: r.id, first_name: r.first_name ?? null, last_name: r.last_name ?? null, avatar_url: r.avatar_url ?? null, email: r.email ?? null }));
+    type SearchProfileRow = {
+      id: string;
+      first_name: string | null;
+      last_name: string | null;
+      avatar_url: string | null;
+      email: string | null;
+    };
+
+    return (data ?? []).map((r: SearchProfileRow) => ({
+      id: r.id,
+      first_name: r.first_name ?? null,
+      last_name: r.last_name ?? null,
+      avatar_url: r.avatar_url ?? null,
+      email: r.email ?? null,
+    }));
   },
 };

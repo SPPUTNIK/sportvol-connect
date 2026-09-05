@@ -1,16 +1,9 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Bell,
-  CheckCircle2,
-  Info,
-  Megaphone,
-  ShieldCheck,
-  Award,
-} from "lucide-react";
+import { Bell, CheckCircle2, Info, Megaphone, ShieldCheck, Award } from "lucide-react";
 
 import { AppShell } from "@/components/app/AppShell";
-import { notificationService } from "@/services/notificationService";
+import { notificationService } from "@/services/volunteer/notificationService";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
 import type { Notification } from "@/lib/types";
@@ -58,11 +51,7 @@ function Notifications() {
 
       setNotifications(data);
     } catch (err: unknown) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to load notifications.",
-      );
+      setError(err instanceof Error ? err.message : "Unable to load notifications.");
     } finally {
       setLoading(false);
     }
@@ -72,9 +61,7 @@ function Notifications() {
     loadNotifications();
   }, []);
 
-  const unreadCount = notifications.filter(
-    (notification) => !notification.read,
-  ).length;
+  const unreadCount = notifications.filter((notification) => !notification.read).length;
 
   async function handleMarkAsRead(id: string) {
     try {
@@ -110,10 +97,7 @@ function Notifications() {
         })),
       );
     } catch (err) {
-      console.error(
-        "[Notifications] Failed to mark all as read:",
-        err,
-      );
+      console.error("[Notifications] Failed to mark all as read:", err);
     } finally {
       setMarkingAll(false);
     }
@@ -122,19 +106,16 @@ function Notifications() {
   return (
     <AppShell title="Notifications">
       <div className="mx-auto max-w-5xl space-y-8">
-
         {/* Header */}
         <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="eyebrow">Notifications</p>
 
-            <h1 className="display-md mt-3">
-              Stay up to date.
-            </h1>
+            <h1 className="display-md mt-3">Stay up to date.</h1>
 
             <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-              View your latest application updates, event announcements,
-              training reminders and platform messages.
+              View your latest application updates, event announcements, training reminders and
+              platform messages.
             </p>
           </div>
 
@@ -154,10 +135,7 @@ function Notifications() {
         {loading ? (
           <LoadingState message="Loading notifications…" />
         ) : error ? (
-          <EmptyState
-            title="Notifications unavailable"
-            description={error}
-          />
+          <EmptyState title="Notifications unavailable" description={error} />
         ) : notifications.length === 0 ? (
           <EmptyState
             title="No notifications"
@@ -169,18 +147,12 @@ function Notifications() {
               <button
                 key={notification.id}
                 type="button"
-                onClick={() =>
-                  !notification.read &&
-                  handleMarkAsRead(notification.id)
-                }
+                onClick={() => !notification.read && handleMarkAsRead(notification.id)}
                 className={`group w-full rounded-[2rem] border bg-card p-5 text-left shadow-[var(--shadow-lift)] transition hover:-translate-y-0.5 sm:p-6 ${
-                  notification.read
-                    ? "border-border"
-                    : "border-primary/30 bg-primary/[0.02]"
+                  notification.read ? "border-border" : "border-primary/30 bg-primary/[0.02]"
                 }`}
               >
                 <div className="flex gap-4">
-
                   {/* Icon */}
                   <div
                     className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${

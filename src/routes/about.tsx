@@ -43,8 +43,7 @@ const values = [
   {
     icon: Award,
     title: "Recognized impact",
-    description:
-      "Volunteers can track their contribution, build experience and earn certificates.",
+    description: "Volunteers can track their contribution, build experience and earn certificates.",
   },
 ];
 
@@ -58,8 +57,7 @@ const steps = [
   {
     number: "02",
     title: "Get involved",
-    description:
-      "Apply for a role and receive the information you need before event day.",
+    description: "Apply for a role and receive the information you need before event day.",
   },
   {
     number: "03",
@@ -155,16 +153,14 @@ function About() {
                     {/* Heading */}
                     <h1 className="display-xl max-w-5xl text-white">
                       Sport is more than
-                      <span className="block text-gradient-accent">
-                        the game.
-                      </span>
+                      <span className="block text-gradient-accent">the game.</span>
                     </h1>
 
                     {/* Description */}
                     <p className="mt-8 max-w-2xl text-base leading-relaxed text-white/65 sm:text-lg">
-                      VolunSport connects passionate people with the sporting
-                      events that bring Morocco together — creating meaningful
-                      opportunities to contribute, learn and belong.
+                      VolunSport connects passionate people with the sporting events that bring
+                      Morocco together — creating meaningful opportunities to contribute, learn and
+                      belong.
                     </p>
 
                     {/* CTA */}
@@ -174,7 +170,6 @@ function About() {
                         className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground transition duration-300 hover:-translate-y-0.5"
                       >
                         Explore events
-
                         <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                       </Link>
 
@@ -211,23 +206,20 @@ function About() {
                   {/* Right */}
                   <div className="space-y-6 text-base leading-relaxed text-muted-foreground">
                     <p>
-                      Sporting events are powered by thousands of people behind
-                      the scenes — welcoming participants, managing
-                      information, supporting operations and creating
-                      unforgettable experiences.
+                      Sporting events are powered by thousands of people behind the scenes —
+                      welcoming participants, managing information, supporting operations and
+                      creating unforgettable experiences.
                     </p>
 
                     <p>
-                      VolunSport exists to make that contribution easier to
-                      discover and more meaningful. We give volunteers a place
-                      to find opportunities while helping organizers build
-                      reliable, prepared teams.
+                      VolunSport exists to make that contribution easier to discover and more
+                      meaningful. We give volunteers a place to find opportunities while helping
+                      organizers build reliable, prepared teams.
                     </p>
 
                     <p>
-                      From local competitions to major sporting moments, our
-                      vision is simple: make volunteering an essential part of
-                      Morocco&apos;s sports ecosystem.
+                      From local competitions to major sporting moments, our vision is simple: make
+                      volunteering an essential part of Morocco&apos;s sports ecosystem.
                     </p>
                   </div>
                 </div>
@@ -239,8 +231,7 @@ function About() {
                       key={label}
                       className={cn(
                         "p-7 sm:p-9",
-                        index !== 0 &&
-                          "border-t border-border sm:border-l sm:border-t-0",
+                        index !== 0 && "border-t border-border sm:border-l sm:border-t-0",
                         index === 2 && "lg:border-t-0",
                       )}
                     >
@@ -265,38 +256,31 @@ function About() {
                 <div className="max-w-2xl">
                   <p className="eyebrow">What we believe</p>
 
-                  <h2 className="display-md mt-5">
-                    A better experience for everyone involved.
-                  </h2>
+                  <h2 className="display-md mt-5">A better experience for everyone involved.</h2>
 
                   <p className="mt-5 text-muted-foreground">
-                    VolunSport is designed around the people who make sporting
-                    events possible.
+                    VolunSport is designed around the people who make sporting events possible.
                   </p>
                 </div>
 
                 {/* Value cards */}
                 <div className="mt-14 grid gap-5 lg:grid-cols-3">
-                  {values.map(
-                    ({ icon: Icon, title, description }) => (
-                      <article
-                        key={title}
-                        className="group rounded-[2rem] border border-border bg-card/95 p-7 transition duration-500 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[var(--shadow-lift)]"
-                      >
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary transition duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
-                          <Icon className="h-5 w-5" />
-                        </div>
+                  {values.map(({ icon: Icon, title, description }) => (
+                    <article
+                      key={title}
+                      className="group rounded-[2rem] border border-border bg-card/95 p-7 transition duration-500 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[var(--shadow-lift)]"
+                    >
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary transition duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
+                        <Icon className="h-5 w-5" />
+                      </div>
 
-                        <h3 className="mt-7 text-lg font-semibold">
-                          {title}
-                        </h3>
+                      <h3 className="mt-7 text-lg font-semibold">{title}</h3>
 
-                        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                          {description}
-                        </p>
-                      </article>
-                    ),
-                  )}
+                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                        {description}
+                      </p>
+                    </article>
+                  ))}
                 </div>
               </div>
             </section>
@@ -311,13 +295,11 @@ function About() {
                   <div>
                     <p className="eyebrow">How it works</p>
 
-                    <h2 className="display-md mt-5">
-                      From interest to impact.
-                    </h2>
+                    <h2 className="display-md mt-5">From interest to impact.</h2>
 
                     <p className="mt-5 max-w-md text-sm leading-relaxed text-muted-foreground">
-                      We make the journey simple so volunteers can focus on
-                      what matters: contributing to the event.
+                      We make the journey simple so volunteers can focus on what matters:
+                      contributing to the event.
                     </p>
                   </div>
 
@@ -332,9 +314,7 @@ function About() {
                           {step.number}
                         </span>
 
-                        <h3 className="text-lg font-semibold">
-                          {step.title}
-                        </h3>
+                        <h3 className="text-lg font-semibold">{step.title}</h3>
 
                         <p className="text-sm leading-relaxed text-muted-foreground">
                           {step.description}
@@ -366,38 +346,31 @@ function About() {
 
                     <h2 className="display-md mt-5 max-w-2xl text-white">
                       One platform.
-                      <span className="block text-white/45">
-                        Many communities.
-                      </span>
+                      <span className="block text-white/45">Many communities.</span>
                     </h2>
                   </div>
 
                   {/* Description */}
                   <p className="max-w-xl text-sm leading-relaxed text-white/55 lg:justify-self-end">
-                    Volunteers, clubs, federations, organizers and communities
-                    all play a role in creating successful sporting events.
-                    VolunSport brings those people together.
+                    Volunteers, clubs, federations, organizers and communities all play a role in
+                    creating successful sporting events. VolunSport brings those people together.
                   </p>
                 </div>
 
                 {/* Community cards */}
                 <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  {communities.map(
-                    ({ icon: Icon, title, text }) => (
-                      <div
-                        key={title}
-                        className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-6 transition duration-300 hover:bg-white/[0.07]"
-                      >
-                        <Icon className="h-5 w-5 text-primary" />
+                  {communities.map(({ icon: Icon, title, text }) => (
+                    <div
+                      key={title}
+                      className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-6 transition duration-300 hover:bg-white/[0.07]"
+                    >
+                      <Icon className="h-5 w-5 text-primary" />
 
-                        <h3 className="mt-6 font-semibold">{title}</h3>
+                      <h3 className="mt-6 font-semibold">{title}</h3>
 
-                        <p className="mt-2 text-sm leading-relaxed text-white/45">
-                          {text}
-                        </p>
-                      </div>
-                    ),
-                  )}
+                      <p className="mt-2 text-sm leading-relaxed text-white/45">{text}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </section>
@@ -420,13 +393,12 @@ function About() {
                     </p>
 
                     <h2 className="display-md mt-5 text-primary-foreground">
-                      Your time can become someone&apos;s best sporting
-                      memory.
+                      Your time can become someone&apos;s best sporting memory.
                     </h2>
 
                     <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-primary-foreground/70">
-                      Discover opportunities, meet your community and help make
-                      the next event unforgettable.
+                      Discover opportunities, meet your community and help make the next event
+                      unforgettable.
                     </p>
 
                     {/* CTA buttons */}
@@ -436,7 +408,6 @@ function About() {
                         className="group inline-flex items-center gap-2 rounded-full bg-background px-6 py-3.5 text-sm font-semibold text-foreground transition duration-300 hover:-translate-y-0.5"
                       >
                         Explore events
-
                         <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                       </Link>
 

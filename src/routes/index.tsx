@@ -71,13 +71,13 @@ function Index() {
   }, []);
 
   return (
-  <I18nProvider>
-    <PublicLayout>
-      <div className="relative overflow-hidden bg-background">
-        {/* Global Zellij Texture */}
-        <div
-          aria-hidden="true"
-          className="
+    <I18nProvider>
+      <PublicLayout>
+        <div className="relative overflow-hidden bg-background">
+          {/* Global Zellij Texture */}
+          <div
+            aria-hidden="true"
+            className="
             pointer-events-none
             absolute
             inset-0
@@ -85,12 +85,12 @@ function Index() {
             opacity-[10%]
             mix-blend-multiply
           "
-        />
+          />
 
-        {/* Soft paper-like overlay */}
-        <div
-          aria-hidden="true"
-          className="
+          {/* Soft paper-like overlay */}
+          <div
+            aria-hidden="true"
+            className="
             pointer-events-none
             absolute
             inset-0
@@ -99,23 +99,23 @@ function Index() {
             via-background/30
             to-background/10
           "
-        />
+          />
 
-        {/* Landing page content */}
-        <div className="relative z-10">
-          <Hero />
-          <TrustedBy />
-          <Mission />
-          <WhyVolunteer />
-          <Journey />
-          <Impact />
-          <Gallery />
-          <Faq />
-          <CallToAction />
-          <JoinDialog />
+          {/* Landing page content */}
+          <div className="relative z-10">
+            <Hero />
+            <TrustedBy />
+            <Mission />
+            <WhyVolunteer />
+            <Journey />
+            <Impact />
+            <Gallery />
+            <Faq />
+            <CallToAction />
+            <JoinDialog />
+          </div>
         </div>
-      </div>
-    </PublicLayout>
-  </I18nProvider>
-);
+      </PublicLayout>
+    </I18nProvider>
+  );
 }

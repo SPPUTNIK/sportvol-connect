@@ -8,26 +8,26 @@ VolunSport now separates **domain models**, **data sources**, **service contract
 
 ## Directory structure
 
-| Location | Responsibility |
-|---|---|
-| `src/types/domain.ts` | Canonical frontend domain models for volunteers, admins, events, roles, applications, shifts, training, attendance, certificates, achievements, notifications, and admin summaries |
-| `src/types/index.ts` | Public barrel export for canonical frontend types |
-| `src/lib/types.ts` | Existing Supabase-compatible response types retained for compatibility with current adapters and routes |
-| `src/mocks/frontendDemo.ts` | Volunteer presentation/demo fixtures used by the volunteer content adapter |
-| `src/mocks/adminDemo.ts` | Admin workspace presentation/demo fixtures used by the admin adapter |
-| `src/services/contracts.ts` | Typed service interfaces and input/filter contracts |
-| `src/services/eventService.ts` | Event discovery and event-detail service |
-| `src/services/applicationService.ts` | Application listing and application submission service |
-| `src/services/volunteerService.ts` | Volunteer profile, accepted events, hours, and statistics service |
-| `src/services/trainingService.ts` | Training list and training-detail service |
-| `src/services/attendanceService.ts` | Attendance service |
-| `src/services/certificateService.ts` | Certificate list and certificate-detail service |
-| `src/services/notificationService.ts` | Notification listing and read-state service |
-| `src/services/scheduleService.ts` | Volunteer shift/schedule service |
-| `src/services/adminService.ts` | Admin workspace snapshot service |
-| `src/services/volunteerContentService.ts` | Synchronous adapter for dashboard and volunteer presentation fixtures |
-| `src/services/index.ts` | Stable service barrel for UI imports |
-| `src/services/mockService.ts` | Existing Supabase-compatible implementation used as the current data adapter by the new services |
+| Location                                  | Responsibility                                                                                                                                                                     |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/types/domain.ts`                     | Canonical frontend domain models for volunteers, admins, events, roles, applications, shifts, training, attendance, certificates, achievements, notifications, and admin summaries |
+| `src/types/index.ts`                      | Public barrel export for canonical frontend types                                                                                                                                  |
+| `src/lib/types.ts`                        | Existing Supabase-compatible response types retained for compatibility with current adapters and routes                                                                            |
+| `src/mocks/frontendDemo.ts`               | Volunteer presentation/demo fixtures used by the volunteer content adapter                                                                                                         |
+| `src/mocks/adminDemo.ts`                  | Admin workspace presentation/demo fixtures used by the admin adapter                                                                                                               |
+| `src/services/contracts.ts`               | Typed service interfaces and input/filter contracts                                                                                                                                |
+| `src/services/eventService.ts`            | Event discovery and event-detail service                                                                                                                                           |
+| `src/services/applicationService.ts`      | Application listing and application submission service                                                                                                                             |
+| `src/services/volunteerService.ts`        | Volunteer profile, accepted events, hours, and statistics service                                                                                                                  |
+| `src/services/trainingService.ts`         | Training list and training-detail service                                                                                                                                          |
+| `src/services/attendanceService.ts`       | Attendance service                                                                                                                                                                 |
+| `src/services/certificateService.ts`      | Certificate list and certificate-detail service                                                                                                                                    |
+| `src/services/notificationService.ts`     | Notification listing and read-state service                                                                                                                                        |
+| `src/services/scheduleService.ts`         | Volunteer shift/schedule service                                                                                                                                                   |
+| `src/services/adminService.ts`            | Admin workspace snapshot service                                                                                                                                                   |
+| `src/services/volunteerContentService.ts` | Synchronous adapter for dashboard and volunteer presentation fixtures                                                                                                              |
+| `src/services/index.ts`                   | Stable service barrel for UI imports                                                                                                                                               |
+| `src/services/mockService.ts`             | Existing Supabase-compatible implementation used as the current data adapter by the new services                                                                                   |
 
 ## Domain models
 
@@ -39,16 +39,16 @@ The existing `src/lib/types.ts` remains available because the current Supabase a
 
 The service interfaces are declared independently from their implementations:
 
-| Interface | Main operations |
-|---|---|
-| `EventService` | `getEvents`, `getEventBySlug`, `getSports` |
-| `ApplicationService` | `getApplications`, `applyForRole` |
-| `VolunteerService` | `getCurrentVolunteer`, `getAcceptedEvents`, `getVolunteerHours`, `getVolunteerStats` |
-| `TrainingService` | `getTraining`, `getTrainingById` |
-| `AttendanceService` | `getAttendance` |
-| `CertificateService` | `getCertificates`, `getCertificateById` |
-| `NotificationService` | `getNotifications`, `markAsRead` |
-| `AdminService` | typed admin profile, statistics, management lists, reporting data, and analytics data |
+| Interface             | Main operations                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| `EventService`        | `getEvents`, `getEventBySlug`, `getSports`                                            |
+| `ApplicationService`  | `getApplications`, `applyForRole`                                                     |
+| `VolunteerService`    | `getCurrentVolunteer`, `getAcceptedEvents`, `getVolunteerHours`, `getVolunteerStats`  |
+| `TrainingService`     | `getTraining`, `getTrainingById`                                                      |
+| `AttendanceService`   | `getAttendance`                                                                       |
+| `CertificateService`  | `getCertificates`, `getCertificateById`                                               |
+| `NotificationService` | `getNotifications`, `markAsRead`                                                      |
+| `AdminService`        | typed admin profile, statistics, management lists, reporting data, and analytics data |
 
 The interfaces are intentionally small and task-oriented. They return frontend models rather than exposing Supabase query builders, row-level filters, database table names, or transport-specific errors to components.
 
@@ -74,12 +74,12 @@ Service calls should be made inside effects, route loaders, or a future query ho
 
 The replacement path is intentionally adapter-oriented:
 
-| Current stage | Replacement action |
-|---|---|
-| Demo/mock adapter | Keep fixtures in `src/mocks` and return them through service objects |
-| Supabase read adapter | Implement the same interface using the existing Supabase client and normalize rows into service return types |
+| Current stage             | Replacement action                                                                                                          |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Demo/mock adapter         | Keep fixtures in `src/mocks` and return them through service objects                                                        |
+| Supabase read adapter     | Implement the same interface using the existing Supabase client and normalize rows into service return types                |
 | Supabase mutation adapter | Implement secure application, notification, attendance, certificate, and profile mutations behind the same service contract |
-| Production UI | Change the service composition/import, not the page rendering code |
+| Production UI             | Change the service composition/import, not the page rendering code                                                          |
 
 No schema, migration, RLS policy, trigger, or backend authorization was changed for this task. Any future Supabase implementation must continue to enforce the existing two-role model and must not move authorization decisions into the client.
 

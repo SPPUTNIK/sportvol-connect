@@ -1,5 +1,5 @@
-// import { getTraining } from "@/services/mockService";
-// import type { TrainingService } from "@/services/contracts";
+// import { getTraining } from "@/services/shared/mockService";
+// import type { TrainingService } from "@/services/shared/contracts";
 
 // export const trainingService: TrainingService = {
 //   getTraining,
@@ -8,7 +8,6 @@
 //     return training.find((item) => item.id === id) ?? null;
 //   },
 // };
-
 
 import { demoTraining } from "@/mocks/frontendDemo";
 import type { Training } from "@/lib/types";
@@ -33,8 +32,6 @@ export const trainingService = {
     }
 
     // Supabase implementation will be connected later.
-    throw new Error(
-      "Supabase training service is not connected yet.",
-    );
+    throw new Error("Supabase training service is not connected yet.");
   },
 };

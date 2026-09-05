@@ -14,19 +14,19 @@ The main architectural direction should be to preserve the public marketing comp
 
 ## Current framework and tooling
 
-| Area | Current implementation |
-|---|---|
-| Application framework | TanStack Start with React 19 and TypeScript |
-| Build tool | Vite 7 with TanStack/Vite integration and Nitro output |
-| Router | TanStack Router file-based routing with generated `src/routeTree.gen.ts` |
-| Styling | Tailwind CSS v4 through `@tailwindcss/vite`, `tw-animate-css`, and `src/styles.css` |
-| UI primitives | Radix UI packages, local `src/components/ui` wrappers, class-variance-authority, tailwind-merge |
-| Motion | Framer Motion, Lenis smooth scrolling on the landing page, local motion helpers |
-| Forms | React Hook Form and `@hookform/resolvers` are installed; most current forms use local React state and native controls |
-| Data visualization | Recharts is installed; current frontend uses mostly compact CSS-based visualizations and service data |
-| Data/auth provider | Supabase JS client with session persistence and auth listeners |
-| Data fetching | Direct service calls in route effects; React Query is installed and provided at the root but is not the primary route data pattern |
-| Package metadata | `package.json`, `package-lock.json`, `bun.lock`, `bunfig.toml`; npm scripts include `dev`, `build`, `build:dev`, `preview`, `lint`, and `format` |
+| Area                  | Current implementation                                                                                                                           |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Application framework | TanStack Start with React 19 and TypeScript                                                                                                      |
+| Build tool            | Vite 7 with TanStack/Vite integration and Nitro output                                                                                           |
+| Router                | TanStack Router file-based routing with generated `src/routeTree.gen.ts`                                                                         |
+| Styling               | Tailwind CSS v4 through `@tailwindcss/vite`, `tw-animate-css`, and `src/styles.css`                                                              |
+| UI primitives         | Radix UI packages, local `src/components/ui` wrappers, class-variance-authority, tailwind-merge                                                  |
+| Motion                | Framer Motion, Lenis smooth scrolling on the landing page, local motion helpers                                                                  |
+| Forms                 | React Hook Form and `@hookform/resolvers` are installed; most current forms use local React state and native controls                            |
+| Data visualization    | Recharts is installed; current frontend uses mostly compact CSS-based visualizations and service data                                            |
+| Data/auth provider    | Supabase JS client with session persistence and auth listeners                                                                                   |
+| Data fetching         | Direct service calls in route effects; React Query is installed and provided at the root but is not the primary route data pattern               |
+| Package metadata      | `package.json`, `package-lock.json`, `bun.lock`, `bunfig.toml`; npm scripts include `dev`, `build`, `build:dev`, `preview`, `lint`, and `format` |
 
 ## Current folder structure
 
@@ -85,33 +85,33 @@ The repository also contains product specification and status documents such as 
 
 ## Existing routes
 
-| Route | Current purpose | Current state |
-|---|---|---|
-| `/` | Public marketing landing page | Complete, highly componentized, multilingual marketing composition |
-| `/about` | Public about page | Present |
-| `/events` | Event discovery, search, sport/city filters, and sorting | Live service call through the module named `mockService`; loading, error, and empty states present |
-| `/events/$slug` | Event detail, role selection, application form, and success state | Present; service-backed and client-validated |
-| `/login` | Email/password login with safe `next` handling | Present and Supabase-backed |
-| `/register` | Registration form | Present and Supabase-backed |
-| `/forgot-password` | Password reset request | Present and Supabase-backed |
-| `/reset-password` | Password update UI | Present |
-| `/dashboard` | Authenticated volunteer dashboard | Present; inline volunteer shell, profile-derived stats, branded hero, empty states, and dashboard navigation |
-| `/applications` | Current volunteer applications | Present; service-backed |
-| `/my-events` | Accepted event commitments | Present; shared feature-page/demo-oriented implementation |
-| `/schedule` | Volunteer shifts | Present; service-backed through `getShifts()` |
-| `/training` | Training module list and progress | Present; service-backed list with resources, no dedicated detail route |
-| `/accreditation` | Accreditation view | Present; service-backed application data and frontend presentation |
-| `/attendance` | Attendance records | Present; service-backed read-only presentation; backend check-in workflow is not implemented in the UI |
-| `/hours` | Volunteer-hours dashboard | Present; shared feature-page/demo-oriented implementation |
-| `/certificates` | Certificate list | Present; service-backed route exists, plus shared demo certificate presentation elsewhere |
-| `/achievements` | Achievement progress | Present; frontend/demo-oriented implementation |
-| `/notifications` | Notification list | Present; service-backed read-only list |
-| `/profile` | Profile editor and impact summary | Present; reads and updates profile through `useAuth().updateProfile()` |
-| `/settings` | Account, notifications, language, and privacy preference entry points | Present; frontend-only controls without substantive setting mutations |
-| `/admin` | Admin overview metrics and management entry cards | Present; role-gated client-side and live metric queries, but no dedicated CRUD subroutes |
-| `/404` | Explicit not-found route | Present |
-| `/.lovable/oauth/consent` | Lovable OAuth consent integration route | Present |
-| `/.mcp/list-tools` and `/.well-known/oauth-protected-resource` | Integration/metadata routes | Present in the repository route tree or adjacent route handlers |
+| Route                                                          | Current purpose                                                       | Current state                                                                                                |
+| -------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `/`                                                            | Public marketing landing page                                         | Complete, highly componentized, multilingual marketing composition                                           |
+| `/about`                                                       | Public about page                                                     | Present                                                                                                      |
+| `/events`                                                      | Event discovery, search, sport/city filters, and sorting              | Live service call through the module named `mockService`; loading, error, and empty states present           |
+| `/events/$slug`                                                | Event detail, role selection, application form, and success state     | Present; service-backed and client-validated                                                                 |
+| `/login`                                                       | Email/password login with safe `next` handling                        | Present and Supabase-backed                                                                                  |
+| `/register`                                                    | Registration form                                                     | Present and Supabase-backed                                                                                  |
+| `/forgot-password`                                             | Password reset request                                                | Present and Supabase-backed                                                                                  |
+| `/reset-password`                                              | Password update UI                                                    | Present                                                                                                      |
+| `/dashboard`                                                   | Authenticated volunteer dashboard                                     | Present; inline volunteer shell, profile-derived stats, branded hero, empty states, and dashboard navigation |
+| `/applications`                                                | Current volunteer applications                                        | Present; service-backed                                                                                      |
+| `/my-events`                                                   | Accepted event commitments                                            | Present; shared feature-page/demo-oriented implementation                                                    |
+| `/schedule`                                                    | Volunteer shifts                                                      | Present; service-backed through `getShifts()`                                                                |
+| `/training`                                                    | Training module list and progress                                     | Present; service-backed list with resources, no dedicated detail route                                       |
+| `/accreditation`                                               | Accreditation view                                                    | Present; service-backed application data and frontend presentation                                           |
+| `/attendance`                                                  | Attendance records                                                    | Present; service-backed read-only presentation; backend check-in workflow is not implemented in the UI       |
+| `/hours`                                                       | Volunteer-hours dashboard                                             | Present; shared feature-page/demo-oriented implementation                                                    |
+| `/certificates`                                                | Certificate list                                                      | Present; service-backed route exists, plus shared demo certificate presentation elsewhere                    |
+| `/achievements`                                                | Achievement progress                                                  | Present; frontend/demo-oriented implementation                                                               |
+| `/notifications`                                               | Notification list                                                     | Present; service-backed read-only list                                                                       |
+| `/profile`                                                     | Profile editor and impact summary                                     | Present; reads and updates profile through `useAuth().updateProfile()`                                       |
+| `/settings`                                                    | Account, notifications, language, and privacy preference entry points | Present; frontend-only controls without substantive setting mutations                                        |
+| `/admin`                                                       | Admin overview metrics and management entry cards                     | Present; role-gated client-side and live metric queries, but no dedicated CRUD subroutes                     |
+| `/404`                                                         | Explicit not-found route                                              | Present                                                                                                      |
+| `/.lovable/oauth/consent`                                      | Lovable OAuth consent integration route                               | Present                                                                                                      |
+| `/.mcp/list-tools` and `/.well-known/oauth-protected-resource` | Integration/metadata routes                                           | Present in the repository route tree or adjacent route handlers                                              |
 
 The generated route tree is maintained in `src/routeTree.gen.ts`. Most app navigation uses hard-coded href strings or route links rather than a shared route metadata registry.
 
@@ -157,20 +157,20 @@ The repository has enough primitives to support the requested product, but sever
 
 The design tokens are centralized in `src/styles.css` using Tailwind v4 `@theme inline` values and CSS custom properties. The system uses:
 
-| Token family | Current direction |
-|---|---|
-| Base palette | Warm near-white background, dark green-tinted foreground, white cards, muted cream surfaces |
-| Primary | Moroccan green, approximately `#0F8A55` in the source comments |
-| Accent | Terracotta/zellij red |
-| Supporting colors | Deep navy ink, warm sand, saffron/gold, cobalt variable retained under the brand namespace |
-| Typography | Geist/Inter for display and body, Geist Mono for eyebrows, Noto Kufi Arabic for RTL |
-| Shape | Rounded cards and controls, base radius `0.75rem`, larger 2xl/3xl page surfaces |
-| Shadows | `--shadow-float` and `--shadow-lift` with soft elevated editorial depth |
-| Gradients | Ink, accent, and veil gradients for dark editorial sections |
-| Utilities | `shell`, `eyebrow`, display scale classes, `ink-panel`, glass utilities, gradient text, zellij utilities, lift, media zoom, no-scrollbar, marquee |
-| Responsive | Tailwind breakpoint classes, mobile sidebar/drawer behavior, responsive grids, and public-nav mobile menu |
-| Motion | Framer Motion on public sections, Lenis smooth scrolling when reduced motion is not preferred, hover lift/media zoom utilities |
-| RTL | `I18nProvider` updates `lang` and `dir`; Arabic typography adjustments exist in global CSS |
+| Token family      | Current direction                                                                                                                                 |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Base palette      | Warm near-white background, dark green-tinted foreground, white cards, muted cream surfaces                                                       |
+| Primary           | Moroccan green, approximately `#0F8A55` in the source comments                                                                                    |
+| Accent            | Terracotta/zellij red                                                                                                                             |
+| Supporting colors | Deep navy ink, warm sand, saffron/gold, cobalt variable retained under the brand namespace                                                        |
+| Typography        | Geist/Inter for display and body, Geist Mono for eyebrows, Noto Kufi Arabic for RTL                                                               |
+| Shape             | Rounded cards and controls, base radius `0.75rem`, larger 2xl/3xl page surfaces                                                                   |
+| Shadows           | `--shadow-float` and `--shadow-lift` with soft elevated editorial depth                                                                           |
+| Gradients         | Ink, accent, and veil gradients for dark editorial sections                                                                                       |
+| Utilities         | `shell`, `eyebrow`, display scale classes, `ink-panel`, glass utilities, gradient text, zellij utilities, lift, media zoom, no-scrollbar, marquee |
+| Responsive        | Tailwind breakpoint classes, mobile sidebar/drawer behavior, responsive grids, and public-nav mobile menu                                         |
+| Motion            | Framer Motion on public sections, Lenis smooth scrolling when reduced motion is not preferred, hover lift/media zoom utilities                    |
+| RTL               | `I18nProvider` updates `lang` and `dir`; Arabic typography adjustments exist in global CSS                                                        |
 
 The stylesheet also applies a global zellij pattern using `body::before` and references `./assets/zellij-pattern.jpg`. The repository contains both `src/assets/zellij-pattern.jpg` and public pattern assets. This creates two possible asset-loading conventions that should be normalized later.
 
@@ -281,29 +281,29 @@ The app has a reasonable responsive foundation, but a full browser-based mobile 
 
 The current route tree covers the core public, volunteer, authentication, and admin overview surfaces, but the following capabilities are absent or incomplete:
 
-| Missing or incomplete capability | Current gap |
-|---|---|
-| Admin shell | No dedicated dense operational navigation/layout |
-| Admin event management | No CRUD route or form |
-| Admin event roles | No dedicated route |
-| Admin shifts | No create/assign/edit route |
-| Admin application decisions | No accept/reject/waitlist workspace |
-| Admin volunteer management | No searchable volunteer management route |
-| Admin training management | No admin training workspace |
-| Admin accreditation operations | No admin accreditation route |
-| Admin attendance operations | No correction/verification route |
-| Admin certificates | No issuance/detail management route |
-| Admin notifications | No compose/send/read-state management route |
-| Admin reports/analytics | No dedicated reporting or analytics route |
-| Training detail | No `/training/$trainingId` route |
-| Certificate detail | No `/certificates/$certificateId` route |
-| Notification actions | Read/unread and related action interactions are incomplete |
-| Rich dashboard aggregation | No dedicated live dashboard query/composition |
-| Mobile event filters | No filter drawer/sheet matching the specification |
-| Full application form | Skills, languages, and additional information are not all represented |
-| Attendance actions | No frontend check-in/check-out workflow |
-| Settings behavior | Entry cards exist, but settings are mostly presentation-only |
-| Authenticated browser tests | No representative volunteer/admin end-to-end flow is present |
+| Missing or incomplete capability | Current gap                                                           |
+| -------------------------------- | --------------------------------------------------------------------- |
+| Admin shell                      | No dedicated dense operational navigation/layout                      |
+| Admin event management           | No CRUD route or form                                                 |
+| Admin event roles                | No dedicated route                                                    |
+| Admin shifts                     | No create/assign/edit route                                           |
+| Admin application decisions      | No accept/reject/waitlist workspace                                   |
+| Admin volunteer management       | No searchable volunteer management route                              |
+| Admin training management        | No admin training workspace                                           |
+| Admin accreditation operations   | No admin accreditation route                                          |
+| Admin attendance operations      | No correction/verification route                                      |
+| Admin certificates               | No issuance/detail management route                                   |
+| Admin notifications              | No compose/send/read-state management route                           |
+| Admin reports/analytics          | No dedicated reporting or analytics route                             |
+| Training detail                  | No `/training/$trainingId` route                                      |
+| Certificate detail               | No `/certificates/$certificateId` route                               |
+| Notification actions             | Read/unread and related action interactions are incomplete            |
+| Rich dashboard aggregation       | No dedicated live dashboard query/composition                         |
+| Mobile event filters             | No filter drawer/sheet matching the specification                     |
+| Full application form            | Skills, languages, and additional information are not all represented |
+| Attendance actions               | No frontend check-in/check-out workflow                               |
+| Settings behavior                | Entry cards exist, but settings are mostly presentation-only          |
+| Authenticated browser tests      | No representative volunteer/admin end-to-end flow is present          |
 
 ## Recommended frontend architecture
 
@@ -397,11 +397,11 @@ The existing public landing components, `src/components/ui` primitives, global d
 
 The audit used the existing repository at `/home/ubuntu/sportvol-connect` on branch `main`. The working tree was clean before the audit output was created.
 
-| Command | Status | Notes |
-|---|---|---|
-| `npx tsc --noEmit --pretty false` | Passed | Exit code 0 |
-| `npm run build` | Passed | Exit code 0; Vite/Nitro production output generated successfully |
-| `npm run lint` | Failed | Existing Prettier formatting errors across multiple `src/components/site` and `src/components/ui` files; Fast Refresh warnings also appeared |
+| Command                           | Status | Notes                                                                                                                                        |
+| --------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npx tsc --noEmit --pretty false` | Passed | Exit code 0                                                                                                                                  |
+| `npm run build`                   | Passed | Exit code 0; Vite/Nitro production output generated successfully                                                                             |
+| `npm run lint`                    | Failed | Existing Prettier formatting errors across multiple `src/components/site` and `src/components/ui` files; Fast Refresh warnings also appeared |
 
 No lint fixes were applied because this task was explicitly audit-only.
 

@@ -8,7 +8,7 @@ import {
   VSEmptyState,
   VSPageHeader,
 } from "@/components/design-system";
-import { volunteerContentService } from "@/services/volunteerContentService";
+import { volunteerContentService } from "@/services/shared/volunteerContentService";
 
 export const Route = createFileRoute("/volunteer/certificates/$certificateId")({
   component: CertificateDetailRoute,

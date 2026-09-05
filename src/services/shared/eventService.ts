@@ -41,7 +41,8 @@ async function getEventsWithRegistrationCounts(): Promise<Event[]> {
 
   const { data: events, error: eventsError } = await supabase
     .from("events")
-    .select(`
+    .select(
+      `
       *,
       event_roles (
         id,
@@ -56,7 +57,8 @@ async function getEventsWithRegistrationCounts(): Promise<Event[]> {
         min_age,
         mandatory_training
       )
-    `)
+    `,
+    )
     .eq("status", "published")
     .order("start_date", {
       ascending: true,
@@ -80,18 +82,16 @@ async function getEventsWithRegistrationCounts(): Promise<Event[]> {
    * Rejected and withdrawn applications are not counted.
    */
 
-  const { data: applications, error: applicationsError } =
-    await supabase
-      .from("applications")
-      .select(`
+  const { data: applications, error: applicationsError } = await supabase
+    .from("applications")
+    .select(
+      `
         id,
         event_id,
         status
-      `)
-      .in(
-        "status",
-        ["pending", "accepted", "waitlisted"],
-      );
+      `,
+    )
+    .in("status", ["pending", "accepted", "waitlisted"]);
 
   if (applicationsError) {
     throw new Error(applicationsError.message);
@@ -103,19 +103,12 @@ async function getEventsWithRegistrationCounts(): Promise<Event[]> {
    * ============================================================
    */
 
-  const registrationCounts = new Map<
-    string,
-    number
-  >();
+  const registrationCounts = new Map<string, number>();
 
   for (const application of applications ?? []) {
-    const current =
-      registrationCounts.get(application.event_id) ?? 0;
+    const current = registrationCounts.get(application.event_id) ?? 0;
 
-    registrationCounts.set(
-      application.event_id,
-      current + 1,
-    );
+    registrationCounts.set(application.event_id, current + 1);
   }
 
   /*
@@ -125,14 +118,12 @@ async function getEventsWithRegistrationCounts(): Promise<Event[]> {
    */
 
   return events.map((event) => {
-    const registered =
-      registrationCounts.get(event.id) ?? 0;
+    const registered = registrationCounts.get(event.id) ?? 0;
 
     return {
       ...(event as EventRow),
 
-      event_roles:
-        event.event_roles ?? [],
+      event_roles: event.event_roles ?? [],
 
       registered_volunteers: registered,
     } as Event;
@@ -154,12 +145,11 @@ export const eventService = {
    * GET EVENT BY ID
    * ============================================================
    */
-  async getEventById(
-    id: string,
-  ): Promise<Event | null> {
+  async getEventById(id: string): Promise<Event | null> {
     const { data: event, error } = await supabase
       .from("events")
-      .select(`
+      .select(
+        `
         *,
         event_roles (
           id,
@@ -174,7 +164,8 @@ export const eventService = {
           min_age,
           mandatory_training
         )
-      `)
+      `,
+      )
       .eq("id", id)
       .maybeSingle();
 
@@ -189,36 +180,25 @@ export const eventService = {
     /*
      * Get applications for this event.
      */
-    const { count, error: applicationsError } =
-      await supabase
-        .from("applications")
-        .select(
-          "id",
-          {
-            count: "exact",
-            head: true,
-          },
-        )
-        .eq("event_id", id)
-        .in(
-          "status",
-          ["pending", "accepted", "waitlisted"],
-        );
+    const { count, error: applicationsError } = await supabase
+      .from("applications")
+      .select("id", {
+        count: "exact",
+        head: true,
+      })
+      .eq("event_id", id)
+      .in("status", ["pending", "accepted", "waitlisted"]);
 
     if (applicationsError) {
-      throw new Error(
-        applicationsError.message,
-      );
+      throw new Error(applicationsError.message);
     }
 
     return {
       ...(event as EventRow),
 
-      event_roles:
-        event.event_roles ?? [],
+      event_roles: event.event_roles ?? [],
 
-      registered_volunteers:
-        count ?? 0,
+      registered_volunteers: count ?? 0,
     } as Event;
   },
 
@@ -227,12 +207,11 @@ export const eventService = {
    * GET EVENT BY SLUG
    * ============================================================
    */
-  async getEventBySlug(
-    slug: string,
-  ): Promise<Event | null> {
+  async getEventBySlug(slug: string): Promise<Event | null> {
     const { data: event, error } = await supabase
       .from("events")
-      .select(`
+      .select(
+        `
         *,
         event_roles (
           id,
@@ -247,7 +226,8 @@ export const eventService = {
           min_age,
           mandatory_training
         )
-      `)
+      `,
+      )
       .eq("slug", slug)
       .maybeSingle();
 
@@ -259,42 +239,29 @@ export const eventService = {
       return null;
     }
 
-    const { count, error: applicationsError } =
-      await supabase
-        .from("applications")
-        .select(
-          "id",
-          {
-            count: "exact",
-            head: true,
-          },
-        )
-        .eq("event_id", event.id)
-        .in(
-          "status",
-          ["pending", "accepted", "waitlisted"],
-        );
+    const { count, error: applicationsError } = await supabase
+      .from("applications")
+      .select("id", {
+        count: "exact",
+        head: true,
+      })
+      .eq("event_id", event.id)
+      .in("status", ["pending", "accepted", "waitlisted"]);
 
     if (applicationsError) {
-      throw new Error(
-        applicationsError.message,
-      );
+      throw new Error(applicationsError.message);
     }
 
     return {
       ...(event as EventRow),
 
-      event_roles:
-        event.event_roles ?? [],
+      event_roles: event.event_roles ?? [],
 
-      registered_volunteers:
-        count ?? 0,
+      registered_volunteers: count ?? 0,
     } as Event;
   },
 
-
-
-    /**
+  /**
    * ============================================================
    * GET MY EVENTS
    * ============================================================
@@ -326,10 +293,10 @@ export const eventService = {
      * 2. Get accepted applications
      * ----------------------------------------------------------
      */
-    const { data: applications, error: applicationsError } =
-      await supabase
-        .from("applications")
-        .select(`
+    const { data: applications, error: applicationsError } = await supabase
+      .from("applications")
+      .select(
+        `
           id,
           event_id,
           role_id,
@@ -350,12 +317,13 @@ export const eventService = {
             id,
             name
           )
-        `)
-        .eq("profile_id", user.id)
-        .eq("status", "accepted")
-        .order("applied_at", {
-          ascending: false,
-        });
+        `,
+      )
+      .eq("profile_id", user.id)
+      .eq("status", "accepted")
+      .order("applied_at", {
+        ascending: false,
+      });
 
     if (applicationsError) {
       throw new Error(applicationsError.message);
@@ -373,9 +341,7 @@ export const eventService = {
     const result: MyEvent[] = [];
 
     for (const application of applications) {
-      const event = Array.isArray(application.events)
-        ? application.events[0]
-        : application.events;
+      const event = Array.isArray(application.events) ? application.events[0] : application.events;
 
       const role = Array.isArray(application.event_roles)
         ? application.event_roles[0]
@@ -390,10 +356,10 @@ export const eventService = {
        * 4. Get volunteer shift
        * --------------------------------------------------------
        */
-      const { data: shifts, error: shiftError } =
-        await supabase
-          .from("shift_assignments")
-          .select(`
+      const { data: shifts, error: shiftError } = await supabase
+        .from("shift_assignments")
+        .select(
+          `
             id,
             status,
 
@@ -406,8 +372,9 @@ export const eventService = {
               end_time,
               instructions
             )
-          `)
-          .eq("profile_id", user.id);
+          `,
+        )
+        .eq("profile_id", user.id);
 
       if (shiftError) {
         throw new Error(shiftError.message);
@@ -432,10 +399,10 @@ export const eventService = {
        * 5. Get training
        * --------------------------------------------------------
        */
-      const { data: trainingModules, error: trainingError } =
-        await supabase
-          .from("training_modules")
-          .select(`
+      const { data: trainingModules, error: trainingError } = await supabase
+        .from("training_modules")
+        .select(
+          `
             id,
             title,
             required,
@@ -443,8 +410,9 @@ export const eventService = {
               completed,
               profile_id
             )
-          `)
-          .eq("event_id", event.id);
+          `,
+        )
+        .eq("event_id", event.id);
 
       if (trainingError) {
         throw new Error(trainingError.message);
@@ -457,16 +425,13 @@ export const eventService = {
       if (eventTraining.length > 0) {
         const completed = eventTraining.filter((training) => {
           const progress = Array.isArray(training.training_progress)
-            ? training.training_progress.find(
-                (item) => item.profile_id === user.id,
-              )
+            ? training.training_progress.find((item) => item.profile_id === user.id)
             : training.training_progress;
 
           return progress?.completed === true;
         }).length;
 
-        trainingLabel =
-          `${completed}/${eventTraining.length} completed`;
+        trainingLabel = `${completed}/${eventTraining.length} completed`;
       }
 
       /**
@@ -474,20 +439,21 @@ export const eventService = {
        * 6. Get accreditation
        * --------------------------------------------------------
        */
-      const { data: accreditation, error: accreditationError } =
-        await supabase
-          .from("accreditations")
-          .select(`
+      const { data: accreditation, error: accreditationError } = await supabase
+        .from("accreditations")
+        .select(
+          `
             id,
             volunteer_identifier,
             zone,
             status,
             qr_code_data
-          `)
-          .eq("profile_id", user.id)
-          .eq("event_id", event.id)
-          .eq("role_id", role.id)
-          .maybeSingle();
+          `,
+        )
+        .eq("profile_id", user.id)
+        .eq("event_id", event.id)
+        .eq("role_id", role.id)
+        .maybeSingle();
 
       if (accreditationError) {
         throw new Error(accreditationError.message);
@@ -504,18 +470,19 @@ export const eventService = {
        * 7. Get attendance
        * --------------------------------------------------------
        */
-      const { data: attendance, error: attendanceError } =
-        await supabase
-          .from("attendance_records")
-          .select(`
+      const { data: attendance, error: attendanceError } = await supabase
+        .from("attendance_records")
+        .select(
+          `
             id,
             status,
             check_in_time,
             check_out_time
-          `)
-          .eq("profile_id", user.id)
-          .eq("event_id", event.id)
-          .maybeSingle();
+          `,
+        )
+        .eq("profile_id", user.id)
+        .eq("event_id", event.id)
+        .maybeSingle();
 
       if (attendanceError) {
         throw new Error(attendanceError.message);
@@ -554,12 +521,9 @@ export const eventService = {
       let shiftLabel = "Not assigned";
 
       if (shift) {
-        const location = shift.location
-          ? ` · ${shift.location}`
-          : "";
+        const location = shift.location ? ` · ${shift.location}` : "";
 
-        shiftLabel =
-          `${shift.date} · ${shift.start_time} – ${shift.end_time}${location}`;
+        shiftLabel = `${shift.date} · ${shift.start_time} – ${shift.end_time}${location}`;
       }
 
       /**

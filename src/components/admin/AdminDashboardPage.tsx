@@ -21,7 +21,7 @@ import {
   VSStatCard,
 } from "@/components/design-system";
 
-import { adminService } from "@/services/adminService";
+import { adminService } from "@/services/admin/adminService";
 
 export function AdminDashboardPage() {
   const stats = adminService.getStats();
@@ -86,10 +86,7 @@ export function AdminDashboardPage() {
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <VSCard className="rounded-[2rem] border-border">
             <VSCardContent className="p-6 sm:p-8">
-              <VSSectionHeader
-                eyebrow="Action centre"
-                title="Keep records current"
-              />
+              <VSSectionHeader eyebrow="Action centre" title="Keep records current" />
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 {actions.map(([label, href, Icon]) => (
@@ -121,18 +118,13 @@ export function AdminDashboardPage() {
 
           <VSCard className="rounded-[2rem] bg-ink text-white">
             <VSCardContent className="p-6 sm:p-8">
-              <p className="eyebrow text-white/60">
-                Admin principle
-              </p>
+              <p className="eyebrow text-white/60">Admin principle</p>
 
-              <h2 className="mt-3 text-3xl font-semibold">
-                Build trust at every handoff.
-              </h2>
+              <h2 className="mt-3 text-3xl font-semibold">Build trust at every handoff.</h2>
 
               <p className="mt-4 text-sm leading-7 text-white/70">
-                Accurate event records, considered applications,
-                reliable attendance, and certificates volunteers
-                can share with pride.
+                Accurate event records, considered applications, reliable attendance, and
+                certificates volunteers can share with pride.
               </p>
 
               <Link

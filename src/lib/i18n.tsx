@@ -466,16 +466,15 @@ export const dict: Record<Lang, Dict> = {
           a: "Entre quatre et dix heures, généralement sur une seule journée. Vous choisissez les créneaux selon vos disponibilités.",
         },
         {
-          q:"Que reçoivent les bénévoles après un événement?",
+          q: "Que reçoivent les bénévoles après un événement?",
 
-          a:" Une fois votre mission accomplie, vous recevrez une confirmation de votre participation et un certificat d’heures de bénévolat à ajouter à votre CV ou à votre profil professionnel. ",
-          },
+          a: " Une fois votre mission accomplie, vous recevrez une confirmation de votre participation et un certificat d’heures de bénévolat à ajouter à votre CV ou à votre profil professionnel. ",
+        },
 
-          {
+        {
+          q: " Comment trouver la mission de bénévolat qui me convient ? ",
 
-          q:" Comment trouver la mission de bénévolat qui me convient ? ",
-
-          a:" Parcourez les événements par sport, ville, date et disponibilités. Chaque offre présente les rôles disponibles, les conditions requises et le calendrier afin que vous puissiez choisir ce qui vous correspond le mieux. ",
+          a: " Parcourez les événements par sport, ville, date et disponibilités. Chaque offre présente les rôles disponibles, les conditions requises et le calendrier afin que vous puissiez choisir ce qui vous correspond le mieux. ",
         },
         {
           q: "Quelles langues sont prises en charge ?",

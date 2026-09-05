@@ -1,33 +1,15 @@
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { QRCodeSVG } from "qrcode.react";
-import {
-  QrCode,
-  Download,
-  Check,
-  ChevronDown,
-  Camera,
-  Loader2,
-  Trash2,
-} from "lucide-react";
-import {
-  Country,
-  City,
-  type ICountry,
-  type ICity,
-} from "country-state-city";
+import { QrCode, Download, Check, ChevronDown, Camera, Loader2, Trash2 } from "lucide-react";
+import { Country, City, type ICountry, type ICity } from "country-state-city";
 
 import { AppShell } from "@/components/app/AppShell";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Input } from "@/components/ui/input";
 
-import { profileService } from "@/services/profileService";
+import { profileService } from "@/services/shared/profileService";
 
 import type { VolunteerProfile } from "@/lib/types";
 
@@ -181,16 +163,10 @@ function normalizeArray(value: unknown): string[] {
     return [];
   }
 
-  return value.filter(
-    (item): item is string =>
-      typeof item === "string" &&
-      item.trim().length > 0,
-  );
+  return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
 }
 
-function getShortVolunteerId(
-  value: string | null | undefined,
-) {
+function getShortVolunteerId(value: string | null | undefined) {
   if (!value) {
     return "--------";
   }
@@ -229,9 +205,7 @@ function MultiSelect({
 
   const toggleValue = (value: string) => {
     if (values.includes(value)) {
-      onChange(
-        values.filter((item) => item !== value),
-      );
+      onChange(values.filter((item) => item !== value));
       return;
     }
 
@@ -240,9 +214,7 @@ function MultiSelect({
 
   return (
     <div className="relative">
-      <label className="block text-sm font-medium text-foreground">
-        {label}
-      </label>
+      <label className="block text-sm font-medium text-foreground">{label}</label>
 
       <button
         type="button"
@@ -261,9 +233,7 @@ function MultiSelect({
               </span>
             ))
           ) : (
-            <span className="text-muted-foreground">
-              {placeholder}
-            </span>
+            <span className="text-muted-foreground">{placeholder}</span>
           )}
         </div>
 
@@ -285,16 +255,13 @@ function MultiSelect({
 
           <div className="absolute left-0 right-0 z-50 mt-2 max-h-72 overflow-y-auto rounded-2xl border border-border bg-card p-2 shadow-xl">
             {options.map((option) => {
-              const selected =
-                values.includes(option);
+              const selected = values.includes(option);
 
               return (
                 <button
                   key={option}
                   type="button"
-                  onClick={() =>
-                    toggleValue(option)
-                  }
+                  onClick={() => toggleValue(option)}
                   className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition hover:bg-muted"
                 >
                   <span
@@ -304,14 +271,10 @@ function MultiSelect({
                         : "border-border bg-background"
                     }`}
                   >
-                    {selected && (
-                      <Check className="h-3.5 w-3.5" />
-                    )}
+                    {selected && <Check className="h-3.5 w-3.5" />}
                   </span>
 
-                  <span className="text-foreground">
-                    {option}
-                  </span>
+                  <span className="text-foreground">{option}</span>
                 </button>
               );
             })}
@@ -329,50 +292,39 @@ function MultiSelect({
  */
 
 function Profile() {
-  const [profile, setProfile] =
-    useState<VolunteerProfile | null>(null);
+  const [profile, setProfile] = useState<VolunteerProfile | null>(null);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [error, setError] =
-    useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const [editing, setEditing] =
-    useState(false);
+  const [editing, setEditing] = useState(false);
 
-  const [saving, setSaving] =
-    useState(false);
+  const [saving, setSaving] = useState(false);
 
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
-  const [uploadingPhoto, setUploadingPhoto] =
-  useState(false);
+  const [photoInputKey, setPhotoInputKey] = useState(0);
 
-  const [photoInputKey, setPhotoInputKey] =
-    useState(0);
+  const [status, setStatus] = useState<string | null>(null);
 
-  const [status, setStatus] =
-    useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const fileInputRef =
-    useRef<HTMLInputElement | null>(null);
-
-  const [formState, setFormState] =
-    useState({
-      first_name: "",
-      last_name: "",
-      phone: "",
-      city: "",
-      country: "",
-      nationality: "",
-      cin_or_passport: "",
-      bio: "",
-      date_of_birth: "",
-      experience: "",
-      interests: [] as string[],
-      skills: [] as string[],
-      languages: [] as string[],
-    });
+  const [formState, setFormState] = useState({
+    first_name: "",
+    last_name: "",
+    phone: "",
+    city: "",
+    country: "",
+    nationality: "",
+    cin_or_passport: "",
+    bio: "",
+    date_of_birth: "",
+    experience: "",
+    interests: [] as string[],
+    skills: [] as string[],
+    languages: [] as string[],
+  });
 
   /*
    * ============================================================
@@ -380,18 +332,11 @@ function Profile() {
    * ============================================================
    */
 
-  const africanCountries =
-    useMemo<ICountry[]>(() => {
-      return Country.getAllCountries()
-        .filter((country) =>
-          AFRICAN_COUNTRY_CODES.has(
-            country.isoCode,
-          ),
-        )
-        .sort((a, b) =>
-          a.name.localeCompare(b.name),
-        );
-    }, []);
+  const africanCountries = useMemo<ICountry[]>(() => {
+    return Country.getAllCountries()
+      .filter((country) => AFRICAN_COUNTRY_CODES.has(country.isoCode))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, []);
 
   /*
    * ============================================================
@@ -411,14 +356,9 @@ function Profile() {
     }
 
     return africanCountries.find(
-      (country) =>
-        country.name === formState.country ||
-        country.isoCode === formState.country,
+      (country) => country.name === formState.country || country.isoCode === formState.country,
     );
-  }, [
-    africanCountries,
-    formState.country,
-  ]);
+  }, [africanCountries, formState.country]);
 
   /*
    * ============================================================
@@ -431,11 +371,7 @@ function Profile() {
       return [];
     }
 
-    return (
-      City.getCitiesOfCountry(
-        selectedCountry.isoCode,
-      ) ?? []
-    ).sort((a, b) =>
+    return (City.getCitiesOfCountry(selectedCountry.isoCode) ?? []).sort((a, b) =>
       a.name.localeCompare(b.name),
     );
   }, [selectedCountry]);
@@ -457,60 +393,37 @@ function Profile() {
         setProfile(data);
 
         setFormState({
-          first_name:
-            data.first_name ?? "",
+          first_name: data.first_name ?? "",
 
-          last_name:
-            data.last_name ?? "",
+          last_name: data.last_name ?? "",
 
-          phone:
-            data.phone ?? "",
+          phone: data.phone ?? "",
 
-          city:
-            data.city ?? "",
+          city: data.city ?? "",
 
-          country:
-            data.country ?? "",
+          country: data.country ?? "",
 
-          nationality:
-            data.nationality ?? "",
+          nationality: data.nationality ?? "",
 
-          cin_or_passport:
-            data.cin_or_passport ?? "",
+          cin_or_passport: data.cin_or_passport ?? "",
 
-          bio:
-            data.bio ?? "",
+          bio: data.bio ?? "",
 
-          date_of_birth:
-            data.date_of_birth ?? "",
+          date_of_birth: data.date_of_birth ?? "",
 
-          experience:
-            data.experience ?? "",
+          experience: data.experience ?? "",
 
-          interests:
-            normalizeArray(
-              data.interests,
-            ),
+          interests: normalizeArray(data.interests),
 
-          skills:
-            normalizeArray(
-              data.skills,
-            ),
+          skills: normalizeArray(data.skills),
 
-          languages:
-            normalizeArray(
-              data.languages,
-            ),
+          languages: normalizeArray(data.languages),
         });
       })
       .catch((err: unknown) => {
         if (!mounted) return;
 
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Unable to load profile.",
-        );
+        setError(err instanceof Error ? err.message : "Unable to load profile.");
       })
       .finally(() => {
         if (mounted) {
@@ -529,54 +442,33 @@ function Profile() {
    * ============================================================
    */
 
-  const resetFormFromProfile = (
-    currentProfile: VolunteerProfile,
-  ) => {
+  const resetFormFromProfile = (currentProfile: VolunteerProfile) => {
     setFormState({
-      first_name:
-        currentProfile.first_name ?? "",
+      first_name: currentProfile.first_name ?? "",
 
-      last_name:
-        currentProfile.last_name ?? "",
+      last_name: currentProfile.last_name ?? "",
 
-      phone:
-        currentProfile.phone ?? "",
+      phone: currentProfile.phone ?? "",
 
-      city:
-        currentProfile.city ?? "",
+      city: currentProfile.city ?? "",
 
-      country:
-        currentProfile.country ?? "",
+      country: currentProfile.country ?? "",
 
-      nationality:
-        currentProfile.nationality ?? "",
+      nationality: currentProfile.nationality ?? "",
 
-      cin_or_passport:
-        currentProfile.cin_or_passport ?? "",
+      cin_or_passport: currentProfile.cin_or_passport ?? "",
 
-      bio:
-        currentProfile.bio ?? "",
+      bio: currentProfile.bio ?? "",
 
-      date_of_birth:
-        currentProfile.date_of_birth ?? "",
+      date_of_birth: currentProfile.date_of_birth ?? "",
 
-      experience:
-        currentProfile.experience ?? "",
+      experience: currentProfile.experience ?? "",
 
-      interests:
-        normalizeArray(
-          currentProfile.interests,
-        ),
+      interests: normalizeArray(currentProfile.interests),
 
-      skills:
-        normalizeArray(
-          currentProfile.skills,
-        ),
+      skills: normalizeArray(currentProfile.skills),
 
-      languages:
-        normalizeArray(
-          currentProfile.languages,
-        ),
+      languages: normalizeArray(currentProfile.languages),
     });
   };
 
@@ -592,13 +484,11 @@ function Profile() {
    * ============================================================
    */
 
- 
   /*
    * ============================================================
    * FILE SELECT
    * ============================================================
    */
-
 
   /*
    * ============================================================
@@ -623,10 +513,7 @@ function Profile() {
   if (error) {
     return (
       <AppShell title="Profile">
-        <EmptyState
-          title="Profile unavailable"
-          description={error}
-        />
+        <EmptyState title="Profile unavailable" description={error} />
       </AppShell>
     );
   }
@@ -648,84 +535,52 @@ function Profile() {
    * ============================================================
    */
 
-  const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement>,
-  ) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     setStatus(null);
     setSaving(true);
 
     const updates = {
-      first_name:
-        formState.first_name.trim(),
+      first_name: formState.first_name.trim(),
 
-      last_name:
-        formState.last_name.trim(),
+      last_name: formState.last_name.trim(),
 
-      phone:
-        formState.phone.trim(),
+      phone: formState.phone.trim(),
 
-      city:
-        formState.city.trim(),
+      city: formState.city.trim(),
 
-      country:
-        formState.country.trim(),
+      country: formState.country.trim(),
 
-      nationality:
-        formState.nationality.trim(),
+      nationality: formState.nationality.trim(),
 
-      cin_or_passport:
-        formState.cin_or_passport.trim(),
+      cin_or_passport: formState.cin_or_passport.trim(),
 
-      bio:
-        formState.bio.trim(),
+      bio: formState.bio.trim(),
 
-      date_of_birth:
-        formState.date_of_birth || null,
+      date_of_birth: formState.date_of_birth || null,
 
-      experience:
-        formState.experience.trim() || null,
+      experience: formState.experience.trim() || null,
 
-      interests:
-        normalizeArray(
-          formState.interests,
-        ),
+      interests: normalizeArray(formState.interests),
 
-      skills:
-        normalizeArray(
-          formState.skills,
-        ),
+      skills: normalizeArray(formState.skills),
 
-      languages:
-        normalizeArray(
-          formState.languages,
-        ),
+      languages: normalizeArray(formState.languages),
     };
 
     try {
-      const updatedProfile =
-        await profileService.updateProfile(
-          updates,
-        );
+      const updatedProfile = await profileService.updateProfile(updates);
 
       setProfile(updatedProfile);
 
-      resetFormFromProfile(
-        updatedProfile,
-      );
+      resetFormFromProfile(updatedProfile);
 
-      setStatus(
-        "Profile updated successfully.",
-      );
+      setStatus("Profile updated successfully.");
 
       setEditing(false);
     } catch (err: unknown) {
-      setStatus(
-        err instanceof Error
-          ? err.message
-          : "Unable to update profile.",
-      );
+      setStatus(err instanceof Error ? err.message : "Unable to update profile.");
     } finally {
       setSaving(false);
     }
@@ -754,30 +609,22 @@ function Profile() {
     <AppShell title="Profile">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-8 xl:grid-cols-[1.1fr_0.9fr]">
-
           {/* ==================================================
               PROFILE FORM
           ================================================== */}
 
           <section className="rounded-[2rem] border border-hairline-invert bg-card p-8 shadow-[var(--shadow-lift)]">
-
             {/* HEADER */}
 
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="eyebrow">
-                  Profile
-                </p>
+                <p className="eyebrow">Profile</p>
 
-                <h1 className="display-md mt-3">
-                  Your profile
-                </h1>
+                <h1 className="display-md mt-3">Your profile</h1>
 
                 <p className="mt-4 max-w-2xl text-sm text-muted-foreground">
-                  Keep your contact details,
-                  sports interests and skills
-                  up to date for better volunteer
-                  role matches.
+                  Keep your contact details, sports interests and skills up to date for better
+                  volunteer role matches.
                 </p>
               </div>
 
@@ -804,12 +651,11 @@ function Profile() {
               )}
             </div>
 
-            
             {/*
-            * ============================================================
-            * PROFILE PHOTO
-            * ============================================================
-            */}
+             * ============================================================
+             * PROFILE PHOTO
+             * ============================================================
+             */}
 
             <div className="flex items-center gap-5">
               <div className="relative">
@@ -856,8 +702,8 @@ function Profile() {
                         if (!file) return;
 
                         /*
-                        * Validate image
-                        */
+                         * Validate image
+                         */
                         if (!file.type.startsWith("image/")) {
                           setStatus("Please select a valid image file.");
                           event.target.value = "";
@@ -865,8 +711,8 @@ function Profile() {
                         }
 
                         /*
-                        * Maximum 2 MB
-                        */
+                         * Maximum 2 MB
+                         */
                         if (file.size > 2 * 1024 * 1024) {
                           setStatus("Image must be smaller than 2 MB.");
                           event.target.value = "";
@@ -877,23 +723,18 @@ function Profile() {
                         setUploadingPhoto(true);
 
                         try {
-                          const updatedProfile =
-                            await profileService.uploadProfilePhoto(file);
+                          const updatedProfile = await profileService.uploadProfilePhoto(file);
 
                           setProfile(updatedProfile);
 
                           resetFormFromProfile(updatedProfile);
 
-                          setStatus(
-                            "Profile photo updated successfully.",
-                          );
+                          setStatus("Profile photo updated successfully.");
 
                           setPhotoInputKey((value) => value + 1);
                         } catch (err: unknown) {
                           setStatus(
-                            err instanceof Error
-                              ? err.message
-                              : "Unable to upload profile photo.",
+                            err instanceof Error ? err.message : "Unable to upload profile photo.",
                           );
                         } finally {
                           setUploadingPhoto(false);
@@ -905,9 +746,7 @@ function Profile() {
               </div>
 
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground">
-                  Profile photo
-                </p>
+                <p className="text-sm font-semibold text-foreground">Profile photo</p>
 
                 <p className="mt-1 text-xs text-muted-foreground">
                   JPG, PNG or WebP · Maximum 2 MB
@@ -920,74 +759,56 @@ function Profile() {
                   </p>
                 )}
 
-                {editing &&
-                  profile.avatar_url &&
-                  !uploadingPhoto && (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        setStatus(null);
-                        setUploadingPhoto(true);
+                {editing && profile.avatar_url && !uploadingPhoto && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setStatus(null);
+                      setUploadingPhoto(true);
 
-                        try {
-                          const updatedProfile =
-                            await profileService.deleteProfilePhoto();
+                      try {
+                        const updatedProfile = await profileService.deleteProfilePhoto();
 
-                          setProfile(updatedProfile);
+                        setProfile(updatedProfile);
 
-                          resetFormFromProfile(updatedProfile);
+                        resetFormFromProfile(updatedProfile);
 
-                          setStatus(
-                            "Profile photo removed successfully.",
-                          );
+                        setStatus("Profile photo removed successfully.");
 
-                          setPhotoInputKey((value) => value + 1);
-                        } catch (err: unknown) {
-                          setStatus(
-                            err instanceof Error
-                              ? err.message
-                              : "Unable to remove profile photo.",
-                          );
-                        } finally {
-                          setUploadingPhoto(false);
-                        }
-                      }}
-                      className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-destructive transition hover:opacity-80"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      Remove photo
-                    </button>
-                  )}
+                        setPhotoInputKey((value) => value + 1);
+                      } catch (err: unknown) {
+                        setStatus(
+                          err instanceof Error ? err.message : "Unable to remove profile photo.",
+                        );
+                      } finally {
+                        setUploadingPhoto(false);
+                      }
+                    }}
+                    className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-destructive transition hover:opacity-80"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Remove photo
+                  </button>
+                )}
               </div>
             </div>
 
-
-
-
             {/* FORM */}
 
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-6 mt-8"
-            >
-
+            <form onSubmit={handleSubmit} className="space-y-6 mt-8">
               {/* FIRST / LAST NAME */}
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block text-sm font-medium text-foreground">
                   First name
-
                   <Input
                     className="mt-2"
-                    value={
-                      formState.first_name
-                    }
+                    value={formState.first_name}
                     disabled={!editing}
                     onChange={(event) =>
                       setFormState((prev) => ({
                         ...prev,
-                        first_name:
-                          event.target.value,
+                        first_name: event.target.value,
                       }))
                     }
                     required
@@ -996,18 +817,14 @@ function Profile() {
 
                 <label className="block text-sm font-medium text-foreground">
                   Last name
-
                   <Input
                     className="mt-2"
-                    value={
-                      formState.last_name
-                    }
+                    value={formState.last_name}
                     disabled={!editing}
                     onChange={(event) =>
                       setFormState((prev) => ({
                         ...prev,
-                        last_name:
-                          event.target.value,
+                        last_name: event.target.value,
                       }))
                     }
                     required
@@ -1020,18 +837,14 @@ function Profile() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block text-sm font-medium text-foreground">
                   Phone
-
                   <Input
                     className="mt-2"
-                    value={
-                      formState.phone
-                    }
+                    value={formState.phone}
                     disabled={!editing}
                     onChange={(event) =>
                       setFormState((prev) => ({
                         ...prev,
-                        phone:
-                          event.target.value,
+                        phone: event.target.value,
                       }))
                     }
                   />
@@ -1039,49 +852,29 @@ function Profile() {
 
                 <label className="block text-sm font-medium text-foreground">
                   Country
-
                   <select
-                    value={
-                      selectedCountry?.isoCode ??
-                      ""
-                    }
+                    value={selectedCountry?.isoCode ?? ""}
                     disabled={!editing}
                     onChange={(event) => {
-                      const country =
-                        africanCountries.find(
-                          (item) =>
-                            item.isoCode ===
-                            event.target.value,
-                        );
+                      const country = africanCountries.find(
+                        (item) => item.isoCode === event.target.value,
+                      );
 
                       setFormState((prev) => ({
                         ...prev,
-                        country:
-                          country?.name ?? "",
+                        country: country?.name ?? "",
                         city: "",
                       }));
                     }}
                     className="mt-2 w-full rounded-3xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    <option value="">
-                      Select country
-                    </option>
+                    <option value="">Select country</option>
 
-                    {africanCountries.map(
-                      (country) => (
-                        <option
-                          key={
-                            country.isoCode
-                          }
-                          value={
-                            country.isoCode
-                          }
-                        >
-                          {country.flag}{" "}
-                          {country.name}
-                        </option>
-                      ),
-                    )}
+                    {africanCountries.map((country) => (
+                      <option key={country.isoCode} value={country.isoCode}>
+                        {country.flag} {country.name}
+                      </option>
+                    ))}
                   </select>
                 </label>
               </div>
@@ -1091,26 +884,15 @@ function Profile() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block text-sm font-medium text-foreground">
                   City
-
                   <select
                     value={
-                      cities.some(
-                        (city) =>
-                          city.name ===
-                          formState.city,
-                      )
-                        ? formState.city
-                        : ""
+                      cities.some((city) => city.name === formState.city) ? formState.city : ""
                     }
-                    disabled={
-                      !editing ||
-                      !selectedCountry
-                    }
+                    disabled={!editing || !selectedCountry}
                     onChange={(event) =>
                       setFormState((prev) => ({
                         ...prev,
-                        city:
-                          event.target.value,
+                        city: event.target.value,
                       }))
                     }
                     className="mt-2 w-full rounded-3xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
@@ -1136,37 +918,24 @@ function Profile() {
 
                 <label className="block text-sm font-medium text-foreground">
                   Nationality
-
                   <select
-                    value={
-                      formState.nationality
-                    }
+                    value={formState.nationality}
                     disabled={!editing}
                     onChange={(event) =>
                       setFormState((prev) => ({
                         ...prev,
-                        nationality:
-                          event.target.value,
+                        nationality: event.target.value,
                       }))
                     }
                     className="mt-2 w-full rounded-3xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    <option value="">
-                      Select nationality
-                    </option>
+                    <option value="">Select nationality</option>
 
-                    {africanCountries.map(
-                      (country) => (
-                        <option
-                          key={
-                            country.isoCode
-                          }
-                          value={country.name}
-                        >
-                          {country.name}
-                        </option>
-                      ),
-                    )}
+                    {africanCountries.map((country) => (
+                      <option key={country.isoCode} value={country.name}>
+                        {country.name}
+                      </option>
+                    ))}
                   </select>
                 </label>
               </div>
@@ -1175,18 +944,14 @@ function Profile() {
 
               <label className="block text-sm font-medium text-foreground">
                 CIN / ID / Passport
-
                 <Input
                   className="mt-2"
-                  value={
-                    formState.cin_or_passport
-                  }
+                  value={formState.cin_or_passport}
                   disabled={!editing}
                   onChange={(event) =>
                     setFormState((prev) => ({
                       ...prev,
-                      cin_or_passport:
-                        event.target.value,
+                      cin_or_passport: event.target.value,
                     }))
                   }
                   placeholder="Enter your CIN, ID or passport number"
@@ -1199,9 +964,7 @@ function Profile() {
                 label="Languages"
                 placeholder="Select your languages"
                 options={LANGUAGES}
-                values={
-                  formState.languages
-                }
+                values={formState.languages}
                 disabled={!editing}
                 onChange={(values) =>
                   setFormState((prev) => ({
@@ -1215,19 +978,15 @@ function Profile() {
 
               <label className="block text-sm font-medium text-foreground">
                 Date of birth
-
                 <Input
                   className="mt-2"
                   type="date"
-                  value={
-                    formState.date_of_birth
-                  }
+                  value={formState.date_of_birth}
                   disabled={!editing}
                   onChange={(event) =>
                     setFormState((prev) => ({
                       ...prev,
-                      date_of_birth:
-                        event.target.value,
+                      date_of_birth: event.target.value,
                     }))
                   }
                 />
@@ -1237,18 +996,14 @@ function Profile() {
 
               <label className="block text-sm font-medium text-foreground">
                 Experience
-
                 <Input
                   className="mt-2"
-                  value={
-                    formState.experience
-                  }
+                  value={formState.experience}
                   disabled={!editing}
                   onChange={(event) =>
                     setFormState((prev) => ({
                       ...prev,
-                      experience:
-                        event.target.value,
+                      experience: event.target.value,
                     }))
                   }
                   placeholder="Previous volunteer or event experience"
@@ -1259,7 +1014,6 @@ function Profile() {
 
               <label className="block text-sm font-medium text-foreground">
                 Bio
-
                 <textarea
                   value={formState.bio}
                   disabled={!editing}
@@ -1279,12 +1033,8 @@ function Profile() {
               <MultiSelect
                 label="Sports interests"
                 placeholder="Select sports you are interested in"
-                options={
-                  SPORTS_INTERESTS
-                }
-                values={
-                  formState.interests
-                }
+                options={SPORTS_INTERESTS}
+                values={formState.interests}
                 disabled={!editing}
                 onChange={(values) =>
                   setFormState((prev) => ({
@@ -1323,10 +1073,7 @@ function Profile() {
               {editing && (
                 <button
                   type="submit"
-                  disabled={
-                    saving ||
-                    uploadingPhoto
-                  }
+                  disabled={saving || uploadingPhoto}
                   className="rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {saving ? (
@@ -1340,7 +1087,6 @@ function Profile() {
                 </button>
               )}
             </form>
-
           </section>
 
           {/* ==================================================
@@ -1348,59 +1094,38 @@ function Profile() {
           ================================================== */}
 
           <aside className="space-y-6">
-
             {/* OVERVIEW */}
 
             <div className="rounded-[2rem] border border-hairline-invert bg-card p-8 shadow-[var(--shadow-lift)]">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                Overview
-              </p>
+              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Overview</p>
 
               <div className="mt-6 space-y-5 text-sm">
-
                 <div>
-                  <p className="font-semibold text-foreground">
-                    Volunteer ID
-                  </p>
+                  <p className="font-semibold text-foreground">Volunteer ID</p>
 
                   <p className="mt-1 font-mono text-lg font-bold tracking-[0.18em] text-primary">
-                    {getShortVolunteerId(
-                      profile.volunteer_id,
-                    )}
+                    {getShortVolunteerId(profile.volunteer_id)}
                   </p>
                 </div>
 
                 <div>
-                  <p className="font-semibold text-foreground">
-                    Volunteer hours
-                  </p>
+                  <p className="font-semibold text-foreground">Volunteer hours</p>
+
+                  <p className="mt-1 text-muted-foreground">{profile.volunteer_hours}</p>
+                </div>
+
+                <div>
+                  <p className="font-semibold text-foreground">Attendance rate</p>
 
                   <p className="mt-1 text-muted-foreground">
-                    {profile.volunteer_hours}
+                    {Math.round(profile.attendance_rate)}%
                   </p>
                 </div>
 
                 <div>
-                  <p className="font-semibold text-foreground">
-                    Attendance rate
-                  </p>
+                  <p className="font-semibold text-foreground">Email</p>
 
-                  <p className="mt-1 text-muted-foreground">
-                    {Math.round(
-                      profile.attendance_rate,
-                    )}
-                    %
-                  </p>
-                </div>
-
-                <div>
-                  <p className="font-semibold text-foreground">
-                    Email
-                  </p>
-
-                  <p className="mt-1 break-all text-muted-foreground">
-                    {profile.email}
-                  </p>
+                  <p className="mt-1 break-all text-muted-foreground">{profile.email}</p>
                 </div>
               </div>
             </div>
@@ -1417,26 +1142,15 @@ function Profile() {
               </div>
 
               <p className="mt-4 text-sm text-muted-foreground">
-                Show this code to event staff
-                so they can quickly access your
-                volunteer profile.
+                Show this code to event staff so they can quickly access your volunteer profile.
               </p>
 
               <div className="mt-6 flex flex-col items-center gap-4">
-
-                <div
-                  id="volunteer-qr"
-                  className="rounded-2xl border border-border bg-white p-6"
-                >
+                <div id="volunteer-qr" className="rounded-2xl border border-border bg-white p-6">
                   <QRCodeSVG
                     value={`${
-                      typeof window !==
-                      "undefined"
-                        ? window.location.origin
-                        : ""
-                    }/admin/volunteers/${
-                      profile.id
-                    }`}
+                      typeof window !== "undefined" ? window.location.origin : ""
+                    }/admin/volunteers/${profile.id}`}
                     size={180}
                     level="M"
                     includeMargin={false}
@@ -1446,57 +1160,31 @@ function Profile() {
                 <button
                   type="button"
                   onClick={() => {
-                    const svg =
-                      document
-                        .getElementById(
-                          "volunteer-qr",
-                        )
-                        ?.querySelector(
-                          "svg",
-                        );
+                    const svg = document.getElementById("volunteer-qr")?.querySelector("svg");
 
                     if (!svg) return;
 
-                    const serializer =
-                      new XMLSerializer();
+                    const serializer = new XMLSerializer();
 
-                    const source =
-                      serializer.serializeToString(
-                        svg,
-                      );
+                    const source = serializer.serializeToString(svg);
 
-                    const blob = new Blob(
-                      [source],
-                      {
-                        type: "image/svg+xml;charset=utf-8",
-                      },
-                    );
+                    const blob = new Blob([source], {
+                      type: "image/svg+xml;charset=utf-8",
+                    });
 
-                    const url =
-                      URL.createObjectURL(
-                        blob,
-                      );
+                    const url = URL.createObjectURL(blob);
 
-                    const link =
-                      document.createElement(
-                        "a",
-                      );
+                    const link = document.createElement("a");
 
                     link.href = url;
 
-                    link.download = `volunteer-qr-${getShortVolunteerId(
-                      profile.volunteer_id,
-                    )}.svg`;
+                    link.download = `volunteer-qr-${getShortVolunteerId(profile.volunteer_id)}.svg`;
 
-                    document.body.appendChild(
-                      link,
-                    );
+                    document.body.appendChild(link);
 
                     link.click();
 
-                    document.body.removeChild(
-                      link,
-                    );
+                    document.body.removeChild(link);
 
                     URL.revokeObjectURL(url);
                   }}
@@ -1516,19 +1204,12 @@ function Profile() {
               </p>
 
               <div className="mt-6 space-y-5 text-sm">
-
                 <div>
-                  <p className="font-semibold text-foreground">
-                    Skills
-                  </p>
+                  <p className="font-semibold text-foreground">Skills</p>
 
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {normalizeArray(
-                      profile.skills,
-                    ).length > 0 ? (
-                      normalizeArray(
-                        profile.skills,
-                      ).map((skill) => (
+                    {normalizeArray(profile.skills).length > 0 ? (
+                      normalizeArray(profile.skills).map((skill) => (
                         <span
                           key={skill}
                           className="rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-foreground"
@@ -1537,38 +1218,26 @@ function Profile() {
                         </span>
                       ))
                     ) : (
-                      <p className="text-muted-foreground">
-                        Not specified
-                      </p>
+                      <p className="text-muted-foreground">Not specified</p>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <p className="font-semibold text-foreground">
-                    Interests
-                  </p>
+                  <p className="font-semibold text-foreground">Interests</p>
 
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {normalizeArray(
-                      profile.interests,
-                    ).length > 0 ? (
-                      normalizeArray(
-                        profile.interests,
-                      ).map(
-                        (interest) => (
-                          <span
-                            key={interest}
-                            className="rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-foreground"
-                          >
-                            {interest}
-                          </span>
-                        ),
-                      )
+                    {normalizeArray(profile.interests).length > 0 ? (
+                      normalizeArray(profile.interests).map((interest) => (
+                        <span
+                          key={interest}
+                          className="rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-foreground"
+                        >
+                          {interest}
+                        </span>
+                      ))
                     ) : (
-                      <p className="text-muted-foreground">
-                        Not specified
-                      </p>
+                      <p className="text-muted-foreground">Not specified</p>
                     )}
                   </div>
                 </div>
@@ -1578,17 +1247,11 @@ function Profile() {
             {/* LANGUAGES */}
 
             <div className="rounded-[2rem] border border-hairline-invert bg-card p-8 shadow-[var(--shadow-lift)]">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                Languages
-              </p>
+              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Languages</p>
 
               <div className="mt-5 flex flex-wrap gap-2">
-                {normalizeArray(
-                  profile.languages,
-                ).length > 0 ? (
-                  normalizeArray(
-                    profile.languages,
-                  ).map((language) => (
+                {normalizeArray(profile.languages).length > 0 ? (
+                  normalizeArray(profile.languages).map((language) => (
                     <span
                       key={language}
                       className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium"
@@ -1597,13 +1260,10 @@ function Profile() {
                     </span>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Not specified
-                  </p>
+                  <p className="text-sm text-muted-foreground">Not specified</p>
                 )}
               </div>
             </div>
-
           </aside>
         </div>
       </div>

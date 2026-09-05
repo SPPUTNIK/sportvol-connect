@@ -12,17 +12,10 @@ type AdminGateProps = {
   title?: string;
 };
 
-export function AdminGate({
-  children,
-  title = "Admin workspace",
-}: AdminGateProps) {
+export function AdminGate({ children, title = "Admin workspace" }: AdminGateProps) {
   const navigate = useNavigate();
 
-  const {
-    user,
-    isAdmin,
-    loading,
-  } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
 
   useEffect(() => {
     if (loading) return;
@@ -47,9 +40,7 @@ export function AdminGate({
         <div className="text-center">
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-primary" />
 
-          <p className="mt-4 text-sm text-muted-foreground">
-            Loading admin workspace...
-          </p>
+          <p className="mt-4 text-sm text-muted-foreground">Loading admin workspace...</p>
         </div>
       </div>
     );
@@ -77,27 +68,20 @@ export function AdminGate({
             <ShieldAlert className="h-7 w-7" />
           </div>
 
-          <h1 className="mt-6 text-2xl font-semibold">
-            Admin access required
-          </h1>
+          <h1 className="mt-6 text-2xl font-semibold">Admin access required</h1>
 
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Your account is authenticated, but it does
-            not have permission to access the admin
+            Your account is authenticated, but it does not have permission to access the admin
             workspace.
           </p>
 
           <div className="mt-6 flex justify-center gap-3">
             <VSButton asChild variant="outline">
-              <Link to="/dashboard">
-                Back to dashboard
-              </Link>
+              <Link to="/dashboard">Back to dashboard</Link>
             </VSButton>
 
             <VSButton asChild>
-              <Link to="/login">
-                Sign in with another account
-              </Link>
+              <Link to="/login">Sign in with another account</Link>
             </VSButton>
           </div>
         </div>
@@ -109,9 +93,5 @@ export function AdminGate({
    * Authenticated + admin.
    * Render the actual admin workspace.
    */
-  return (
-    <AdminLayout title={title}>
-      {children}
-    </AdminLayout>
-  );
+  return <AdminLayout title={title}>{children}</AdminLayout>;
 }

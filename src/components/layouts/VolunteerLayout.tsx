@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
-import { notificationService } from "@/services/notificationService";
+import { notificationService } from "@/services/volunteer/notificationService";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
@@ -163,11 +163,7 @@ function VolunteerNavigation({
       <div className="relative flex min-h-max flex-col">
         {/* Logo */}
         <div className="mb-8 flex items-center justify-between px-3">
-          <Link
-            to="/"
-            className="flex items-center gap-3"
-            onClick={onNavigate}
-          >
+          <Link to="/" className="flex items-center gap-3" onClick={onNavigate}>
             <div className="flex h-13 w-13 items-center justify-center overflow-hidden rounded-2xl">
               <img
                 src="/logo.png"
@@ -177,13 +173,9 @@ function VolunteerNavigation({
             </div>
 
             <div>
-              <p className="font-display text-lg font-semibold">
-                VOLUNSPORT
-              </p>
+              <p className="font-display text-lg font-semibold">VOLUNSPORT</p>
 
-              <p className="text-[0.58rem] uppercase tracking-[0.3em] text-primary">
-                Morocco
-              </p>
+              <p className="text-[0.58rem] uppercase tracking-[0.3em] text-primary">Morocco</p>
             </div>
           </Link>
 
@@ -236,9 +228,7 @@ function VolunteerNavigation({
                               : "bg-primary text-primary-foreground",
                           )}
                         >
-                          {unreadNotifications > 99
-                            ? "99+"
-                            : unreadNotifications}
+                          {unreadNotifications > 99 ? "99+" : unreadNotifications}
                         </span>
                       ) : active ? (
                         <ChevronRight className="ml-auto h-4 w-4" />
@@ -263,19 +253,13 @@ function VolunteerNavigation({
             </div>
 
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-foreground">
-                {firstName}
-              </p>
+              <p className="truncate text-sm font-semibold text-foreground">{firstName}</p>
 
-              <p className="truncate text-xs text-muted-foreground">
-                Volunteer
-              </p>
+              <p className="truncate text-xs text-muted-foreground">Volunteer</p>
             </div>
           </div>
 
-          <p className="mt-3 text-xs font-semibold text-primary">
-            View profile
-          </p>
+          <p className="mt-3 text-xs font-semibold text-primary">View profile</p>
         </Link>
 
         {/* Sign out */}
@@ -317,10 +301,7 @@ export function VolunteerLayout({
 
       setUnreadNotifications(count);
     } catch (error) {
-      console.error(
-        "[VolunteerLayout] Failed to load notification count:",
-        error,
-      );
+      console.error("[VolunteerLayout] Failed to load notification count:", error);
     }
   }
 
@@ -335,16 +316,10 @@ export function VolunteerLayout({
       loadUnreadNotifications();
     };
 
-    window.addEventListener(
-      "notifications:updated",
-      handleNotificationsUpdated,
-    );
+    window.addEventListener("notifications:updated", handleNotificationsUpdated);
 
     return () => {
-      window.removeEventListener(
-        "notifications:updated",
-        handleNotificationsUpdated,
-      );
+      window.removeEventListener("notifications:updated", handleNotificationsUpdated);
     };
   }, []);
 
@@ -430,9 +405,7 @@ export function VolunteerLayout({
                   {eyebrow}
                 </p>
 
-                <h1 className="text-lg font-semibold text-foreground sm:text-xl">
-                  {title}
-                </h1>
+                <h1 className="text-lg font-semibold text-foreground sm:text-xl">{title}</h1>
               </div>
             </div>
 
@@ -452,9 +425,7 @@ export function VolunteerLayout({
 
                 {unreadNotifications > 0 && (
                   <span className="absolute -right-1.5 -top-1.5 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground">
-                    {unreadNotifications > 99
-                      ? "99+"
-                      : unreadNotifications}
+                    {unreadNotifications > 99 ? "99+" : unreadNotifications}
                   </span>
                 )}
               </Link>
@@ -495,9 +466,7 @@ export function VolunteerLayout({
         </header>
 
         {/* Page */}
-        <main className="px-5 py-8 sm:px-8 lg:px-10">
-          {children}
-        </main>
+        <main className="px-5 py-8 sm:px-8 lg:px-10">{children}</main>
       </div>
     </div>
   );

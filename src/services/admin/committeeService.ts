@@ -14,7 +14,9 @@ type CommitteeMembersInsert = Database["public"]["Tables"]["committee_members"][
 type CommitteeMembersRow = Database["public"]["Tables"]["committee_members"]["Row"];
 type CommitteeMembersUpdate = Database["public"]["Tables"]["committee_members"]["Update"];
 
-type CommitteeMemberWithCommittee = Partial<CommitteeMembersRow> & { committees?: CommitteesRow | CommitteesRow[] | null };
+type CommitteeMemberWithCommittee = Partial<CommitteeMembersRow> & {
+  committees?: CommitteesRow | CommitteesRow[] | null;
+};
 
 type CommitteeFeedbackInsert = Database["public"]["Tables"]["committee_feedback"]["Insert"];
 type CommitteeFeedbackRow = Database["public"]["Tables"]["committee_feedback"]["Row"];
@@ -65,18 +67,18 @@ export const committeeService = {
 
   async listAvailableEvents() {
     const { data, error } = await supabase
-        .from("events")
-        .select("id, title, start_date, end_date, status")
-        .order("start_date", {
+      .from("events")
+      .select("id, title, start_date, end_date, status")
+      .order("start_date", {
         ascending: true,
-        });
+      });
 
     if (error) {
-        throw new Error(error.message);
+      throw new Error(error.message);
     }
 
     return data ?? [];
-    },
+  },
 
   async listCommittees(): Promise<DomainCommittee[]> {
     const { data, error } = await supabase
@@ -124,9 +126,11 @@ export const committeeService = {
 
     const { data, error } = await supabase
       .from("committee_members")
-      .select(`committee_id, committees (*, leader:profiles(id, first_name, last_name, avatar_url))`)
+      .select(
+        `committee_id, committees (*, leader:profiles(id, first_name, last_name, avatar_url))`,
+      )
       .eq("profile_id", user.id)
-      .eq("status", 'assigned');
+      .eq("status", "assigned");
 
     if (error) throw new Error(error.message);
 
@@ -179,7 +183,10 @@ export const committeeService = {
     return this.mapCommittee(data as CommitteesRow);
   },
 
-  async updateCommittee(id: string, changes: Partial<DomainCommittee>): Promise<DomainCommittee | null> {
+  async updateCommittee(
+    id: string,
+    changes: Partial<DomainCommittee>,
+  ): Promise<DomainCommittee | null> {
     const update: Partial<CommitteesUpdate> = {
       name: changes.name,
       description: changes.description ?? undefined,
@@ -220,7 +227,18 @@ export const committeeService = {
   /**
    * Return members with joined profile information and event role id/name when available.
    */
-  async listMembersDetailed(committeeId: string): Promise<Array<{ member: DomainCommitteeMember; profile: { id: string; first_name: string | null; last_name: string | null; avatar_url: string | null }; eventRoleId: string | null }>> {
+  async listMembersDetailed(committeeId: string): Promise<
+    Array<{
+      member: DomainCommitteeMember;
+      profile: {
+        id: string;
+        first_name: string | null;
+        last_name: string | null;
+        avatar_url: string | null;
+      };
+      eventRoleId: string | null;
+    }>
+  > {
     const { data, error } = await supabase
       .from("committee_members")
       .select(`*, profile:profiles(id, first_name, last_name, avatar_url)`)
@@ -228,19 +246,37 @@ export const committeeService = {
       .order("joined_at", { ascending: true });
 
     if (error) throw new Error(error.message);
-    type CommitteeMemberWithProfile = CommitteeMembersRow & { profile?: { id: string; first_name: string | null; last_name: string | null; avatar_url: string | null }; event_role_id?: string | null };
+    type CommitteeMemberWithProfile = CommitteeMembersRow & {
+      profile?: {
+        id: string;
+        first_name: string | null;
+        last_name: string | null;
+        avatar_url: string | null;
+      };
+      event_role_id?: string | null;
+    };
 
     const out = (data ?? []).map((row) => {
       const r = row as CommitteeMemberWithProfile;
       const member = this.mapMember(r as CommitteeMembersRow);
-      const profile = r.profile ? { id: r.profile.id, first_name: r.profile.first_name ?? null, last_name: r.profile.last_name ?? null, avatar_url: r.profile.avatar_url ?? null } : { id: member.profileId, first_name: null, last_name: null, avatar_url: null };
-      return { member, profile, eventRoleId: (r.event_role_id ?? null) };
+      const profile = r.profile
+        ? {
+            id: r.profile.id,
+            first_name: r.profile.first_name ?? null,
+            last_name: r.profile.last_name ?? null,
+            avatar_url: r.profile.avatar_url ?? null,
+          }
+        : { id: member.profileId, first_name: null, last_name: null, avatar_url: null };
+      return { member, profile, eventRoleId: r.event_role_id ?? null };
     });
 
     return out;
   },
 
-  async updateMember(memberId: string, updates: Partial<{ eventRoleId: string | null; status: DomainCommitteeMember["status"] }>): Promise<DomainCommitteeMember | null> {
+  async updateMember(
+    memberId: string,
+    updates: Partial<{ eventRoleId: string | null; status: DomainCommitteeMember["status"] }>,
+  ): Promise<DomainCommitteeMember | null> {
     const payload: Partial<CommitteeMembersUpdate> = {};
     if (updates.eventRoleId !== undefined) payload.event_role_id = updates.eventRoleId ?? null;
     if (updates.status !== undefined) payload.status = updates.status;
@@ -256,7 +292,11 @@ export const committeeService = {
     return data ? this.mapMember(data as CommitteeMembersRow) : null;
   },
 
-  async addMember(committeeId: string, profileId: string, eventRoleId?: string): Promise<DomainCommitteeMember> {
+  async addMember(
+    committeeId: string,
+    profileId: string,
+    eventRoleId?: string,
+  ): Promise<DomainCommitteeMember> {
     const payload: CommitteeMembersInsert = {
       committee_id: committeeId,
       profile_id: profileId,
@@ -274,7 +314,10 @@ export const committeeService = {
     return this.mapMember(data as CommitteeMembersRow);
   },
 
-  async removeMember(committeeId: string, profileId: string): Promise<DomainCommitteeMember | null> {
+  async removeMember(
+    committeeId: string,
+    profileId: string,
+  ): Promise<DomainCommitteeMember | null> {
     const { data, error } = await supabase
       .from("committee_members")
       .update({ status: "removed" })
@@ -306,7 +349,13 @@ export const committeeService = {
     eventId: string,
     memberProfileId: string,
     leaderProfileId: string,
-    ratings: { punctuality: number; teamwork: number; communication: number; responsibility: number; overall_rating: number },
+    ratings: {
+      punctuality: number;
+      teamwork: number;
+      communication: number;
+      responsibility: number;
+      overall_rating: number;
+    },
     comment?: string,
   ): Promise<DomainCommitteeFeedback> {
     const {

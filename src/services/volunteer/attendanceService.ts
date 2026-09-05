@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { getCurrentUserId } from "@/services/backendService";
+import { getCurrentUserId } from "@/services/shared/backendService";
 import type { AttendanceRecord } from "@/lib/types";
 
 export const attendanceService = {
@@ -12,7 +12,8 @@ export const attendanceService = {
 
     const { data, error } = await supabase
       .from("attendance_records")
-      .select(`
+      .select(
+        `
         id,
         event_id,
         role_id,
@@ -38,60 +39,48 @@ export const attendanceService = {
           end_time,
           location
         )
-      `)
+      `,
+      )
       .eq("profile_id", userId)
       .order("date", { ascending: false });
 
     if (error) {
       console.error("Failed to load attendance:", error);
-      throw new Error(
-        error.message || "Unable to load attendance.",
-      );
+      throw new Error(error.message || "Unable to load attendance.");
     }
 
-    return (data ?? []).map((record: any) => ({
-      id: record.id,
-      event_id: record.event_id,
+    return (data ?? []).map(
+      (record) =>
+        ({
+          id: record.id,
+          event_id: record.event_id,
 
-      event_title:
-        record.event?.title ??
-        "Event",
+          event_title: record.event?.title ?? "Event",
 
-      role_name:
-        record.role?.title ??
-        "Volunteer",
+          role_name: record.role?.title ?? "Volunteer",
 
-      date: record.date,
+          date: record.date,
 
-      status:
-        record.status ?? "pending",
+          status: record.status ?? "pending",
 
-      check_in_time:
-        record.check_in_time ?? null,
+          check_in_time: record.check_in_time ?? null,
 
-      check_out_time:
-        record.check_out_time ?? null,
+          check_out_time: record.check_out_time ?? null,
 
-      notes:
-        record.notes ?? null,
+          notes: record.notes ?? null,
 
-      venue:
-        record.event?.venue ?? null,
+          venue: record.event?.venue ?? null,
 
-      city:
-        record.event?.city ?? null,
+          city: record.event?.city ?? null,
 
-      shift_title:
-        record.shift?.title ?? null,
+          shift_title: record.shift?.title ?? null,
 
-      shift_start_time:
-        record.shift?.start_time ?? null,
+          shift_start_time: record.shift?.start_time ?? null,
 
-      shift_end_time:
-        record.shift?.end_time ?? null,
+          shift_end_time: record.shift?.end_time ?? null,
 
-      shift_location:
-        record.shift?.location ?? null,
-    }));
+          shift_location: record.shift?.location ?? null,
+        }) as AttendanceRecord,
+    );
   },
 };

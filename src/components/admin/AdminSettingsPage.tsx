@@ -2,12 +2,7 @@ import { Save } from "lucide-react";
 
 import { AdminGate } from "./components/AdminGate";
 
-import {
-  VSButton,
-  VSCard,
-  VSCardContent,
-  VSPageHeader,
-} from "@/components/design-system";
+import { VSButton, VSCard, VSCardContent, VSPageHeader } from "@/components/design-system";
 
 const settings = [
   "Email notifications for new applications",
@@ -28,15 +23,10 @@ export function AdminSettingsPage() {
 
         <div className="mt-8 space-y-4">
           {settings.map((setting, index) => (
-            <VSCard
-              key={setting}
-              className="rounded-[1.5rem] border-border"
-            >
+            <VSCard key={setting} className="rounded-[1.5rem] border-border">
               <VSCardContent className="flex items-center justify-between gap-4 p-5">
                 <div>
-                  <p className="text-sm font-semibold text-foreground">
-                    {setting}
-                  </p>
+                  <p className="text-sm font-semibold text-foreground">{setting}</p>
 
                   <p className="mt-1 text-xs text-muted-foreground">
                     Frontend preference placeholder

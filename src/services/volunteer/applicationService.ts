@@ -1,8 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import type {
-  Application,
-  EventRole,
-} from "@/lib/types";
+import type { Application, EventRole } from "@/lib/types";
 
 export const applicationService = {
   /**
@@ -54,49 +51,35 @@ export const applicationService = {
       throw new Error(error.message);
     }
 
-    return (data ?? []).map(
-      (application) => {
-        const event = Array.isArray(
-          application.events,
-        )
-          ? application.events[0]
-          : application.events;
+    return (data ?? []).map((application) => {
+      const event = Array.isArray(application.events) ? application.events[0] : application.events;
 
-        const role = Array.isArray(
-          application.event_roles,
-        )
-          ? application.event_roles[0]
-          : application.event_roles;
+      const role = Array.isArray(application.event_roles)
+        ? application.event_roles[0]
+        : application.event_roles;
 
-        return {
-          id: application.id,
+      return {
+        id: application.id,
 
-          event_id: application.event_id,
+        event_id: application.event_id,
 
-          role_id: application.role_id,
+        role_id: application.role_id,
 
-          event_title:
-            event?.title ?? "Unknown event",
+        event_title: event?.title ?? "Unknown event",
 
-          role_name:
-            role?.name ?? "Volunteer",
+        role_name: role?.name ?? "Volunteer",
 
-          submitted_at:
-            application.applied_at,
+        submitted_at: application.applied_at,
 
-          status: application.status,
+        status: application.status,
 
-          message:
-            application.motivation ?? null,
+        message: application.motivation ?? null,
 
-          availability:
-            application.availability ?? null,
+        availability: application.availability ?? null,
 
-          experience:
-            application.experience ?? null,
-        };
-      },
-    ) as Application[];
+        experience: application.experience ?? null,
+      };
+    }) as Application[];
   },
 
   /**
@@ -105,20 +88,15 @@ export const applicationService = {
    * ============================================================
    */
 
-  async getEventRoles(
-    eventId: string,
-  ): Promise<EventRole[]> {
+  async getEventRoles(eventId: string): Promise<EventRole[]> {
     if (!eventId) {
-      throw new Error(
-        "Event ID is required.",
-      );
+      throw new Error("Event ID is required.");
     }
 
-    const { data, error } =
-      await supabase
-        .from("event_roles")
-        .select(
-          `
+    const { data, error } = await supabase
+      .from("event_roles")
+      .select(
+        `
           id,
           event_id,
           name,
@@ -131,11 +109,11 @@ export const applicationService = {
           min_age,
           mandatory_training
         `,
-        )
-        .eq("event_id", eventId)
-        .order("name", {
-          ascending: true,
-        });
+      )
+      .eq("event_id", eventId)
+      .order("name", {
+        ascending: true,
+      });
 
     if (error) {
       throw new Error(error.message);
@@ -170,9 +148,7 @@ export const applicationService = {
     }
 
     if (!user) {
-      throw new Error(
-        "You must be signed in to apply for an event.",
-      );
+      throw new Error("You must be signed in to apply for an event.");
     }
 
     if (!input.eventId) {
@@ -180,88 +156,65 @@ export const applicationService = {
     }
 
     if (!input.roleId) {
-      throw new Error(
-        "Volunteer role is required.",
-      );
+      throw new Error("Volunteer role is required.");
     }
 
     /**
      * One application per event.
      */
 
-    const {
-      data: existingApplication,
-      error: existingError,
-    } = await supabase
+    const { data: existingApplication, error: existingError } = await supabase
       .from("applications")
-      .select(
-        "id, status, role_id",
-      )
+      .select("id, status, role_id")
       .eq("profile_id", user.id)
       .eq("event_id", input.eventId)
       .maybeSingle();
 
     if (existingError) {
-      throw new Error(
-        existingError.message,
-      );
+      throw new Error(existingError.message);
     }
 
     if (existingApplication) {
-      throw new Error(
-        "You have already applied for this event.",
-      );
+      throw new Error("You have already applied for this event.");
     }
 
     /**
      * Verify role belongs to event.
      */
 
-    const { data: role, error: roleError } =
-      await supabase
-        .from("event_roles")
-        .select(
-          `
+    const { data: role, error: roleError } = await supabase
+      .from("event_roles")
+      .select(
+        `
           id,
           event_id,
           positions,
           filled_positions
         `,
-        )
-        .eq("id", input.roleId)
-        .eq("event_id", input.eventId)
-        .maybeSingle();
+      )
+      .eq("id", input.roleId)
+      .eq("event_id", input.eventId)
+      .maybeSingle();
 
     if (roleError) {
-      throw new Error(
-        roleError.message,
-      );
+      throw new Error(roleError.message);
     }
 
     if (!role) {
-      throw new Error(
-        "The selected volunteer role does not exist.",
-      );
+      throw new Error("The selected volunteer role does not exist.");
     }
 
-    const remaining =
-      role.positions -
-      role.filled_positions;
+    const remaining = role.positions - role.filled_positions;
 
     if (remaining <= 0) {
-      throw new Error(
-        "This volunteer role is already full.",
-      );
+      throw new Error("This volunteer role is already full.");
     }
 
     /**
      * Insert.
      */
 
-    const {
-      data: application,
-      error: insertError,
-    } = await supabase
+    const { data: application, error: insertError } = await supabase
       .from("applications")
       .insert({
         profile_id: user.id,
@@ -269,37 +222,26 @@ export const applicationService = {
         role_id: input.roleId,
         status: "pending",
 
-        availability:
-          input.availability?.trim() ||
-          null,
+        availability: input.availability?.trim() || null,
 
-        experience:
-          input.experience?.trim() ||
-          null,
+        experience: input.experience?.trim() || null,
 
-        motivation:
-          input.motivation?.trim() ||
-          null,
+        motivation: input.motivation?.trim() || null,
       })
       .select("id")
       .single();
 
     if (insertError) {
-      throw new Error(
-        insertError.message,
-      );
+      throw new Error(insertError.message);
     }
 
     if (!application) {
-      throw new Error(
-        "Application was not created.",
-      );
+      throw new Error("Application was not created.");
     }
 
     return {
       ok: true,
-      applicationId:
-        application.id,
+      applicationId: application.id,
     };
   },
 
@@ -322,27 +264,19 @@ export const applicationService = {
     } = await supabase.auth.getUser();
 
     if (authError) {
-      throw new Error(
-        authError.message,
-      );
+      throw new Error(authError.message);
     }
 
     if (!user) {
-      throw new Error(
-        "You must be signed in.",
-      );
+      throw new Error("You must be signed in.");
     }
 
     if (!input.applicationId) {
-      throw new Error(
-        "Application is required.",
-      );
+      throw new Error("Application is required.");
     }
 
     if (!input.roleId) {
-      throw new Error(
-        "Volunteer role is required.",
-      );
+      throw new Error("Volunteer role is required.");
     }
 
     /**
@@ -351,10 +285,7 @@ export const applicationService = {
      * ----------------------------------------------------------
      */
 
-    const {
-      data: application,
-      error: applicationError,
-    } = await supabase
+    const { data: application, error: applicationError } = await supabase
       .from("applications")
       .select(
         `
@@ -365,26 +296,16 @@ export const applicationService = {
         status
         `,
       )
-      .eq(
-        "id",
-        input.applicationId,
-      )
-      .eq(
-        "profile_id",
-        user.id,
-      )
+      .eq("id", input.applicationId)
+      .eq("profile_id", user.id)
       .maybeSingle();
 
     if (applicationError) {
-      throw new Error(
-        applicationError.message,
-      );
+      throw new Error(applicationError.message);
     }
 
     if (!application) {
-      throw new Error(
-        "Application not found.",
-      );
+      throw new Error("Application not found.");
     }
 
     /**
@@ -393,15 +314,8 @@ export const applicationService = {
      * ----------------------------------------------------------
      */
 
-    if (
-      application.status !==
-        "pending" &&
-      application.status !==
-        "waitlisted"
-    ) {
-      throw new Error(
-        "This application can no longer be edited.",
-      );
+    if (application.status !== "pending" && application.status !== "waitlisted") {
+      throw new Error("This application can no longer be edited.");
     }
 
     /**
@@ -410,10 +324,7 @@ export const applicationService = {
      * ----------------------------------------------------------
      */
 
-    const {
-      data: role,
-      error: roleError,
-    } = await supabase
+    const { data: role, error: roleError } = await supabase
       .from("event_roles")
       .select(
         `
@@ -423,26 +334,16 @@ export const applicationService = {
         filled_positions
         `,
       )
-      .eq(
-        "id",
-        input.roleId,
-      )
-      .eq(
-        "event_id",
-        application.event_id,
-      )
+      .eq("id", input.roleId)
+      .eq("event_id", application.event_id)
       .maybeSingle();
 
     if (roleError) {
-      throw new Error(
-        roleError.message,
-      );
+      throw new Error(roleError.message);
     }
 
     if (!role) {
-      throw new Error(
-        "The selected role does not belong to this event.",
-      );
+      throw new Error("The selected role does not belong to this event.");
     }
 
     /**
@@ -454,18 +355,11 @@ export const applicationService = {
      * ----------------------------------------------------------
      */
 
-    if (
-      input.roleId !==
-      application.role_id
-    ) {
-      const remaining =
-        role.positions -
-        role.filled_positions;
+    if (input.roleId !== application.role_id) {
+      const remaining = role.positions - role.filled_positions;
 
       if (remaining <= 0) {
-        throw new Error(
-          "This volunteer role is already full.",
-        );
+        throw new Error("This volunteer role is already full.");
       }
     }
 
@@ -475,41 +369,24 @@ export const applicationService = {
      * ----------------------------------------------------------
      */
 
-    const {
-      error: updateError,
-    } = await supabase
+    const { error: updateError } = await supabase
       .from("applications")
       .update({
         role_id: input.roleId,
 
-        availability:
-          input.availability.trim() ||
-          null,
+        availability: input.availability.trim() || null,
 
-        experience:
-          input.experience.trim() ||
-          null,
+        experience: input.experience.trim() || null,
 
-        motivation:
-          input.motivation.trim() ||
-          null,
+        motivation: input.motivation.trim() || null,
 
-        updated_at:
-          new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       })
-      .eq(
-        "id",
-        input.applicationId,
-      )
-      .eq(
-        "profile_id",
-        user.id,
-      );
+      .eq("id", input.applicationId)
+      .eq("profile_id", user.id);
 
     if (updateError) {
-      throw new Error(
-        updateError.message,
-      );
+      throw new Error(updateError.message);
     }
 
     return {

@@ -30,19 +30,19 @@ The goal is to make the frontend complete, polished, responsive, and ready to co
 
 Before changing anything, inspect:
 
-* Existing pages
-* Existing routes
-* Components
-* Layouts
-* Design system
-* Navigation
-* Forms
-* Dashboard
-* Existing mock data
-* Existing authentication UI
-* Existing event pages
-* Existing admin pages
-* Existing responsive behavior
+- Existing pages
+- Existing routes
+- Components
+- Layouts
+- Design system
+- Navigation
+- Forms
+- Dashboard
+- Existing mock data
+- Existing authentication UI
+- Existing event pages
+- Existing admin pages
+- Existing responsive behavior
 
 Do NOT rebuild the application from scratch.
 
@@ -58,24 +58,24 @@ There are ONLY two user roles:
 
 Volunteer can:
 
-* Register
-* Login
-* Complete profile
-* Browse sports events
-* Search/filter events
-* View event details
-* View available volunteer roles
-* Apply
-* Track applications
-* View accepted events
-* View schedule
-* View training
-* View accreditation
-* View attendance
-* View volunteer hours
-* View certificates
-* View notifications
-* Manage profile/settings
+- Register
+- Login
+- Complete profile
+- Browse sports events
+- Search/filter events
+- View event details
+- View available volunteer roles
+- Apply
+- Track applications
+- View accepted events
+- View schedule
+- View training
+- View accreditation
+- View attendance
+- View volunteer hours
+- View certificates
+- View notifications
+- Manage profile/settings
 
 ### Admin
 
@@ -83,22 +83,22 @@ Admin manages the entire platform.
 
 Admin can:
 
-* Create events
-* Edit events
-* Publish events
-* Manage event roles
-* Manage applications
-* Manage volunteers
-* Create shifts
-* Assign volunteers
-* Manage training
-* Manage accreditation
-* Manage attendance
-* Manage hours
-* Generate certificates
-* Send notifications
-* View reports
-* View analytics
+- Create events
+- Edit events
+- Publish events
+- Manage event roles
+- Manage applications
+- Manage volunteers
+- Create shifts
+- Assign volunteers
+- Manage training
+- Manage accreditation
+- Manage attendance
+- Manage hours
+- Generate certificates
+- Send notifications
+- View reports
+- View analytics
 
 There is NO organizer dashboard.
 
@@ -110,15 +110,15 @@ There are NO organizer accounts.
 
 Complete the frontend for:
 
-* Home
-* Events
-* Event Details
-* Sports/categories
-* About
-* Login
-* Register
-* Forgot Password
-* Reset Password
+- Home
+- Events
+- Event Details
+- Sports/categories
+- About
+- Login
+- Register
+- Forgot Password
+- Reset Password
 
 ---
 
@@ -130,14 +130,14 @@ The homepage should immediately communicate:
 
 Include:
 
-* Hero
-* Event search
-* Sport categories
-* Upcoming events
-* Featured events
-* How volunteering works
-* Volunteer impact/statistics
-* CTA to browse events
+- Hero
+- Event search
+- Sport categories
+- Upcoming events
+- Featured events
+- How volunteering works
+- Volunteer impact/statistics
+- CTA to browse events
 
 Use the existing MVP visual identity.
 
@@ -149,31 +149,31 @@ Implement:
 
 ### Search
 
-* Event name
-* Sport
-* City
-* Venue
+- Event name
+- Sport
+- City
+- Venue
 
 ### Filters
 
-* Sport
-* City
-* Date
-* Availability
+- Sport
+- City
+- Date
+- Availability
 
 ### Sorting
 
-* Upcoming
-* Newest
-* Most available positions
+- Upcoming
+- Newest
+- Most available positions
 
 Include:
 
-* Event cards
-* Loading state
-* Empty state
-* Error state
-* Pagination/infinite loading if appropriate
+- Event cards
+- Loading state
+- Empty state
+- Error state
+- Pagination/infinite loading if appropriate
 
 For now, use the project's existing data/service abstraction rather than implementing database logic.
 
@@ -185,29 +185,29 @@ Create a complete event details experience.
 
 Show:
 
-* Event cover
-* Event title
-* Sport
-* Date
-* Time
-* Venue
-* Location
-* Description
-* Requirements
-* Volunteer capacity
-* Available positions
-* Application deadline
+- Event cover
+- Event title
+- Sport
+- Date
+- Time
+- Venue
+- Location
+- Description
+- Requirements
+- Volunteer capacity
+- Available positions
+- Application deadline
 
 ### Volunteer Roles
 
 Each role card should show:
 
-* Role name
-* Description
-* Responsibilities
-* Requirements
-* Capacity
-* Remaining positions
+- Role name
+- Description
+- Responsibilities
+- Requirements
+- Capacity
+- Remaining positions
 
 CTA:
 
@@ -232,11 +232,11 @@ Event
 
 Application form can include:
 
-* Availability
-* Experience
-* Motivation
-* Relevant skills
-* Additional information
+- Availability
+- Experience
+- Motivation
+- Relevant skills
+- Additional information
 
 Show clear validation.
 
@@ -246,11 +246,11 @@ Show clear validation.
 
 Volunteer should see:
 
-* Pending
-* Accepted
-* Rejected
-* Waitlisted
-* Withdrawn
+- Pending
+- Accepted
+- Rejected
+- Waitlisted
+- Withdrawn
 
 Use clear status components.
 
@@ -264,14 +264,14 @@ Create/complete:
 
 Show:
 
-* Upcoming event
-* Next shift
-* Application status
-* Volunteer hours
-* Completed events
-* Certificates
-* Training progress
-* Notifications
+- Upcoming event
+- Next shift
+- Application status
+- Volunteer hours
+- Completed events
+- Certificates
+- Training progress
+- Notifications
 
 ---
 
@@ -279,12 +279,12 @@ Show:
 
 Create a complete page containing:
 
-* Event
-* Role
-* Date
-* Application date
-* Status
-* View details
+- Event
+- Role
+- Date
+- Application date
+- Status
+- View details
 
 ---
 
@@ -294,12 +294,12 @@ Show accepted events.
 
 Each event should show:
 
-* Event information
-* Assigned role
-* Shift
-* Training
-* Accreditation
-* Attendance status
+- Event information
+- Assigned role
+- Shift
+- Training
+- Accreditation
+- Attendance status
 
 ---
 
@@ -309,14 +309,14 @@ Create a schedule interface.
 
 Show:
 
-* Event
-* Date
-* Shift
-* Role
-* Location
-* Start time
-* End time
-* Instructions
+- Event
+- Date
+- Shift
+- Role
+- Location
+- Start time
+- End time
+- Instructions
 
 Optimize this page for mobile because volunteers may use it during event days.
 
@@ -326,12 +326,12 @@ Optimize this page for mobile because volunteers may use it during event days.
 
 Create:
 
-* Training list
-* Training details
-* Video UI
-* PDF/resource UI
-* Completion state
-* Progress indicator
+- Training list
+- Training details
+- Video UI
+- PDF/resource UI
+- Completion state
+- Progress indicator
 
 Example:
 
@@ -348,13 +348,13 @@ Create an accreditation page.
 
 Show:
 
-* Volunteer name
-* Volunteer ID
-* Event
-* Role
-* Zone
-* Status
-* QR code placeholder if backend is not yet connected
+- Volunteer name
+- Volunteer ID
+- Event
+- Role
+- Zone
+- Status
+- QR code placeholder if backend is not yet connected
 
 Make the design suitable for mobile.
 
@@ -364,10 +364,10 @@ Make the design suitable for mobile.
 
 Create UI for:
 
-* Check-in state
-* Check-out state
-* Attendance status
-* Event day information
+- Check-in state
+- Check-out state
+- Attendance status
+- Event day information
 
 Backend functionality is NOT required in this frontend task.
 
@@ -377,11 +377,11 @@ Backend functionality is NOT required in this frontend task.
 
 Create:
 
-* Total hours
-* Current-year hours
-* Hours by sport
-* Hours by event
-* Completed events
+- Total hours
+- Current-year hours
+- Hours by sport
+- Hours by event
+- Completed events
 
 Use charts/cards where appropriate.
 
@@ -391,15 +391,15 @@ Use charts/cards where appropriate.
 
 Create:
 
-* Certificate list
-* Certificate preview
-* Certificate details
-* Download button UI
-* Certificate ID
-* Event
-* Role
-* Hours
-* Date
+- Certificate list
+- Certificate preview
+- Certificate details
+- Download button UI
+- Certificate ID
+- Event
+- Role
+- Hours
+- Date
 
 Actual PDF generation is not required in this frontend-only phase unless it already exists.
 
@@ -409,12 +409,12 @@ Actual PDF generation is not required in this frontend-only phase unless it alre
 
 Create:
 
-* Notification dropdown
-* Notifications page
-* Read/unread state
-* Notification categories
-* Timestamp
-* Related event
+- Notification dropdown
+- Notifications page
+- Read/unread state
+- Notification categories
+- Timestamp
+- Related event
 
 ---
 
@@ -424,23 +424,23 @@ Create a complete profile experience.
 
 Fields:
 
-* First name
-* Last name
-* Avatar
-* Bio
-* Phone
-* City
-* Country
-* Sports interests
-* Skills
-* Languages
+- First name
+- Last name
+- Avatar
+- Bio
+- Phone
+- City
+- Country
+- Sports interests
+- Skills
+- Languages
 
 Also show:
 
-* Events completed
-* Volunteer hours
-* Certificates
-* Attendance
+- Events completed
+- Volunteer hours
+- Certificates
+- Attendance
 
 ---
 
@@ -454,81 +454,81 @@ Admin frontend should contain:
 
 ### Overview
 
-* Total volunteers
-* Upcoming events
-* Applications
-* Accepted volunteers
-* Volunteer hours
-* Attendance
+- Total volunteers
+- Upcoming events
+- Applications
+- Accepted volunteers
+- Volunteer hours
+- Attendance
 
 ### Events
 
-* Event list
-* Create event
-* Edit event
-* Event details
-* Event roles
-* Event shifts
+- Event list
+- Create event
+- Edit event
+- Event details
+- Event roles
+- Event shifts
 
 ### Applications
 
-* Application list
-* Filters
-* Application details
-* Accept
-* Reject
-* Waitlist
-* Assign role
+- Application list
+- Filters
+- Application details
+- Accept
+- Reject
+- Waitlist
+- Assign role
 
 ### Volunteers
 
-* Volunteer list
-* Search
-* Filters
-* Volunteer details
-* History
-* Hours
-* Certificates
+- Volunteer list
+- Search
+- Filters
+- Volunteer details
+- History
+- Hours
+- Certificates
 
 ### Training
 
-* Training list
-* Create training
-* Training progress
+- Training list
+- Create training
+- Training progress
 
 ### Attendance
 
-* Attendance dashboard
-* Check-in
-* Check-out
-* Attendance status
+- Attendance dashboard
+- Check-in
+- Check-out
+- Attendance status
 
 ### Certificates
 
-* Generate UI
-* Certificate list
-* Certificate details
+- Generate UI
+- Certificate list
+- Certificate details
 
 ### Notifications
 
-* Create announcement
-* Send notification
+- Create announcement
+- Send notification
 
 ### Reports
 
-* Applications
-* Attendance
-* Hours
-* Training
+- Applications
+- Attendance
+- Hours
+- Training
 
 ### Analytics
 
-* Volunteers
-* Events
-* Sports
-* Roles
-* Attendance
-* Hours
+- Volunteers
+- Events
+- Sports
+- Roles
+- Attendance
+- Hours
 
 ---
 
@@ -536,19 +536,19 @@ Admin frontend should contain:
 
 Everything must work on:
 
-* Desktop
-* Tablet
-* Mobile
+- Desktop
+- Tablet
+- Mobile
 
 Pay special attention to:
 
-* Event details
-* Application forms
-* Volunteer dashboard
-* Schedule
-* Accreditation
-* Check-in
-* Admin tables
+- Event details
+- Application forms
+- Volunteer dashboard
+- Schedule
+- Accreditation
+- Check-in
+- Admin tables
 
 ---
 
@@ -556,12 +556,12 @@ Pay special attention to:
 
 Every major frontend operation needs:
 
-* Loading
-* Empty
-* Error
-* Success
-* Disabled
-* Confirmation
+- Loading
+- Empty
+- Error
+- Success
+- Disabled
+- Confirmation
 
 Examples:
 
@@ -580,21 +580,21 @@ Keep the existing project architecture when reasonable.
 
 Create reusable components for:
 
-* EventCard
-* EventStatus
-* RoleCard
-* ApplicationStatus
-* VolunteerStats
-* ShiftCard
-* TrainingCard
-* CertificateCard
-* NotificationItem
-* DataTable
-* EmptyState
-* LoadingState
-* ErrorState
-* Modal
-* Form components
+- EventCard
+- EventStatus
+- RoleCard
+- ApplicationStatus
+- VolunteerStats
+- ShiftCard
+- TrainingCard
+- CertificateCard
+- NotificationItem
+- DataTable
+- EmptyState
+- LoadingState
+- ErrorState
+- Modal
+- Form components
 
 Avoid duplicated UI.
 
@@ -624,18 +624,18 @@ The structure should make replacing mock data with real backend calls easy.
 
 Create proper frontend types for:
 
-* Volunteer
-* Event
-* Sport
-* EventRole
-* Application
-* Shift
-* Training
-* Accreditation
-* Attendance
-* VolunteerHours
-* Certificate
-* Notification
+- Volunteer
+- Event
+- Sport
+- EventRole
+- Application
+- Shift
+- Training
+- Accreditation
+- Attendance
+- VolunteerHours
+- Certificate
+- Notification
 
 Keep them reusable.
 
@@ -663,9 +663,9 @@ Do not implement the Supabase backend here.
 
 Run available:
 
-* build
-* lint
-* typecheck
+- build
+- lint
+- typecheck
 
 Fix frontend errors.
 

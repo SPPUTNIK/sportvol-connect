@@ -1,42 +1,26 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  Eye,
-  EyeOff,
-  LockKeyhole,
-} from "lucide-react";
+import { ArrowRight, Eye, EyeOff, LockKeyhole } from "lucide-react";
 
 import { useAuth } from "@/lib/auth";
 
 export function AdminLoginPage() {
   const navigate = useNavigate();
 
-  const {
-    user,
-    isAdmin,
-    signIn,
-    sendResetPasswordEmail,
-    loading,
-  } = useAuth();
+  const { user, isAdmin, signIn, sendResetPasswordEmail, loading } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [showPassword, setShowPassword] =
-    useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [error, setError] =
-    useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const [success, setSuccess] =
-    useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  const [submitting, setSubmitting] =
-    useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const [resetting, setResetting] =
-    useState(false);
+  const [resetting, setResetting] = useState(false);
 
   /*
    * If an already authenticated admin opens
@@ -51,25 +35,17 @@ export function AdminLoginPage() {
     }
   }, [loading, user, isAdmin, navigate]);
 
-  async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>,
-  ) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setError(null);
     setSuccess(null);
     setSubmitting(true);
 
-    const result = await signIn(
-      email.trim(),
-      password,
-    );
+    const result = await signIn(email.trim(), password);
 
     if (result.error) {
-      setError(
-        result.error.message ||
-          "Unable to sign in. Please check your credentials.",
-      );
+      setError(result.error.message || "Unable to sign in. Please check your credentials.");
 
       setSubmitting(false);
       return;
@@ -89,33 +65,22 @@ export function AdminLoginPage() {
     setSuccess(null);
 
     if (!normalizedEmail) {
-      setError(
-        "Enter your admin email address first.",
-      );
+      setError("Enter your admin email address first.");
       return;
     }
 
     setResetting(true);
 
-    const result =
-      await sendResetPasswordEmail(
-        normalizedEmail,
-        "/admin/login",
-        );
+    const result = await sendResetPasswordEmail(normalizedEmail, "/admin/login");
 
     if (result.error) {
-      setError(
-        result.error.message ||
-          "Unable to send the password reset email.",
-      );
+      setError(result.error.message || "Unable to send the password reset email.");
 
       setResetting(false);
       return;
     }
 
-    setSuccess(
-      "Password reset instructions have been sent to your email.",
-    );
+    setSuccess("Password reset instructions have been sent to your email.");
 
     setResetting(false);
   }
@@ -133,26 +98,15 @@ export function AdminLoginPage() {
 
           <div className="relative z-10 flex w-full flex-col justify-between p-12 xl:p-16">
             <div>
-              <Link
-                to="/"
-                className="inline-flex items-center gap-3"
-              >
+              <Link to="/" className="inline-flex items-center gap-3">
                 <div className="flex h-14 w-25 items-center justify-center overflow-hidden rounded-2xl">
-                  <img
-                    src="/logo.png"
-                    alt="VolunSport"
-                    className="h-full w-full object-contain"
-                  />
+                  <img src="/logo.png" alt="VolunSport" className="h-full w-full object-contain" />
                 </div>
 
                 <div>
-                  <p className="text-lg font-semibold text-white">
-                    VolunSport
-                  </p>
+                  <p className="text-lg font-semibold text-white">VolunSport</p>
 
-                  <p className="text-xs text-white/60">
-                    Morocco
-                  </p>
+                  <p className="text-xs text-white/60">Morocco</p>
                 </div>
               </Link>
             </div>
@@ -167,15 +121,12 @@ export function AdminLoginPage() {
               </h1>
 
               <p className="mt-6 max-w-lg text-base leading-7 text-white/65">
-                Access volunteer operations, events,
-                roles, shifts, accreditation, and
-                platform reporting from one workspace.
+                Access volunteer operations, events, roles, shifts, accreditation, and platform
+                reporting from one workspace.
               </p>
             </div>
 
-            <p className="text-xs text-white/40">
-              VolunSport Morocco · Administration
-            </p>
+            <p className="text-xs text-white/40">VolunSport Morocco · Administration</p>
           </div>
         </div>
 
@@ -184,26 +135,15 @@ export function AdminLoginPage() {
           <div className="w-full max-w-md">
             {/* Mobile logo */}
             <div className="mb-10 lg:hidden">
-              <Link
-                to="/"
-                className="inline-flex items-center gap-3"
-              >
+              <Link to="/" className="inline-flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-primary">
-                  <img
-                    src="/logo.png"
-                    alt="VolunSport"
-                    className="h-full w-full object-contain"
-                  />
+                  <img src="/logo.png" alt="VolunSport" className="h-full w-full object-contain" />
                 </div>
 
                 <div>
-                  <p className="font-semibold">
-                    VolunSport
-                  </p>
+                  <p className="font-semibold">VolunSport</p>
 
-                  <p className="text-xs text-muted-foreground">
-                    Morocco
-                  </p>
+                  <p className="text-xs text-muted-foreground">Morocco</p>
                 </div>
               </Link>
             </div>
@@ -213,24 +153,17 @@ export function AdminLoginPage() {
                 <LockKeyhole className="h-5 w-5" />
               </div>
 
-              <h2 className="mt-6 text-3xl font-semibold tracking-tight">
-                Admin sign in
-              </h2>
+              <h2 className="mt-6 text-3xl font-semibold tracking-tight">Admin sign in</h2>
 
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Sign in to access the VolunSport
-                administration workspace.
+                Sign in to access the VolunSport administration workspace.
               </p>
             </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="mt-8 space-y-5"
-            >
+            <form onSubmit={handleSubmit} className="mt-8 space-y-5">
               {/* Email */}
               <label className="block text-sm font-medium">
                 Email
-
                 <input
                   type="email"
                   value={email}
@@ -242,9 +175,7 @@ export function AdminLoginPage() {
                   placeholder="admin@example.com"
                   autoComplete="email"
                   required
-                  disabled={
-                    submitting || resetting
-                  }
+                  disabled={submitting || resetting}
                   className="mt-2 h-12 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
                 />
               </label>
@@ -252,53 +183,30 @@ export function AdminLoginPage() {
               {/* Password */}
               <label className="block text-sm font-medium">
                 Password
-
                 <div className="relative mt-2">
                   <input
-                    type={
-                      showPassword
-                        ? "text"
-                        : "password"
-                    }
+                    type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(event) => {
-                      setPassword(
-                        event.target.value,
-                      );
+                      setPassword(event.target.value);
                       setError(null);
                       setSuccess(null);
                     }}
                     placeholder="Enter your password"
                     autoComplete="current-password"
                     required
-                    disabled={
-                      submitting || resetting
-                    }
+                    disabled={submitting || resetting}
                     className="h-12 w-full rounded-2xl border border-border bg-background px-4 pr-12 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
                   />
 
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowPassword(
-                        (current) => !current,
-                      )
-                    }
-                    disabled={
-                      submitting || resetting
-                    }
+                    onClick={() => setShowPassword((current) => !current)}
+                    disabled={submitting || resetting}
                     className="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:opacity-50"
-                    aria-label={
-                      showPassword
-                        ? "Hide password"
-                        : "Show password"
-                    }
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </label>
@@ -308,17 +216,10 @@ export function AdminLoginPage() {
                 <button
                   type="button"
                   onClick={handleForgotPassword}
-                  disabled={
-                    loading ||
-                    submitting ||
-                    resetting ||
-                    !email.trim()
-                  }
+                  disabled={loading || submitting || resetting || !email.trim()}
                   className="text-sm font-medium text-primary transition hover:text-primary/80 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {resetting
-                    ? "Sending reset email..."
-                    : "Forgot password?"}
+                  {resetting ? "Sending reset email..." : "Forgot password?"}
                 </button>
               </div>
 
@@ -339,13 +240,7 @@ export function AdminLoginPage() {
               {/* Submit */}
               <button
                 type="submit"
-                disabled={
-                  loading ||
-                  submitting ||
-                  resetting ||
-                  !email.trim() ||
-                  !password
-                }
+                disabled={loading || submitting || resetting || !email.trim() || !password}
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {submitting ? (
