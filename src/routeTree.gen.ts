@@ -16,11 +16,8 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LeaderRouteImport } from './routes/leader'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as McpRouteImport } from './routes/mcp'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAccreditationRouteImport } from './routes/admin/accreditation'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
@@ -58,7 +55,6 @@ import { Route as VolunteerProfileRouteImport } from './routes/volunteer/profile
 import { Route as VolunteerScheduleRouteImport } from './routes/volunteer/schedule'
 import { Route as VolunteerTrainingRouteImport } from './routes/volunteer/training'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
-import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AdminEventsIndexRouteImport } from './routes/admin/events/index'
 import { Route as AdminEventsEventIdRouteImport } from './routes/admin/events/$eventId'
 import { Route as AdminEventsCreateRouteImport } from './routes/admin/events/create'
@@ -104,11 +100,6 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -119,18 +110,6 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -316,12 +295,6 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Char91DotmcpChar93InvokeToolToolRoute =
-  Char91DotmcpChar93InvokeToolToolRouteImport.update({
-    id: '/.mcp/invoke-tool/$tool',
-    path: '/.mcp/invoke-tool/$tool',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AdminEventsIndexRoute = AdminEventsIndexRouteImport.update({
   id: '/events/',
   path: '/events/',
@@ -379,11 +352,8 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/leader': typeof LeaderRouteWithChildren
   '/login': typeof LoginRoute
-  '/mcp': typeof McpRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/accreditation': typeof AdminAccreditationRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/applications': typeof AdminApplicationsRoute
@@ -421,7 +391,6 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/leader/': typeof LeaderIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/events/$eventId': typeof AdminEventsEventIdRoute
   '/admin/events/create': typeof AdminEventsCreateRoute
   '/admin/volunteers/$volunteerId': typeof AdminVolunteersVolunteerIdRoute
@@ -438,11 +407,8 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
-  '/mcp': typeof McpRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/accreditation': typeof AdminAccreditationRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/applications': typeof AdminApplicationsRoute
@@ -480,7 +446,6 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/leader': typeof LeaderIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/events/$eventId': typeof AdminEventsEventIdRoute
   '/admin/events/create': typeof AdminEventsCreateRoute
   '/admin/volunteers/$volunteerId': typeof AdminVolunteersVolunteerIdRoute
@@ -500,11 +465,8 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/leader': typeof LeaderRouteWithChildren
   '/login': typeof LoginRoute
-  '/mcp': typeof McpRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/accreditation': typeof AdminAccreditationRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/applications': typeof AdminApplicationsRoute
@@ -542,7 +504,6 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/leader/': typeof LeaderIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/events/$eventId': typeof AdminEventsEventIdRoute
   '/admin/events/create': typeof AdminEventsCreateRoute
   '/admin/volunteers/$volunteerId': typeof AdminVolunteersVolunteerIdRoute
@@ -563,11 +524,8 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/leader'
     | '/login'
-    | '/mcp'
     | '/register'
     | '/reset-password'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/admin/accreditation'
     | '/admin/analytics'
     | '/admin/applications'
@@ -605,7 +563,6 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/leader/'
     | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
     | '/admin/events/$eventId'
     | '/admin/events/create'
     | '/admin/volunteers/$volunteerId'
@@ -622,11 +579,8 @@ export interface FileRouteTypes {
     | '/about'
     | '/forgot-password'
     | '/login'
-    | '/mcp'
     | '/register'
     | '/reset-password'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/admin/accreditation'
     | '/admin/analytics'
     | '/admin/applications'
@@ -664,7 +618,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/leader'
     | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
     | '/admin/events/$eventId'
     | '/admin/events/create'
     | '/admin/volunteers/$volunteerId'
@@ -683,11 +636,8 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/leader'
     | '/login'
-    | '/mcp'
     | '/register'
     | '/reset-password'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/admin/accreditation'
     | '/admin/analytics'
     | '/admin/applications'
@@ -725,7 +675,6 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/leader/'
     | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
     | '/admin/events/$eventId'
     | '/admin/events/create'
     | '/admin/volunteers/$volunteerId'
@@ -745,11 +694,8 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LeaderRoute: typeof LeaderRouteWithChildren
   LoginRoute: typeof LoginRoute
-  McpRoute: typeof McpRoute
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
-  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   VolunteerAccreditationRoute: typeof VolunteerAccreditationRoute
   VolunteerAchievementsRoute: typeof VolunteerAchievementsRoute
   VolunteerApplicationsRoute: typeof VolunteerApplicationsRoute
@@ -763,7 +709,6 @@ export interface RootRouteChildren {
   VolunteerScheduleRoute: typeof VolunteerScheduleRoute
   VolunteerTrainingRoute: typeof VolunteerTrainingRouteWithChildren
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
-  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   VolunteerEventsEventIdRoute: typeof VolunteerEventsEventIdRoute
   VolunteerEventsIndexRoute: typeof VolunteerEventsIndexRoute
 }
@@ -819,13 +764,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/register': {
       id: '/register'
       path: '/register'
@@ -838,20 +776,6 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.mcp/list-tools': {
-      id: '/.mcp/list-tools'
-      path: '/.mcp/list-tools'
-      fullPath: '/.mcp/list-tools'
-      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -1113,13 +1037,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/.mcp/invoke-tool/$tool': {
-      id: '/.mcp/invoke-tool/$tool'
-      path: '/.mcp/invoke-tool/$tool'
-      fullPath: '/.mcp/invoke-tool/$tool'
-      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin/events/': {
       id: '/admin/events/'
       path: '/events'
@@ -1294,12 +1211,8 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   LeaderRoute: LeaderRouteWithChildren,
   LoginRoute: LoginRoute,
-  McpRoute: McpRoute,
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
-  Char91DotwellKnownChar93OauthProtectedResourceRoute:
-    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   VolunteerAccreditationRoute: VolunteerAccreditationRoute,
   VolunteerAchievementsRoute: VolunteerAchievementsRoute,
   VolunteerApplicationsRoute: VolunteerApplicationsRoute,
@@ -1313,7 +1226,6 @@ const rootRouteChildren: RootRouteChildren = {
   VolunteerScheduleRoute: VolunteerScheduleRoute,
   VolunteerTrainingRoute: VolunteerTrainingRouteWithChildren,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
-  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   VolunteerEventsEventIdRoute: VolunteerEventsEventIdRoute,
   VolunteerEventsIndexRoute: VolunteerEventsIndexRoute,
 }
