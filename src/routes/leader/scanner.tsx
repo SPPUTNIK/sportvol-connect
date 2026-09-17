@@ -77,6 +77,9 @@ function LeaderScannerPage() {
   const controlsRef = useRef<{
     stop: () => void;
   } | null>(null);
+
+  const [scanMessage, setScanMessage] =
+    useState("Point the camera at the QR code");
   
 
   // ============================================================
@@ -127,23 +130,39 @@ function LeaderScannerPage() {
   // ============================================================
 
   const stopScanner = () => {
+    console.log(
+      "[QR] Stopping scanner...",
+    );
+
     try {
       controlsRef.current?.stop();
     } catch (error) {
-      console.error("Failed to stop scanner:", error);
+      console.error(
+        "[QR] Failed to stop ZXing:",
+        error,
+      );
     }
 
     controlsRef.current = null;
+    qrReaderRef.current = null;
 
-    const video = videoRef.current;
+    const video =
+      videoRef.current;
 
-    if (video?.srcObject instanceof MediaStream) {
-      video.srcObject.getTracks().forEach((track) => {
-        track.stop();
-      });
+    if (
+      video?.srcObject instanceof
+      MediaStream
+    ) {
+      video.srcObject
+        .getTracks()
+        .forEach((track) => {
+          track.stop();
+        });
 
       video.srcObject = null;
     }
+
+    scanHandledRef.current = false;
 
     setIsScanning(false);
   };
@@ -153,12 +172,18 @@ function LeaderScannerPage() {
   // ============================================================
 
   const startScanner = async () => {
-    if (isScanning) return;
+    if (isScanning) {
+      return;
+    }
 
     const video = videoRef.current;
 
     if (!video) {
-      toast.error("Camera preview is not ready.");
+      const message =
+        "Camera preview is not ready.";
+
+      setCameraError(message);
+      toast.error(message);
       return;
     }
 
@@ -174,48 +199,92 @@ function LeaderScannerPage() {
       return;
     }
 
-    setCameraError(null);
-    setSelectedVolunteer(null);
-    scanHandledRef.current = false;
-    setIsScanning(true);
-
     try {
+      console.log("[QR] Starting camera...");
+
+      setCameraError(null);
+      setSelectedVolunteer(null);
+      scanHandledRef.current = false;
+      setIsScanning(true);
+
+      // ----------------------------------------------------------
+      // 1. Open camera ourselves
+      // ----------------------------------------------------------
+
+      const stream =
+        await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: {
+              ideal: "environment",
+            },
+            width: {
+              ideal: 1280,
+            },
+            height: {
+              ideal: 720,
+            },
+          },
+          audio: false,
+        });
+
+      console.log(
+        "[QR] Camera stream opened.",
+      );
+
+      setScanMessage(
+        "Point the camera at the QR code",
+      );
+
+      const videoTrack =
+        stream.getVideoTracks()[0];
+
+      console.log(
+        "[QR] Camera track:",
+        videoTrack?.label,
+      );
+
+      console.log(
+        "[QR] Camera settings:",
+        videoTrack?.getSettings(),
+      );
+
+      // ----------------------------------------------------------
+      // 2. Attach stream to video
+      // ----------------------------------------------------------
+
+      video.srcObject = stream;
+      video.muted = true;
+      video.playsInline = true;
+
+      await video.play();
+
+      console.log(
+        "[QR] Video started.",
+      );
+
+      console.log(
+        "[QR] Video dimensions:",
+        {
+          width: video.videoWidth,
+          height: video.videoHeight,
+        },
+      );
+
+      // ----------------------------------------------------------
+      // 3. Start ZXing from the actual video element
+      // ----------------------------------------------------------
+
       const reader =
-        qrReaderRef.current ??
         new BrowserMultiFormatReader();
 
       qrReaderRef.current = reader;
 
-      console.log(
-        "Starting QR scanner...",
-      );
-
       const controls =
-        await reader.decodeFromConstraints(
-          {
-            video: {
-              facingMode: {
-                ideal: "environment",
-              },
-              width: {
-                ideal: 1280,
-              },
-              height: {
-                ideal: 720,
-              },
-            },
-            audio: false,
-          },
+        await reader.decodeFromVideoElement(
           video,
           async (result, error) => {
-            // ZXing continuously calls this callback.
-            // Most calls will contain an error because no QR
-            // is visible yet. That is normal.
-
-            if (error && !result) {
-              return;
-            }
-
+            // No QR in this frame.
+            // This is normal and happens continuously.
             if (!result) {
               return;
             }
@@ -225,7 +294,7 @@ function LeaderScannerPage() {
             }
 
             const qrData =
-              result.getText().trim();
+              result.getText()?.trim();
 
             if (!qrData) {
               return;
@@ -236,8 +305,17 @@ function LeaderScannerPage() {
             );
 
             console.log(
-              "QR DETECTED:",
+              "[QR] QR DETECTED:",
               qrData,
+            );
+
+            setScanMessage(
+              "QR detected — checking...",
+            );
+
+            console.log(
+              "[QR] FORMAT:",
+              result.getBarcodeFormat(),
             );
 
             console.log(
@@ -263,34 +341,33 @@ function LeaderScannerPage() {
                 "qr-lookup",
               );
 
-              // --------------------------------------------------
-              // QR was detected but is not authorized
-              // --------------------------------------------------
-
               if (!volunteer) {
-                scanHandledRef.current = false;
+                console.warn(
+                  "[QR] Detected but not authorized:",
+                  qrData,
+                );
+
+                scanHandledRef.current =
+                  false;
 
                 toast.error(
-                  "This QR code is not assigned to your committee, role, or shift.",
+                  "QR detected, but this volunteer is not assigned to your committee, role, and shift.",
                 );
 
                 return;
               }
 
-              // --------------------------------------------------
-              // Valid volunteer
-              // --------------------------------------------------
-
               console.log(
-                "Volunteer verified:",
+                "[QR] VOLUNTEER VERIFIED:",
                 volunteer,
               );
 
+              // Stop ZXing
               try {
                 controls.stop();
               } catch (stopError) {
                 console.error(
-                  "Failed to stop ZXing:",
+                  "[QR] Failed to stop ZXing:",
                   stopError,
                 );
               }
@@ -298,18 +375,22 @@ function LeaderScannerPage() {
               controlsRef.current =
                 null;
 
+              // Stop camera
+              const currentStream =
+                video.srcObject;
+
               if (
-                video.srcObject instanceof
+                currentStream instanceof
                 MediaStream
               ) {
-                video.srcObject
+                currentStream
                   .getTracks()
                   .forEach((track) => {
                     track.stop();
                   });
-
-                video.srcObject = null;
               }
+
+              video.srcObject = null;
 
               setIsScanning(false);
 
@@ -322,7 +403,7 @@ function LeaderScannerPage() {
               );
             } catch (lookupError) {
               console.error(
-                "QR lookup failed:",
+                "[QR] Lookup failed:",
                 lookupError,
               );
 
@@ -330,7 +411,6 @@ function LeaderScannerPage() {
                 "qr-lookup",
               );
 
-              // Keep scanner alive.
               scanHandledRef.current =
                 false;
 
@@ -347,36 +427,19 @@ function LeaderScannerPage() {
         controls;
 
       console.log(
-        "QR scanner started successfully.",
+        "[QR] ZXing decoder started.",
       );
-
-      // Make sure the video actually starts.
-      try {
-        await video.play();
-      } catch (playError) {
-        console.warn(
-          "Video play was not required or failed:",
-          playError,
-        );
-      }
     } catch (error) {
       console.error(
-        "Failed to start QR scanner:",
+        "[QR] Scanner failed:",
         error,
       );
 
-      // Stop everything that may have started.
-      try {
-        controlsRef.current?.stop();
-      } catch {
-        // Ignore.
-      }
-
-      controlsRef.current =
-        null;
+      const video =
+        videoRef.current;
 
       if (
-        video.srcObject instanceof
+        video?.srcObject instanceof
         MediaStream
       ) {
         video.srcObject
@@ -387,6 +450,9 @@ function LeaderScannerPage() {
 
         video.srcObject = null;
       }
+
+      controlsRef.current = null;
+      qrReaderRef.current = null;
 
       setIsScanning(false);
 
@@ -417,24 +483,19 @@ function LeaderScannerPage() {
           "SecurityError"
         ) {
           message =
-            "Camera access requires a secure connection (HTTPS or localhost).";
-        }
-      } else if (
-        error instanceof Error
-      ) {
-        message =
-          error.message;
+            "Camera access requires HTTPS or localhost.";
       }
-
-      setCameraError(
-        message,
-      );
-
-      toast.error(
-        message,
-      );
+    } else if (
+      error instanceof Error
+    ) {
+      message = error.message;
     }
-  };
+
+    setCameraError(message);
+
+    toast.error(message);
+  }
+};
 
   // ============================================================
   // CLEANUP CAMERA ON UNMOUNT
@@ -585,17 +646,12 @@ function LeaderScannerPage() {
                   ref={videoRef}
                   className={`h-full w-full object-cover ${
                     isScanning
-                      ? "block"
-                      : "hidden"
+                      ? "opacity-100"
+                      : "opacity-0"
                   }`}
                   muted
                   playsInline
                   autoPlay
-                  onLoadedMetadata={() => {
-                    console.log(
-                      "Camera video metadata loaded.",
-                    );
-                  }}
                 />
 
                 {!isScanning && (
@@ -831,6 +887,10 @@ function LeaderScannerPage() {
             )}
           </VSCardContent>
         </VSCard>
+      </div>
+
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/70 px-4 py-2 text-xs font-medium text-white backdrop-blur">
+        {scanMessage}
       </div>
 
       {/* ========================================================
