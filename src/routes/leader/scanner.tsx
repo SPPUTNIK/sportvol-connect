@@ -69,7 +69,10 @@ function LeaderScannerPage() {
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const qrReaderRef = useRef<BrowserQRCodeReader | null>(null);
+  const qrReaderRef =
+    useRef<BrowserQRCodeReader | null>(null);
+
+  const scanHandledRef = useRef(false);
 
   const controlsRef = useRef<{
     stop: () => void;
@@ -170,6 +173,7 @@ function LeaderScannerPage() {
 
     setCameraError(null);
     setSelectedVolunteer(null);
+    scanHandledRef.current = false;
     setIsScanning(true);
 
     try {
@@ -190,21 +194,25 @@ function LeaderScannerPage() {
             audio: false,
           },
           videoRef.current,
-          async (result, error) => {
+          async (result) => {
             if (!result) {
-              // Normal: ZXing keeps checking frames
-              // until it finds a QR code.
               return;
             }
 
-            const qrData = result
-              .getText()
-              .trim();
+            // Prevent the same QR from being processed multiple times
+            if (scanHandledRef.current) {
+              return;
+            }
 
-            if (!qrData) return;
+            const qrData = result.getText().trim();
 
-            // Stop immediately to prevent duplicate scans.
-            stopScanner();
+            if (!qrData) {
+              return;
+            }
+
+            console.log("QR detected:", qrData);
+
+            scanHandledRef.current = true;
 
             try {
               toast.loading(
@@ -221,14 +229,33 @@ function LeaderScannerPage() {
 
               toast.dismiss("qr-lookup");
 
+              // Only stop camera after successful validation
               if (!volunteer) {
+                scanHandledRef.current = false;
+
                 toast.error(
-                  "This accreditation was not found.",
+                  "This QR code is not a valid SportVol accreditation.",
                 );
 
                 return;
               }
 
+              controls.stop();
+              controlsRef.current = null;
+
+              const video = videoRef.current;
+
+              if (
+                video?.srcObject instanceof MediaStream
+              ) {
+                video.srcObject
+                  .getTracks()
+                  .forEach((track) => track.stop());
+
+                video.srcObject = null;
+              }
+
+              setIsScanning(false);
               setSelectedVolunteer(volunteer);
 
               toast.success(
@@ -242,13 +269,14 @@ function LeaderScannerPage() {
 
               toast.dismiss("qr-lookup");
 
+              // Keep camera running so leader can try again
+              scanHandledRef.current = false;
+
               toast.error(
                 lookupError instanceof Error
                   ? lookupError.message
                   : "This QR code is not authorized.",
               );
-
-              setSelectedVolunteer(null);
             }
           },
         );
