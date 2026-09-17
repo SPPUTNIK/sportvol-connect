@@ -388,7 +388,7 @@ function Events() {
                 cover={event.cover_url ?? undefined}
                 filled={event.registered_volunteers ?? 0}
                 capacity={event.total_volunteers_needed}
-                href={`/events/${event.id}`}
+                href={`/volunteer/events/${event.id}`}
               />
             ))}
           </div>

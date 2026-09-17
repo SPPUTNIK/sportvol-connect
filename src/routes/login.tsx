@@ -23,19 +23,26 @@ export const Route = createFileRoute("/login")({
 
 function Login() {
   const { t } = useI18n();
-  const { user, signIn, loading } = useAuth();
+  const { user, profile, signIn, loading } = useAuth();
   const { next } = Route.useSearch();
-  const destination = safeNext(next) ?? "/volunteer/dashboard";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      window.location.href = destination;
-    }
-  }, [destination, user]);
+    if (loading || !user || !profile) return;
+
+    const roleDestination =
+      profile.role === "admin"
+        ? "/admin"
+        : profile.role === "leader"
+          ? "/leader/dashboard"
+          : "/volunteer/dashboard";
+
+    window.location.href = safeNext(next) ?? roleDestination;
+  }, [loading, user, profile, next]);
 
   return (
     <I18nProvider>
@@ -43,6 +50,7 @@ function Login() {
         <div className="shell min-h-screen py-24">
           <div className="mx-auto max-w-md rounded-[2rem] border border-hairline-invert bg-card p-10 shadow-[var(--shadow-lift)]">
             <h1 className="text-3xl font-semibold text-foreground">Sign in</h1>
+
             <p className="mt-3 text-sm text-muted-foreground">
               Access your volunteer dashboard and apply for upcoming events.
             </p>
@@ -52,17 +60,20 @@ function Login() {
               onSubmit={async (event) => {
                 event.preventDefault();
                 setError(null);
+
                 const { error } = await signIn(email, password);
+
                 if (error) {
                   setError(error.message);
                   return;
                 }
+
                 setSuccess(true);
-                window.location.href = destination;
               }}
             >
               <label className="block text-sm font-medium text-foreground">
                 Email
+
                 <input
                   type="email"
                   value={email}
@@ -71,8 +82,10 @@ function Login() {
                   className="mt-2 w-full rounded-3xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none focus:border-primary"
                 />
               </label>
+
               <label className="block text-sm font-medium text-foreground">
                 Password
+
                 <input
                   type="password"
                   value={password}
@@ -83,13 +96,25 @@ function Login() {
               </label>
 
               <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <Link to="/forgot-password" className="text-primary hover:text-primary/80">
+                <Link
+                  to="/forgot-password"
+                  className="text-primary hover:text-primary/80"
+                >
                   Forgot password?
                 </Link>
               </div>
 
-              {error && <p className="text-sm text-destructive">{error}</p>}
-              {success && <p className="text-sm text-success">Signed in successfully.</p>}
+              {error && (
+                <p className="text-sm text-destructive">
+                  {error}
+                </p>
+              )}
+
+              {success && (
+                <p className="text-sm text-success">
+                  Signed in successfully.
+                </p>
+              )}
 
               <button
                 type="submit"
@@ -102,7 +127,11 @@ function Login() {
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
               Don&apos;t have an account?{" "}
-              <Link to="/register" search={{ next }} className="text-primary">
+              <Link
+                to="/register"
+                search={{ next }}
+                className="text-primary"
+              >
                 Create one
               </Link>
             </p>
