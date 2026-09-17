@@ -1689,9 +1689,14 @@ export const leaderService = {
   async getVolunteerByQrCode(
     qrCode: string,
   ): Promise<LeaderScannerVolunteer | null> {
-    const committees = await this.getLeaderCommittees();
+    const committees =
+      await this.getLeaderCommittees();
 
     if (!committees.length) {
+      console.warn(
+        "QR lookup: leader has no committees",
+      );
+
       return null;
     }
 
@@ -1703,18 +1708,69 @@ export const leaderService = {
       ),
     ];
 
-    // ============================================================
-    // 1. QR -> ACCREDITATION
-    // ============================================================
+    const normalizedQrCode =
+      qrCode.trim();
 
-    const { data: accreditation, error: accreditationError } =
-      await supabase
+    console.log(
+      "QR lookup:",
+      normalizedQrCode,
+    );
+
+    // ----------------------------------------------------------
+    // 1. Find accreditation
+    //    Accept both qr_code_data and volunteer_identifier.
+    // ----------------------------------------------------------
+
+    let accreditation: any = null;
+
+    const {
+      data: qrData,
+      error: qrError,
+    } = await supabase
+      .from("accreditations")
+      .select(`
+        id,
+        profile_id,
+        event_id,
+        role_id,
+        volunteer_identifier,
+        qr_code_data,
+        profile:profiles(
+          id,
+          first_name,
+          last_name,
+          avatar_url
+        )
+      `)
+      .in("event_id", eventIds)
+      .eq(
+        "qr_code_data",
+        normalizedQrCode,
+      )
+      .maybeSingle();
+
+    if (qrError) {
+      console.error(
+        "QR lookup qr_code_data error:",
+        qrError,
+      );
+    }
+
+    accreditation = qrData;
+
+    // Fallback: volunteer_identifier
+    if (!accreditation) {
+      const {
+        data: identifierData,
+        error: identifierError,
+      } = await supabase
         .from("accreditations")
         .select(`
           id,
           profile_id,
           event_id,
           role_id,
+          volunteer_identifier,
           qr_code_data,
           profile:profiles(
             id,
@@ -1724,72 +1780,112 @@ export const leaderService = {
           )
         `)
         .in("event_id", eventIds)
-        .eq("qr_code_data", qrCode)
+        .eq(
+          "volunteer_identifier",
+          normalizedQrCode,
+        )
         .maybeSingle();
 
-    if (accreditationError) {
-      console.error(
-        "Failed to find accreditation:",
-        accreditationError,
+      if (identifierError) {
+        console.error(
+          "QR lookup volunteer_identifier error:",
+          identifierError,
+        );
+      }
+
+      accreditation =
+        identifierData;
+    }
+
+    if (!accreditation) {
+      console.warn(
+        "No accreditation found for QR:",
+        normalizedQrCode,
       );
 
       return null;
     }
 
-    if (!accreditation) {
-      return null;
-    }
-
-    // ============================================================
-    // 2. QR EVENT MUST BELONG TO ONE OF LEADER'S COMMITTEES
-    // ============================================================
-
-    const leaderCommitteesForEvent = committees.filter(
-      (committee) =>
-        committee.eventId === accreditation.event_id,
+    console.log(
+      "Accreditation found:",
+      {
+        id: accreditation.id,
+        profileId: accreditation.profile_id,
+        eventId: accreditation.event_id,
+        roleId: accreditation.role_id,
+        volunteerIdentifier:
+          accreditation.volunteer_identifier,
+        qrCodeData:
+          accreditation.qr_code_data,
+      },
     );
 
+    // ----------------------------------------------------------
+    // 2. Find leader committee for this event
+    // ----------------------------------------------------------
+
+    const leaderCommitteesForEvent =
+      committees.filter(
+        (committee) =>
+          committee.eventId ===
+          accreditation.event_id,
+      );
+
     if (!leaderCommitteesForEvent.length) {
+      console.warn(
+        "QR volunteer belongs to an event outside leader committees.",
+      );
+
       return null;
     }
-
-    // ============================================================
-    // 3. PROFILE
-    // ============================================================
 
     const profile =
-      (accreditation as any).profile ?? null;
+      accreditation.profile ?? null;
 
     if (!profile) {
+      console.warn(
+        "Accreditation profile not found.",
+      );
+
       return null;
     }
 
-    // ============================================================
-    // 4. VOLUNTEER MUST BELONG TO LEADER'S COMMITTEE
-    // ============================================================
+    // ----------------------------------------------------------
+    // 3. Check committee membership
+    // ----------------------------------------------------------
 
-    let matchedCommittee: LeaderCommittee | null = null;
+    let matchedCommittee: any = null;
     let matchedMembership: any = null;
 
-    for (const committee of leaderCommitteesForEvent) {
-      const { data: membership, error: membershipError } =
-        await supabase
-          .from("committee_members")
-          .select(`
-            id,
-            committee_id,
-            profile_id,
-            event_role_id,
-            status
-          `)
-          .eq("committee_id", committee.id)
-          .eq("profile_id", accreditation.profile_id)
-          .eq("status", "assigned")
-          .maybeSingle();
+    for (
+      const committee of leaderCommitteesForEvent
+    ) {
+      const {
+        data: membership,
+        error: membershipError,
+      } = await supabase
+        .from("committee_members")
+        .select(`
+          id,
+          committee_id,
+          profile_id,
+          event_role_id,
+          status
+        `)
+        .eq(
+          "committee_id",
+          committee.id,
+        )
+        .eq(
+          "profile_id",
+          accreditation.profile_id,
+        )
+        .eq("status", "assigned")
+        .maybeSingle();
 
       if (membershipError) {
         console.error(
-          "Failed to check committee membership:",
+          "Committee membership lookup error:",
           membershipError,
         );
 
@@ -1797,149 +1893,185 @@ export const leaderService = {
       }
 
       if (membership) {
-        matchedCommittee = committee;
-        matchedMembership = membership;
+        matchedCommittee =
+          committee;
+        matchedMembership =
+          membership;
+
         break;
       }
     }
 
-    if (!matchedCommittee || !matchedMembership) {
+    if (
+      !matchedCommittee ||
+      !matchedMembership
+    ) {
+      console.warn(
+        "Volunteer is not assigned to leader committee.",
+      );
+
       return null;
     }
 
-    // ============================================================
-    // 5. ROLE MUST MATCH
-    //
-    // Accreditation role_id
-    //       ===
-    // Committee member event_role_id
-    // ============================================================
+    // ----------------------------------------------------------
+    // 4. Role must match accreditation role
+    // ----------------------------------------------------------
 
     if (
       matchedMembership.event_role_id !==
       accreditation.role_id
     ) {
+      console.warn(
+        "Role mismatch:",
+        {
+          committeeRole:
+            matchedMembership.event_role_id,
+          accreditationRole:
+            accreditation.role_id,
+        },
+      );
+
       return null;
     }
 
-    // ============================================================
-    // 6. GET SHIFTS BELONGING TO THIS COMMITTEE
-    // ============================================================
+    // ----------------------------------------------------------
+    // 5. Get shifts attached to leader committee
+    // ----------------------------------------------------------
 
-    const { data: committeeShifts, error: committeeShiftsError } =
-      await supabase
-        .from("committee_shifts")
-        .select(`
-          shift_id,
-          shift:event_shifts(
+    const {
+      data: committeeShifts,
+      error: committeeShiftsError,
+    } = await supabase
+      .from("committee_shifts")
+      .select(`
+        shift_id,
+        shift:event_shifts(
+          id,
+          event_id,
+          role_id,
+          title,
+          location,
+          date,
+          start_time,
+          end_time,
+          role:event_roles(
             id,
-            event_id,
-            role_id,
-            title,
-            date,
-            start_time,
-            end_time,
-            role:event_roles(
-              id,
-              name
-            )
+            name
           )
-        `)
-        .eq("committee_id", matchedCommittee.id);
+        )
+      `)
+      .eq(
+        "committee_id",
+        matchedCommittee.id,
+      );
 
     if (committeeShiftsError) {
       console.error(
-        "Failed to load committee shifts:",
+        "Committee shifts lookup error:",
         committeeShiftsError,
       );
 
       return null;
     }
 
-    const shiftRows = (committeeShifts ?? []) as any[];
-
-    const shiftIds = shiftRows
-      .map((row) => row.shift_id)
-      .filter(Boolean);
+    const shiftIds =
+      (committeeShifts ?? [])
+        .map(
+          (row: any) =>
+            row.shift_id,
+        )
+        .filter(Boolean);
 
     if (!shiftIds.length) {
+      console.warn(
+        "Leader committee has no shifts.",
+      );
+
       return null;
     }
 
-    // ============================================================
-    // 7. FIND VOLUNTEER'S ASSIGNED SHIFT
-    //
-    // The shift must:
-    // - belong to this committee
-    // - belong to this volunteer
-    // - be assigned
-    // - have the SAME role as accreditation
-    // ============================================================
+    // ----------------------------------------------------------
+    // 6. Find volunteer's exact assigned shift
+    // ----------------------------------------------------------
 
-    const { data: assignments, error: assignmentError } =
-      await supabase
-        .from("shift_assignments")
-        .select(`
+    const {
+      data: assignments,
+      error: assignmentError,
+    } = await supabase
+      .from("shift_assignments")
+      .select(`
+        id,
+        profile_id,
+        shift_id,
+        status,
+        assigned_at,
+        shift:event_shifts(
           id,
-          profile_id,
-          shift_id,
-          status,
-          assigned_at,
-          shift:event_shifts(
+          event_id,
+          role_id,
+          title,
+          location,
+          date,
+          start_time,
+          end_time,
+          role:event_roles(
             id,
-            event_id,
-            role_id,
-            title,
-            date,
-            start_time,
-            end_time,
-            role:event_roles(
-              id,
-              name
-            )
+            name
           )
-        `)
-        .eq("profile_id", accreditation.profile_id)
-        .in("shift_id", shiftIds)
-        .eq("status", "assigned")
-        .order("assigned_at", {
+        )
+      `)
+      .eq(
+        "profile_id",
+        accreditation.profile_id,
+      )
+      .in(
+        "shift_id",
+        shiftIds,
+      )
+      .eq(
+        "status",
+        "assigned",
+      )
+      .order(
+        "assigned_at",
+        {
           ascending: true,
-        });
+        },
+      );
 
     if (assignmentError) {
       console.error(
-        "Failed to load volunteer shift assignments:",
+        "Shift assignment lookup error:",
         assignmentError,
       );
 
       return null;
     }
 
-    const matchingAssignments = (assignments ?? []).filter(
-      (assignment: any) =>
-        assignment.shift &&
-        assignment.shift.event_id ===
-          accreditation.event_id &&
-        assignment.shift.role_id ===
-          accreditation.role_id,
-    );
+    const matchingAssignments =
+      (assignments ?? []).filter(
+        (assignment: any) =>
+          assignment.shift &&
+          assignment.shift.event_id ===
+            accreditation.event_id &&
+          assignment.shift.role_id ===
+            accreditation.role_id,
+      );
 
-    // ============================================================
-    // IMPORTANT:
-    // QR currently contains qr_code_data + role_id,
-    // but NOT shift_id.
-    //
-    // Therefore, if the volunteer has multiple assigned
-    // shifts with the same role, the QR is ambiguous.
-    // ============================================================
-
-    if (matchingAssignments.length !== 1) {
+    // We need exactly one shift.
+    if (
+      matchingAssignments.length !==
+      1
+    ) {
       console.warn(
-        "QR matched an unexpected number of shifts:",
+        "Expected exactly one matching shift:",
         {
-          profileId: accreditation.profile_id,
-          roleId: accreditation.role_id,
-          matches: matchingAssignments.length,
+          profileId:
+            accreditation.profile_id,
+          roleId:
+            accreditation.role_id,
+          matches:
+            matchingAssignments.length,
         },
       );
 
@@ -1949,54 +2081,72 @@ export const leaderService = {
     const assignment =
       matchingAssignments[0];
 
-    const shift = assignment.shift;
+    const shift =
+      assignment.shift;
 
     if (!shift) {
       return null;
     }
 
-    // ============================================================
-    // 8. GET EVENT TITLE
-    // ============================================================
+    // ----------------------------------------------------------
+    // 7. Event
+    // ----------------------------------------------------------
 
-    const { data: event } = await supabase
+    const {
+      data: event,
+    } = await supabase
       .from("events")
-      .select("id, title")
-      .eq("id", accreditation.event_id)
+      .select(`
+        id,
+        title
+      `)
+      .eq(
+        "id",
+        accreditation.event_id,
+      )
       .maybeSingle();
 
-    // ============================================================
-    // 9. GET CURRENT ATTENDANCE FOR THIS EXACT SHIFT
-    // ============================================================
+    // ----------------------------------------------------------
+    // 8. Attendance
+    // ----------------------------------------------------------
 
-    const { data: attendance, error: attendanceError } =
-      await supabase
-        .from("attendance_records")
-        .select(`
-          status,
-          check_in_time,
-          check_out_time,
-          updated_at
-        `)
-        .eq("profile_id", accreditation.profile_id)
-        .eq("shift_id", assignment.shift_id)
-        .maybeSingle();
+    const {
+      data: attendance,
+      error: attendanceError,
+    } = await supabase
+      .from("attendance_records")
+      .select(`
+        status,
+        check_in_time,
+        check_out_time,
+        updated_at
+      `)
+      .eq(
+        "profile_id",
+        accreditation.profile_id,
+      )
+      .eq(
+        "shift_id",
+        assignment.shift_id,
+      )
+      .maybeSingle();
 
     if (attendanceError) {
       console.error(
-        "Failed to load attendance:",
+        "Attendance lookup error:",
         attendanceError,
       );
 
       return null;
     }
 
-    // ============================================================
-    // 10. RETURN EXACT VOLUNTEER ASSIGNMENT
-    // ============================================================
+    // ----------------------------------------------------------
+    // 9. Return verified volunteer
+    // ----------------------------------------------------------
 
     return {
-      id: accreditation.profile_id,
+      id:
+        accreditation.profile_id,
 
       firstName:
         profile.first_name ??
@@ -2034,7 +2184,7 @@ export const leaderService = {
         "Assigned shift",
 
       accreditationQrCode:
-        qrCode,
+        normalizedQrCode,
 
       attendanceStatus:
         normalizeAttendanceStatus(
