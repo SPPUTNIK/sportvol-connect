@@ -332,23 +332,36 @@ function LeaderScannerPage() {
                 },
               );
 
+              console.log(
+                "[QR] Calling getVolunteerByQrCode with:",
+                qrData,
+              );
+
               const volunteer =
                 await leaderService.getVolunteerByQrCode(
                   qrData,
                 );
 
-              toast.dismiss(
-                "qr-lookup",
+              console.log(
+                "[QR] getVolunteerByQrCode returned:",
+                volunteer,
               );
+
+              toast.dismiss("qr-lookup");
 
               if (!volunteer) {
                 console.warn(
-                  "[QR] Detected but not authorized:",
-                  qrData,
+                  "[QR] Volunteer lookup returned NULL.",
+                  {
+                    qrData,
+                  },
                 );
 
-                scanHandledRef.current =
-                  false;
+                scanHandledRef.current = false;
+
+                setScanMessage(
+                  "QR detected, but volunteer was not authorized.",
+                );
 
                 toast.error(
                   "QR detected, but this volunteer is not assigned to your committee, role, and shift.",
