@@ -541,38 +541,56 @@ function LeaderScannerPage() {
                 qrData,
               );
 
-              const volunteer =
+              const result =
                 await leaderService.getVolunteerByQrCode(
                   qrData,
                 );
 
-              console.log(
-                "[QR] getVolunteerByQrCode returned:",
-                volunteer,
-              );
-
               toast.dismiss("qr-lookup");
 
-              if (!volunteer) {
+              if (!result.ok) {
                 console.warn(
-                  "[QR] Volunteer lookup returned NULL.",
-                  {
-                    qrData,
-                  },
+                  "[QR] Rejected:",
+                  result.reason,
                 );
 
-                // scanHandledRef.current = false;
-
                 setScanMessage(
-                  "QR detected, but volunteer was not authorized.",
+                  `QR rejected: ${result.reason}`,
                 );
 
                 toast.error(
-                  "QR detected, but this volunteer is not assigned to your committee, role, and shift.",
+                  `QR rejected: ${result.reason}`,
+                  {
+                    duration: 8000,
+                  },
                 );
 
+                // IMPORTANT:
+                // Do not reset scanHandledRef here.
+                // This prevents the same QR from being
+                // processed repeatedly by the camera.
                 return;
               }
+
+              const volunteer =
+                result.volunteer;
+
+              console.log(
+                "[QR] VOLUNTEER VERIFIED:",
+                volunteer,
+              );
+
+              setScanMessage(
+                "Volunteer verified.",
+              );
+
+              setSelectedVolunteer(
+                volunteer,
+              );
+
+              toast.success(
+                "Accreditation verified.",
+              );
 
               console.log(
                 "[QR] VOLUNTEER VERIFIED:",

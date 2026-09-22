@@ -1686,63 +1686,154 @@ export const leaderService = {
   // QR CODE
   // ============================================================
 
+  type VolunteerQrLookupResult =
+  | {
+      ok: true;
+      volunteer: LeaderScannerVolunteer;
+    }
+  | {
+      ok: false;
+      reason: string;
+    };
+
   async getVolunteerByQrCode(
     qrCode: string,
-  ): Promise<LeaderScannerVolunteer | null> {
-    console.log("[QR LOOKUP] START:", qrCode);
+  ): Promise<VolunteerQrLookupResult> {
+    const committees =
+      await this.getLeaderCommittees();
 
-    const normalizedQrCode = qrCode.trim();
+    if (!committees.length) {
+      console.warn(
+        "QR lookup: leader has no committees",
+      );
 
-    console.log("[QR LOOKUP] normalized:", normalizedQrCode);
+      return {
+        ok: false,
+        reason: "LEADER_HAS_NO_COMMITTEES",
+      };
+    }
 
-    const { data: accreditation, error: accreditationError } =
-      await supabase
+    const eventIds = [
+      ...new Set(
+        committees
+          .map((committee) => committee.eventId)
+          .filter(Boolean),
+      ),
+    ];
+
+    const normalizedQrCode =
+      qrCode.trim();
+
+    console.log(
+      "QR lookup:",
+      normalizedQrCode,
+    );
+
+    // ----------------------------------------------------------
+    // 1. Find accreditation
+    // ----------------------------------------------------------
+
+    let accreditation: any = null;
+
+    const {
+      data: qrData,
+      error: qrError,
+    } = await supabase
+      .from("accreditations")
+      .select(`
+        id,
+        profile_id,
+        event_id,
+        role_id,
+        volunteer_identifier,
+        qr_code_data,
+        profile:profiles(
+          id,
+          first_name,
+          last_name,
+          avatar_url
+        )
+      `)
+      .in("event_id", eventIds)
+      .eq(
+        "qr_code_data",
+        normalizedQrCode,
+      )
+      .maybeSingle();
+
+    if (qrError) {
+      console.error(
+        "QR lookup qr_code_data error:",
+        qrError,
+      );
+    }
+
+    accreditation = qrData;
+
+    // Fallback: volunteer_identifier
+    if (!accreditation) {
+      const {
+        data: identifierData,
+        error: identifierError,
+      } = await supabase
         .from("accreditations")
         .select(`
           id,
           profile_id,
           event_id,
           role_id,
+          volunteer_identifier,
           qr_code_data,
-          volunteer_identifier
+          profile:profiles(
+            id,
+            first_name,
+            last_name,
+            avatar_url
+          )
         `)
-        .or(
-          `qr_code_data.eq.${normalizedQrCode},volunteer_identifier.eq.${normalizedQrCode}`,
+        .in("event_id", eventIds)
+        .eq(
+          "volunteer_identifier",
+          normalizedQrCode,
         )
         .maybeSingle();
 
-    console.log("[QR LOOKUP] accreditation:", accreditation);
-    console.log(
-      "[QR LOOKUP] accreditation error:",
-      accreditationError,
-    );
+      if (identifierError) {
+        console.error(
+          "QR lookup volunteer_identifier error:",
+          identifierError,
+        );
+      }
 
-    if (accreditationError) {
-      console.error(
-        "[QR LOOKUP] Accreditation query failed:",
-        accreditationError,
-      );
-
-      return null;
+      accreditation =
+        identifierData;
     }
 
     if (!accreditation) {
       console.warn(
-        "[QR LOOKUP] NO ACCREDITATION FOUND FOR:",
+        "No accreditation found for QR:",
         normalizedQrCode,
       );
 
-      return null;
+      return {
+        ok: false,
+        reason: "NO_ACCREDITATION",
+      };
     }
 
-    console.log("[QR LOOKUP] ACCREDITATION FOUND:", {
-      id: accreditation.id,
-      profile_id: accreditation.profile_id,
-      event_id: accreditation.event_id,
-      role_id: accreditation.role_id,
-      qr_code_data: accreditation.qr_code_data,
-    });
-
+    console.log(
+      "Accreditation found:",
+      {
+        id: accreditation.id,
+        profileId: accreditation.profile_id,
+        eventId: accreditation.event_id,
+        roleId: accreditation.role_id,
+        volunteerIdentifier:
+          accreditation.volunteer_identifier,
+        qrCodeData:
+          accreditation.qr_code_data,
+      },
+    );
 
     // ----------------------------------------------------------
     // 2. Find leader committee for this event
@@ -1760,7 +1851,11 @@ export const leaderService = {
         "QR volunteer belongs to an event outside leader committees.",
       );
 
-      return null;
+      return {
+        ok: false,
+        reason:
+          "EVENT_NOT_IN_LEADER_COMMITTEES",
+      };
     }
 
     const profile =
@@ -1771,7 +1866,10 @@ export const leaderService = {
         "Accreditation profile not found.",
       );
 
-      return null;
+      return {
+        ok: false,
+        reason: "PROFILE_NOT_FOUND",
+      };
     }
 
     // ----------------------------------------------------------
@@ -1804,7 +1902,10 @@ export const leaderService = {
           "profile_id",
           accreditation.profile_id,
         )
-        .eq("status", "assigned")
+        .eq(
+          "status",
+          "assigned",
+        )
         .maybeSingle();
 
       if (membershipError) {
@@ -1819,6 +1920,7 @@ export const leaderService = {
       if (membership) {
         matchedCommittee =
           committee;
+
         matchedMembership =
           membership;
 
@@ -1834,7 +1936,11 @@ export const leaderService = {
         "Volunteer is not assigned to leader committee.",
       );
 
-      return null;
+      return {
+        ok: false,
+        reason:
+          "NOT_ASSIGNED_TO_LEADER_COMMITTEE",
+      };
     }
 
     // ----------------------------------------------------------
@@ -1855,7 +1961,10 @@ export const leaderService = {
         },
       );
 
-      return null;
+      return {
+        ok: false,
+        reason: "ROLE_MISMATCH",
+      };
     }
 
     // ----------------------------------------------------------
@@ -1895,7 +2004,11 @@ export const leaderService = {
         committeeShiftsError,
       );
 
-      return null;
+      return {
+        ok: false,
+        reason:
+          "COMMITTEE_SHIFTS_QUERY_ERROR",
+      };
     }
 
     const shiftIds =
@@ -1911,7 +2024,11 @@ export const leaderService = {
         "Leader committee has no shifts.",
       );
 
-      return null;
+      return {
+        ok: false,
+        reason:
+          "LEADER_COMMITTEE_HAS_NO_SHIFTS",
+      };
     }
 
     // ----------------------------------------------------------
@@ -1969,7 +2086,11 @@ export const leaderService = {
         assignmentError,
       );
 
-      return null;
+      return {
+        ok: false,
+        reason:
+          "SHIFT_ASSIGNMENT_QUERY_ERROR",
+      };
     }
 
     const matchingAssignments =
@@ -1982,7 +2103,7 @@ export const leaderService = {
             accreditation.role_id,
       );
 
-    // We need exactly one shift.
+    // We need exactly one exact shift.
     if (
       matchingAssignments.length !==
       1
@@ -1999,7 +2120,13 @@ export const leaderService = {
         },
       );
 
-      return null;
+      return {
+        ok: false,
+        reason:
+          matchingAssignments.length === 0
+            ? "NO_EXACT_SHIFT_ASSIGNMENT"
+            : "MULTIPLE_EXACT_SHIFT_ASSIGNMENTS",
+      };
     }
 
     const assignment =
@@ -2009,7 +2136,10 @@ export const leaderService = {
       assignment.shift;
 
     if (!shift) {
-      return null;
+      return {
+        ok: false,
+        reason: "SHIFT_NOT_FOUND",
+      };
     }
 
     // ----------------------------------------------------------
@@ -2061,7 +2191,11 @@ export const leaderService = {
         attendanceError,
       );
 
-      return null;
+      return {
+        ok: false,
+        reason:
+          "ATTENDANCE_QUERY_ERROR",
+      };
     }
 
     // ----------------------------------------------------------
@@ -2069,63 +2203,67 @@ export const leaderService = {
     // ----------------------------------------------------------
 
     return {
-      id:
-        accreditation.profile_id,
+      ok: true,
 
-      firstName:
-        profile.first_name ??
-        "Volunteer",
+      volunteer: {
+        id:
+          accreditation.profile_id,
 
-      lastName:
-        profile.last_name ??
-        "",
+        firstName:
+          profile.first_name ??
+          "Volunteer",
 
-      role:
-        shift.role?.name ??
-        "Volunteer",
+        lastName:
+          profile.last_name ??
+          "",
 
-      roleId:
-        accreditation.role_id,
+        role:
+          shift.role?.name ??
+          "Volunteer",
 
-      committeeId:
-        matchedCommittee.id,
+        roleId:
+          accreditation.role_id,
 
-      committeeName:
-        matchedCommittee.name,
+        committeeId:
+          matchedCommittee.id,
 
-      eventId:
-        accreditation.event_id,
+        committeeName:
+          matchedCommittee.name,
 
-      eventTitle:
-        event?.title ??
-        undefined,
+        eventId:
+          accreditation.event_id,
 
-      shiftId:
-        assignment.shift_id,
+        eventTitle:
+          event?.title ??
+          undefined,
 
-      shiftTitle:
-        shift.title ??
-        "Assigned shift",
+        shiftId:
+          assignment.shift_id,
 
-      accreditationQrCode:
-        normalizedQrCode,
+        shiftTitle:
+          shift.title ??
+          "Assigned shift",
 
-      attendanceStatus:
-        normalizeAttendanceStatus(
-          attendance?.status,
-        ),
+        accreditationQrCode:
+          normalizedQrCode,
 
-      avatar:
-        profile.avatar_url ??
-        null,
+        attendanceStatus:
+          normalizeAttendanceStatus(
+            attendance?.status,
+          ),
 
-      checkInTime:
-        attendance?.check_in_time ??
-        undefined,
+        avatar:
+          profile.avatar_url ??
+          null,
 
-      checkOutTime:
-        attendance?.check_out_time ??
-        undefined,
+        checkInTime:
+          attendance?.check_in_time ??
+          undefined,
+
+        checkOutTime:
+          attendance?.check_out_time ??
+          undefined,
+      },
     };
   },
 
