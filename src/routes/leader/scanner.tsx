@@ -20,7 +20,7 @@ import {
   VSSectionHeader,
   VSStatusBadge,
 } from "@/components/design-system";
-import { type LeaderScannerVolunteer } from "@/mocks/leaderDemo";
+import { type LeaderScannerVolunteer } from "@/services/leader/leaderService";
 import { leaderService } from "@/services/leader/leaderService";
 
 const formatDisplayStatus = (
@@ -47,6 +47,210 @@ export const Route = createFileRoute("/leader/scanner")({
     meta: [{ title: "QR Scanner | SportVol Connect" }],
   }),
 });
+
+function VolunteerAttendanceModal({
+  volunteer,
+  currentStatus,
+  canCheckIn,
+  canCheckOut,
+  isCheckedOut,
+  processingAction,
+  onCheckIn,
+  onCheckOut,
+  onClose,
+}: {
+  volunteer: LeaderScannerVolunteer;
+  currentStatus:
+    | "not_checked_in"
+    | "checked_in"
+    | "checked_out";
+  canCheckIn: boolean;
+  canCheckOut: boolean;
+  isCheckedOut: boolean;
+  processingAction:
+    | "check-in"
+    | "check-out"
+    | null;
+  onCheckIn: () => void;
+  onCheckOut: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[2rem] border border-border bg-card p-6 shadow-2xl sm:p-8">
+
+        {/* Close */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          aria-label="Close"
+        >
+          ×
+        </button>
+
+        {/* Header */}
+        <div className="pr-10">
+          <div className="flex items-center gap-2 text-sm font-medium text-emerald-600">
+            <CheckCircle2 className="h-5 w-5" />
+            Accreditation verified
+          </div>
+
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+            Volunteer details
+          </h2>
+        </div>
+
+        {/* Volunteer */}
+        <div className="mt-6 rounded-2xl border border-border bg-background p-5">
+          <div className="flex items-center gap-4">
+            <VSAvatar
+              name={`${volunteer.firstName} ${volunteer.lastName}`}
+              src={volunteer.avatar}
+              size="lg"
+            />
+
+            <div className="min-w-0 flex-1">
+              <h3 className="text-xl font-semibold text-foreground">
+                {volunteer.firstName}{" "}
+                {volunteer.lastName}
+              </h3>
+
+              <p className="mt-1 text-sm text-muted-foreground">
+                {volunteer.role}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Assignment details */}
+        <div className="mt-4 space-y-3">
+
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted/20 p-4">
+            <span className="text-sm text-muted-foreground">
+              Committee
+            </span>
+
+            <span className="text-right text-sm font-semibold text-foreground">
+              {volunteer.committeeName ??
+                "Assigned committee"}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted/20 p-4">
+            <span className="text-sm text-muted-foreground">
+              Role
+            </span>
+
+            <span className="text-right text-sm font-semibold text-foreground">
+              {volunteer.role}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted/20 p-4">
+            <span className="text-sm text-muted-foreground">
+              Event
+            </span>
+
+            <span className="text-right text-sm font-semibold text-foreground">
+              {volunteer.eventTitle ??
+                "Assigned event"}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted/20 p-4">
+            <span className="text-sm text-muted-foreground">
+              Shift
+            </span>
+
+            <span className="text-right text-sm font-semibold text-foreground">
+              {volunteer.shiftTitle ??
+                "Assigned shift"}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted/20 p-4">
+            <span className="text-sm text-muted-foreground">
+              Attendance
+            </span>
+
+            <VSStatusBadge
+              status={formatDisplayStatus(
+                currentStatus,
+              )}
+            />
+          </div>
+        </div>
+
+        {/* Attendance actions */}
+        <div className="mt-6">
+
+          {isCheckedOut ? (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="mt-0.5 h-5 w-5" />
+
+                <div>
+                  <p className="font-semibold">
+                    Checked out
+                  </p>
+
+                  <p className="mt-1 text-sm leading-6">
+                    This volunteer has already been
+                    checked out for this shift.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+
+              <VSButton
+                className="h-12 w-full"
+                onClick={onCheckIn}
+                disabled={
+                  processingAction !== null ||
+                  !canCheckIn
+                }
+              >
+                {processingAction === "check-in"
+                  ? "Checking in..."
+                  : "Check in"}
+              </VSButton>
+
+              <VSButton
+                variant="outline"
+                className="h-12 w-full"
+                onClick={onCheckOut}
+                disabled={
+                  processingAction !== null ||
+                  !canCheckOut
+                }
+              >
+                {processingAction === "check-out"
+                  ? "Checking out..."
+                  : "Check out"}
+              </VSButton>
+
+            </div>
+          )}
+        </div>
+
+        {/* Close */}
+        <div className="mt-4">
+          <VSButton
+            variant="outline"
+            className="h-11 w-full"
+            onClick={onClose}
+            disabled={processingAction !== null}
+          >
+            Close
+          </VSButton>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function LeaderScannerPage() {
   const [isScanning, setIsScanning] = useState(false);
@@ -700,9 +904,7 @@ function LeaderScannerPage() {
                     </div>
 
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/70 px-4 py-2 text-xs font-medium text-white backdrop-blur">
-                      {scanHandledRef.current
-                        ? "QR detected — checking..." 
-                        : "Point the camera at the QR code"}
+                      {scanMessage}
                     </div>
                   </>
                 )}
@@ -755,156 +957,10 @@ function LeaderScannerPage() {
           </VSCardContent>
         </VSCard>
 
-        {/* ======================================================
-            VOLUNTEER RESULT
-        ====================================================== */}
-
-        <VSCard className="rounded-[2rem] border-border bg-card shadow-[var(--shadow-float)]">
-          <VSCardContent className="p-6 sm:p-8">
-            {selectedVolunteer ? (
-              <div className="space-y-5">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2
-                      className="h-5 w-5 text-emerald-600"
-                      aria-hidden="true"
-                    />
-
-                    <p className="text-base font-semibold text-foreground">
-                      Volunteer found
-                    </p>
-                  </div>
-
-                  <VSStatusBadge
-                    status={formatDisplayStatus(
-                      currentStatus,
-                    )}
-                  />
-                </div>
-
-                <div className="rounded-2xl border border-border bg-background p-4">
-                  <div className="flex items-start gap-4">
-                    <VSAvatar
-                      name={`${selectedVolunteer.firstName} ${selectedVolunteer.lastName}`}
-                      src={selectedVolunteer.avatar}
-                      size="lg"
-                    />
-
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xl font-semibold text-foreground">
-                        {selectedVolunteer.firstName}{" "}
-                        {selectedVolunteer.lastName}
-                      </p>
-
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {selectedVolunteer.role}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-5 space-y-3 text-sm">
-                    <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/20 p-3">
-                      <span className="text-muted-foreground">
-                        Committee
-                      </span>
-
-                      <span className="text-right font-medium text-foreground">
-                        {selectedVolunteer.committeeName ??
-                          "Assigned committee"}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/20 p-3">
-                      <span className="text-muted-foreground">
-                        Event
-                      </span>
-
-                      <span className="text-right font-medium text-foreground">
-                        {selectedVolunteer.eventTitle ??
-                          "Assigned event"}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/20 p-3">
-                      <span className="text-muted-foreground">
-                        Attendance
-                      </span>
-
-                      <span className="font-medium text-foreground">
-                        {formatDisplayStatus(
-                          currentStatus,
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {isCheckedOut ? (
-                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
-                    <div className="flex items-start gap-3">
-                      <CheckCircle2
-                        className="mt-0.5 h-5 w-5"
-                        aria-hidden="true"
-                      />
-
-                      <div>
-                        <p className="font-semibold">
-                          Checked out
-                        </p>
-
-                        <p className="mt-1 text-sm leading-6">
-                          Attendance has already been
-                          checked out for this volunteer.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <VSButton
-                    className="h-11 w-full"
-                    onClick={() => {
-                      if (canCheckOut) {
-                        void handleAttendanceAction(
-                          "check-out",
-                        );
-                        return;
-                      }
-
-                      if (canCheckIn) {
-                        void handleAttendanceAction(
-                          "check-in",
-                        );
-                      }
-                    }}
-                    disabled={
-                      processingAction !== null ||
-                      (!canCheckIn && !canCheckOut)
-                    }
-                  >
-                    {processingAction === "check-in"
-                      ? "Checking in..."
-                      : processingAction === "check-out"
-                        ? "Checking out..."
-                        : canCheckOut
-                          ? "Check out"
-                          : "Check in"}
-                  </VSButton>
-                )}
-              </div>
-            ) : (
-              <div className="flex min-h-[240px] items-center justify-center rounded-2xl border border-dashed border-border bg-muted/20 p-6 text-center text-sm text-muted-foreground">
-                {loading
-                  ? "Loading scanner..."
-                  : "No volunteer scanned yet."}
-              </div>
-            )}
-          </VSCardContent>
-        </VSCard>
+        
       </div>
 
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/70 px-4 py-2 text-xs font-medium text-white backdrop-blur">
-        {scanMessage}
-      </div>
+
 
       {/* ========================================================
           RECENT SCANS
@@ -964,6 +1020,33 @@ function LeaderScannerPage() {
           </VSCard>
         )}
       </div>
+
+      {selectedVolunteer && (
+        <VolunteerAttendanceModal
+          volunteer={selectedVolunteer}
+          currentStatus={currentStatus}
+          canCheckIn={canCheckIn}
+          canCheckOut={canCheckOut}
+          isCheckedOut={isCheckedOut}
+          processingAction={processingAction}
+          onCheckIn={() => {
+            void handleAttendanceAction("check-in");
+          }}
+          onCheckOut={() => {
+            void handleAttendanceAction("check-out");
+          }}
+          onClose={() => {
+            if (processingAction !== null) {
+              return;
+            }
+
+            setSelectedVolunteer(null);
+            setScanMessage(
+              "Point the camera at the QR code",
+            );
+          }}
+        />
+      )}
     </div>
   );
 }
