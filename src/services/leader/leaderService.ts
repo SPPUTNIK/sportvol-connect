@@ -1689,136 +1689,60 @@ export const leaderService = {
   async getVolunteerByQrCode(
     qrCode: string,
   ): Promise<LeaderScannerVolunteer | null> {
-    const committees =
-      await this.getLeaderCommittees();
+    console.log("[QR LOOKUP] START:", qrCode);
 
-    if (!committees.length) {
-      console.warn(
-        "QR lookup: leader has no committees",
-      );
+    const normalizedQrCode = qrCode.trim();
 
-      return null;
-    }
+    console.log("[QR LOOKUP] normalized:", normalizedQrCode);
 
-    const eventIds = [
-      ...new Set(
-        committees
-          .map((committee) => committee.eventId)
-          .filter(Boolean),
-      ),
-    ];
-
-    const normalizedQrCode =
-      qrCode.trim();
-
-    console.log(
-      "QR lookup:",
-      normalizedQrCode,
-    );
-
-    // ----------------------------------------------------------
-    // 1. Find accreditation
-    //    Accept both qr_code_data and volunteer_identifier.
-    // ----------------------------------------------------------
-
-    let accreditation: any = null;
-
-    const {
-      data: qrData,
-      error: qrError,
-    } = await supabase
-      .from("accreditations")
-      .select(`
-        id,
-        profile_id,
-        event_id,
-        role_id,
-        volunteer_identifier,
-        qr_code_data,
-        profile:profiles(
-          id,
-          first_name,
-          last_name,
-          avatar_url
-        )
-      `)
-      .in("event_id", eventIds)
-      .eq(
-        "qr_code_data",
-        normalizedQrCode,
-      )
-      .maybeSingle();
-
-    if (qrError) {
-      console.error(
-        "QR lookup qr_code_data error:",
-        qrError,
-      );
-    }
-
-    accreditation = qrData;
-
-    // Fallback: volunteer_identifier
-    if (!accreditation) {
-      const {
-        data: identifierData,
-        error: identifierError,
-      } = await supabase
+    const { data: accreditation, error: accreditationError } =
+      await supabase
         .from("accreditations")
         .select(`
           id,
           profile_id,
           event_id,
           role_id,
-          volunteer_identifier,
           qr_code_data,
-          profile:profiles(
-            id,
-            first_name,
-            last_name,
-            avatar_url
-          )
+          volunteer_identifier
         `)
-        .in("event_id", eventIds)
-        .eq(
-          "volunteer_identifier",
-          normalizedQrCode,
+        .or(
+          `qr_code_data.eq.${normalizedQrCode},volunteer_identifier.eq.${normalizedQrCode}`,
         )
         .maybeSingle();
 
-      if (identifierError) {
-        console.error(
-          "QR lookup volunteer_identifier error:",
-          identifierError,
-        );
-      }
+    console.log("[QR LOOKUP] accreditation:", accreditation);
+    console.log(
+      "[QR LOOKUP] accreditation error:",
+      accreditationError,
+    );
 
-      accreditation =
-        identifierData;
+    if (accreditationError) {
+      console.error(
+        "[QR LOOKUP] Accreditation query failed:",
+        accreditationError,
+      );
+
+      return null;
     }
 
     if (!accreditation) {
       console.warn(
-        "No accreditation found for QR:",
+        "[QR LOOKUP] NO ACCREDITATION FOUND FOR:",
         normalizedQrCode,
       );
 
       return null;
     }
 
-    console.log(
-      "Accreditation found:",
-      {
-        id: accreditation.id,
-        profileId: accreditation.profile_id,
-        eventId: accreditation.event_id,
-        roleId: accreditation.role_id,
-        volunteerIdentifier:
-          accreditation.volunteer_identifier,
-        qrCodeData:
-          accreditation.qr_code_data,
-      },
-    );
+    console.log("[QR LOOKUP] ACCREDITATION FOUND:", {
+      id: accreditation.id,
+      profile_id: accreditation.profile_id,
+      event_id: accreditation.event_id,
+      role_id: accreditation.role_id,
+      qr_code_data: accreditation.qr_code_data,
+    });
+
 
     // ----------------------------------------------------------
     // 2. Find leader committee for this event

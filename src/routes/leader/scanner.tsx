@@ -561,7 +561,7 @@ function LeaderScannerPage() {
                   },
                 );
 
-                scanHandledRef.current = false;
+                // scanHandledRef.current = false;
 
                 setScanMessage(
                   "QR detected, but volunteer was not authorized.",
