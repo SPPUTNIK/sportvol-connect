@@ -107,6 +107,16 @@ export type LeaderScanRecord = {
   timestamp: string;
 };
 
+type VolunteerQrLookupResult =
+  | {
+      ok: true;
+      volunteer: LeaderScannerVolunteer;
+    }
+  | {
+      ok: false;
+      reason: string;
+    };
+
 async function getCurrentUserId(): Promise<string | null> {
   const { data, error } =
     await supabase.auth.getUser();
@@ -1685,16 +1695,6 @@ export const leaderService = {
   // ============================================================
   // QR CODE
   // ============================================================
-
-  type VolunteerQrLookupResult =
-  | {
-      ok: true;
-      volunteer: LeaderScannerVolunteer;
-    }
-  | {
-      ok: false;
-      reason: string;
-    };
 
   async getVolunteerByQrCode(
     qrCode: string,
