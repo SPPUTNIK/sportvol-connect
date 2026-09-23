@@ -1736,39 +1736,49 @@ export const leaderService = {
     let accreditation: any = null;
 
     const {
-      data: qrData,
-      error: qrError,
-    } = await supabase
-      .from("accreditations")
-      .select(`
-        id,
-        profile_id,
-        event_id,
-        role_id,
-        volunteer_identifier,
-        qr_code_data,
-        profile:profiles(
-          id,
-          first_name,
-          last_name,
-          avatar_url
-        )
-      `)
-      .in("event_id", eventIds)
-      .eq(
-        "qr_code_data",
-        normalizedQrCode,
-      )
-      .maybeSingle();
+  data: qrData,
+  error: qrError,
+} = await supabase
+  .from("accreditations")
+  .select(`
+    id,
+    profile_id,
+    event_id,
+    role_id,
+    volunteer_identifier,
+    qr_code_data
+  `)
+  .eq("qr_code_data", normalizedQrCode);
 
-    if (qrError) {
-      console.error(
-        "QR lookup qr_code_data error:",
-        qrError,
-      );
-    }
+console.log("========== QR DEBUG ==========");
+console.log("QR:", normalizedQrCode);
+console.log("Leader event IDs:", eventIds);
+console.log("Accreditation data:", qrData);
+console.log("Accreditation error:", qrError);
+console.log("================================");
 
-    accreditation = qrData;
+if (qrError) {
+  return {
+    ok: false,
+    reason: `ACCREDITATION_QUERY_ERROR: ${qrError.message}`,
+  };
+}
+
+if (!qrData || qrData.length === 0) {
+  return {
+    ok: false,
+    reason: `NO_ACCREDITATION_FOR_QR: ${normalizedQrCode}`,
+  };
+}
+
+if (qrData.length > 1) {
+  return {
+    ok: false,
+    reason: `MULTIPLE_ACCREDITATIONS_FOR_QR: ${normalizedQrCode}`,
+  };
+}
+
+accreditation = qrData[0];
 
     // Fallback: volunteer_identifier
     if (!accreditation) {
@@ -1791,11 +1801,11 @@ export const leaderService = {
             avatar_url
           )
         `)
-        .in("event_id", eventIds)
-        .eq(
-          "volunteer_identifier",
-          normalizedQrCode,
-        )
+        // .in("event_id", eventIds)
+        // .eq(
+        //   "volunteer_identifier",
+        //   normalizedQrCode,
+        // )
         .maybeSingle();
 
       if (identifierError) {
