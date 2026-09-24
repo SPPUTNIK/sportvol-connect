@@ -773,36 +773,21 @@ function LeaderScannerPage() {
 
     setProcessingAction(action);
 
-    try {
-      setScanMessage("1/4 — Checking authentication...");
-
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
-
-      if (authError) {
-        throw new Error(
-          `Auth error: ${authError.message}`,
-        );
-      }
-
-      if (!user?.id) {
-        throw new Error(
-          "No authenticated user found. Please sign in again.",
-        );
-      }
-
-      toast.success(
-        `Authenticated: ${user.id}`,
-        { duration: 5000 },
+    const timeoutId = window.setTimeout(() => {
+      toast.error(
+        "Attendance update is taking more than 15 seconds. The request may be blocked by Supabase/RLS.",
+        {
+          duration: 15000,
+        },
       );
+    }, 15000);
 
-      setScanMessage("2/4 — Authentication OK. Updating attendance...");
-
+    try {
       toast.info(
-        "Calling updateAttendanceStatus...",
-        { duration: 5000 },
+        "Sending attendance update to Supabase...",
+        {
+          duration: 5000,
+        },
       );
 
       const nextVolunteer =
@@ -811,7 +796,7 @@ function LeaderScannerPage() {
           action,
         );
 
-      setScanMessage("3/4 — Attendance updated successfully.");
+      window.clearTimeout(timeoutId);
 
       setSelectedVolunteer(nextVolunteer);
 
@@ -825,17 +810,19 @@ function LeaderScannerPage() {
         [newScan, ...current].slice(0, 5),
       );
 
-      setScanMessage("4/4 — Done.");
-
       toast.success(
         `${nextVolunteer.firstName} ${
           nextVolunteer.lastName
         } checked ${
           action === "check-in" ? "in" : "out"
         } successfully.`,
-        { duration: 7000 },
+        {
+          duration: 7000,
+        },
       );
     } catch (error) {
+      window.clearTimeout(timeoutId);
+
       console.error(
         "[ATTENDANCE] Update failed:",
         error,
@@ -844,13 +831,14 @@ function LeaderScannerPage() {
       const message =
         error instanceof Error
           ? error.message
-          : "Failed to update attendance.";
+          : String(error);
 
-      setScanMessage(`ERROR — ${message}`);
-
-      toast.error(message, {
-        duration: 12000,
-      });
+      toast.error(
+        `Attendance failed: ${message}`,
+        {
+          duration: 15000,
+        },
+      );
     } finally {
       setProcessingAction(null);
     }

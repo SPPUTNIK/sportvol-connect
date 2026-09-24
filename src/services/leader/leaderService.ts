@@ -2486,6 +2486,10 @@ export const leaderService = {
     volunteer: LeaderScannerVolunteer,
     action: LeaderScanAction,
   ): Promise<LeaderScannerVolunteer> {
+
+    toast.info("ATTENDANCE: function started", {
+      duration: 5000,
+    });
     // IMPORTANT:
     // These are the actual database enum values.
     const nextStatus =
