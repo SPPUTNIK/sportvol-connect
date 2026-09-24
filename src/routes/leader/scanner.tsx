@@ -762,27 +762,47 @@ function LeaderScannerPage() {
   const handleAttendanceAction = async (
     action: "check-in" | "check-out",
   ) => {
-    if (!selectedVolunteer) return;
-    if (processingAction !== null) return;
+    if (!selectedVolunteer) {
+      toast.error("No volunteer selected.");
+      return;
+    }
+
+    if (processingAction !== null) {
+      return;
+    }
 
     setProcessingAction(action);
 
     try {
+      setScanMessage("1/4 — Checking authentication...");
+
       const {
         data: { user },
+        error: authError,
       } = await supabase.auth.getUser();
 
-      if (!user?.id) {
-        toast.error(
-          "No authenticated user found. Please sign in again.",
-          { duration: 10000 },
+      if (authError) {
+        throw new Error(
+          `Auth error: ${authError.message}`,
         );
-        return;
+      }
+
+      if (!user?.id) {
+        throw new Error(
+          "No authenticated user found. Please sign in again.",
+        );
       }
 
       toast.success(
-        `Authenticated user: ${user.id}`,
-        { duration: 10000 },
+        `Authenticated: ${user.id}`,
+        { duration: 5000 },
+      );
+
+      setScanMessage("2/4 — Authentication OK. Updating attendance...");
+
+      toast.info(
+        "Calling updateAttendanceStatus...",
+        { duration: 5000 },
       );
 
       const nextVolunteer =
@@ -790,6 +810,8 @@ function LeaderScannerPage() {
           selectedVolunteer,
           action,
         );
+
+      setScanMessage("3/4 — Attendance updated successfully.");
 
       setSelectedVolunteer(nextVolunteer);
 
@@ -803,12 +825,15 @@ function LeaderScannerPage() {
         [newScan, ...current].slice(0, 5),
       );
 
+      setScanMessage("4/4 — Done.");
+
       toast.success(
         `${nextVolunteer.firstName} ${
           nextVolunteer.lastName
         } checked ${
           action === "check-in" ? "in" : "out"
         } successfully.`,
+        { duration: 7000 },
       );
     } catch (error) {
       console.error(
@@ -821,8 +846,10 @@ function LeaderScannerPage() {
           ? error.message
           : "Failed to update attendance.";
 
+      setScanMessage(`ERROR — ${message}`);
+
       toast.error(message, {
-        duration: 10000,
+        duration: 12000,
       });
     } finally {
       setProcessingAction(null);
