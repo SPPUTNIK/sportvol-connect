@@ -2486,7 +2486,8 @@ export const leaderService = {
     volunteer: LeaderScannerVolunteer,
     action: LeaderScanAction,
   ): Promise<LeaderScannerVolunteer> {
-    const now = new Date().toISOString();
+    const now = new Date();
+    const timeNow = now.toTimeString().slice(0, 8);
 
     const nextStatus =
       action === "check-in"
@@ -2531,19 +2532,19 @@ export const leaderService = {
     if (existing) {
       const payload: Record<string, unknown> = {
         status: nextStatus,
-        updated_at: now,
+        updated_at: timeNow,
       };
 
       if (action === "check-in") {
         payload.check_in_time =
-          existing.check_in_time ?? now;
+          existing.check_in_time ?? timeNow;
 
         payload.check_out_time = null;
       } else {
-        payload.check_out_time = now;
+        payload.check_out_time = timeNow;
 
         payload.check_in_time =
-          existing.check_in_time ?? now;
+          existing.check_in_time ?? timeNow;
       }
 
       const {
@@ -2604,11 +2605,11 @@ export const leaderService = {
           status: nextStatus,
           check_in_time:
             action === "check-in"
-              ? now
+              ? timeNow
               : null,
           check_out_time:
             action === "check-out"
-              ? now
+              ? timeNow
               : null,
         });
 
@@ -2633,12 +2634,12 @@ export const leaderService = {
 
       checkInTime:
         action === "check-in"
-          ? now
+          ? timeNow
           : volunteer.checkInTime,
 
       checkOutTime:
         action === "check-out"
-          ? now
+          ? timeNow
           : volunteer.checkOutTime,
     };
   },
