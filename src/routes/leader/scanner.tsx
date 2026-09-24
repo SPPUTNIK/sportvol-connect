@@ -760,67 +760,85 @@ function LeaderScannerPage() {
   // ============================================================
 
   const handleAttendanceAction = async (
-    action: "check-in" | "check-out",
-  ) => {
-    if (!selectedVolunteer) {
-      return;
+  action: "check-in" | "check-out",
+) => {
+  if (!selectedVolunteer) {
+    setScanMessage("ERROR: No volunteer selected.");
+    return;
+  }
+
+  if (processingAction !== null) {
+    return;
+  }
+
+  setProcessingAction(action);
+
+  try {
+    setScanMessage(
+      "1/4 — Starting attendance...",
+    );
+
+    if (!selectedVolunteer.shiftId) {
+      throw new Error(
+        "No shift ID found for this volunteer.",
+      );
     }
 
-    if (processingAction !== null) {
-      return;
-    }
+    setScanMessage(
+      `2/4 — Shift found: ${selectedVolunteer.shiftId}`,
+    );
 
-    setProcessingAction(action);
-
-    try {
-      const nextVolunteer =
-        await leaderService.updateAttendanceStatus(
-          selectedVolunteer,
-          action,
-        );
-
-      setSelectedVolunteer(nextVolunteer);
-
-      const newScan =
-        leaderService.createRecentScan(
-          nextVolunteer,
-          action,
-        );
-
-      setRecentScans((current) =>
-        [newScan, ...current].slice(0, 5),
+    const nextVolunteer =
+      await leaderService.updateAttendanceStatus(
+        selectedVolunteer,
+        action,
       );
 
-      toast.success(
-        `${nextVolunteer.firstName} ${
-          nextVolunteer.lastName
-        } ${
-          action === "check-in"
-            ? "checked in"
-            : "checked out"
-        } successfully.`,
-        {
-          duration: 5000,
-        },
-      );
-    } catch (error) {
-      console.error(
-        "[ATTENDANCE] Update failed:",
-        error,
+    setScanMessage(
+      "3/4 — Supabase attendance updated.",
+    );
+
+    setSelectedVolunteer(nextVolunteer);
+
+    const newScan =
+      leaderService.createRecentScan(
+        nextVolunteer,
+        action,
       );
 
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to update attendance.";
+    setRecentScans((current) =>
+      [newScan, ...current].slice(0, 5),
+    );
 
-      toast.error(message, {
-        duration: 10000,
-      });
-    } finally {
-      setProcessingAction(null);
-    }
-  };
+    setScanMessage(
+      "4/4 — Attendance completed successfully.",
+    );
+
+    toast.success(
+      action === "check-in"
+        ? "Check in successful."
+        : "Check out successful.",
+      {
+        duration: 6000,
+      },
+    );
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unknown attendance error.";
+
+    setScanMessage(
+      `ERROR: ${message}`,
+    );
+
+    toast.error(message, {
+      duration: 12000,
+    });
+  } finally {
+    setProcessingAction(null);
+  }
+};
 
   // ============================================================
   // DERIVED STATE
