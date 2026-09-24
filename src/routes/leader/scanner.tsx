@@ -20,6 +20,7 @@ import {
   VSSectionHeader,
   VSStatusBadge,
 } from "@/components/design-system";
+import { supabase } from "@/lib/supabase";
 import { type LeaderScannerVolunteer } from "@/services/leader/leaderService";
 import { leaderService } from "@/services/leader/leaderService";
 
