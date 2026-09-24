@@ -762,9 +762,13 @@ function LeaderScannerPage() {
   const handleAttendanceAction = async (
     action: "check-in" | "check-out",
   ) => {
-    if (!selectedVolunteer) return;
+    if (!selectedVolunteer) {
+      return;
+    }
 
-    if (processingAction !== null) return;
+    if (processingAction !== null) {
+      return;
+    }
 
     setProcessingAction(action);
 
@@ -775,10 +779,8 @@ function LeaderScannerPage() {
           action,
         );
 
-      // Update volunteer status in popup immediately
       setSelectedVolunteer(nextVolunteer);
 
-      // Add to recent scans
       const newScan =
         leaderService.createRecentScan(
           nextVolunteer,

@@ -2486,228 +2486,21 @@ export const leaderService = {
     volunteer: LeaderScannerVolunteer,
     action: LeaderScanAction,
   ): Promise<LeaderScannerVolunteer> {
+    const now = new Date().toISOString();
 
-    toast.info("ATTENDANCE: function started", {
-      duration: 5000,
-    });
-    // IMPORTANT:
-    // These are the actual database enum values.
     const nextStatus =
       action === "check-in"
         ? "checked-in"
         : "checked-out";
 
-    const now =
-      new Date().toISOString();
-
-    // ----------------------------------------------------------
-    // 1. Verify committee membership
-    // ----------------------------------------------------------
-
-    const {
-      data: membership,
-      error: membershipError,
-    } = await supabase
-      .from("committee_members")
-      .select(`
-        id,
-        event_role_id
-      `)
-      .eq(
-        "committee_id",
-        volunteer.committeeId,
-      )
-      .eq(
-        "profile_id",
-        volunteer.id,
-      )
-      .eq(
-        "status",
-        "assigned",
-      )
-      .maybeSingle();
-
-    if (membershipError) {
+    if (!volunteer.shiftId) {
       throw new Error(
-        membershipError.message,
-      );
-    }
-
-    if (!membership) {
-      throw new Error(
-        "This volunteer is not assigned to your committee.",
+        "No assigned shift was found for this volunteer.",
       );
     }
 
     // ----------------------------------------------------------
-    // 2. Get committee shifts
-    // ----------------------------------------------------------
-
-    const {
-      data: committeeShifts,
-      error: shiftsError,
-    } = await supabase
-      .from("committee_shifts")
-      .select(`
-        shift_id,
-        shift:event_shifts(
-          id,
-          event_id,
-          role_id,
-          date,
-          start_time,
-          end_time
-        )
-      `)
-      .eq(
-        "committee_id",
-        volunteer.committeeId,
-      );
-
-    if (shiftsError) {
-      throw new Error(
-        shiftsError.message,
-      );
-    }
-
-    const shiftRows =
-      (committeeShifts ??
-        []) as any[];
-
-    const shiftIds =
-      shiftRows
-        .map(
-          (row) =>
-            row.shift_id,
-        )
-        .filter(Boolean);
-
-    if (!shiftIds.length) {
-      throw new Error(
-        "No shifts are assigned to this committee.",
-      );
-    }
-
-    // ----------------------------------------------------------
-    // 3. Find the volunteer's EXACT assigned shift.
-    // ----------------------------------------------------------
-
-    const {
-      data: assignments,
-      error: assignmentError,
-    } = await supabase
-      .from("shift_assignments")
-      .select(`
-        id,
-        shift_id,
-        status,
-        assigned_at,
-        shift:event_shifts(
-          id,
-          event_id,
-          role_id,
-          title,
-          date,
-          start_time,
-          end_time,
-          role:event_roles(
-            id,
-            name
-          )
-        )
-      `)
-      .eq(
-        "profile_id",
-        volunteer.id,
-      )
-      .in(
-        "shift_id",
-        shiftIds,
-      )
-      .eq(
-        "status",
-        "assigned",
-      )
-      .order("assigned_at", {
-        ascending: true,
-      });
-
-    if (assignmentError) {
-      throw new Error(
-        assignmentError.message,
-      );
-    }
-
-    const matchingAssignments =
-      (assignments ?? []).filter(
-        (item: any) =>
-          item.shift &&
-          item.shift.event_id ===
-            volunteer.eventId &&
-          (
-            !volunteer.roleId ||
-            item.shift.role_id ===
-              volunteer.roleId
-          ) &&
-          (
-            !volunteer.shiftId ||
-            item.shift_id ===
-              volunteer.shiftId
-          ),
-      );
-
-    if (matchingAssignments.length !== 1) {
-      throw new Error(
-        "This volunteer does not have one exact assigned role and shift in your committee.",
-      );
-    }
-
-    const assignment =
-      matchingAssignments[0];
-
-    const shift =
-      assignment.shift;
-
-    if (!shift) {
-      throw new Error(
-        "The assigned shift could not be found.",
-      );
-    }
-
-    // Extra safety: event must match.
-    if (
-      shift.event_id !==
-      volunteer.eventId
-    ) {
-      throw new Error(
-        "This volunteer belongs to a different event.",
-      );
-    }
-
-    // Extra safety: role must match.
-    if (
-      volunteer.roleId &&
-      shift.role_id !==
-        volunteer.roleId
-    ) {
-      throw new Error(
-        "This volunteer is assigned to a different role.",
-      );
-    }
-
-    // Extra safety: shift must match.
-    if (
-      volunteer.shiftId &&
-      assignment.shift_id !==
-        volunteer.shiftId
-    ) {
-      throw new Error(
-        "This volunteer is assigned to a different shift.",
-      );
-    }
-
-    // ----------------------------------------------------------
-    // 4. Existing attendance for exact shift
+    // 1. Get existing attendance for this EXACT volunteer + shift
     // ----------------------------------------------------------
 
     const {
@@ -2721,127 +2514,114 @@ export const leaderService = {
         check_out_time,
         status
       `)
-      .eq(
-        "profile_id",
-        volunteer.id,
-      )
-      .eq(
-        "shift_id",
-        assignment.shift_id,
-      )
+      .eq("profile_id", volunteer.id)
+      .eq("shift_id", volunteer.shiftId)
       .maybeSingle();
 
     if (existingError) {
       throw new Error(
-        existingError.message,
+        `Attendance lookup failed: ${existingError.message}`,
       );
     }
 
     // ----------------------------------------------------------
-    // 5. Update existing attendance
+    // 2. Update existing record
     // ----------------------------------------------------------
 
     if (existing) {
-      const updatePayload: Record<
-        string,
-        unknown
-      > = {
-        status:
-          nextStatus,
-
-        updated_at:
-          now,
+      const payload: Record<string, unknown> = {
+        status: nextStatus,
+        updated_at: now,
       };
 
-      if (
-        action === "check-in"
-      ) {
-        updatePayload.check_in_time =
-          existing.check_in_time ??
-          now;
+      if (action === "check-in") {
+        payload.check_in_time =
+          existing.check_in_time ?? now;
 
-        updatePayload.check_out_time =
-          null;
+        payload.check_out_time = null;
       } else {
-        updatePayload.check_out_time =
-          now;
+        payload.check_out_time = now;
 
-        updatePayload.check_in_time =
-          existing.check_in_time ??
-          now;
+        payload.check_in_time =
+          existing.check_in_time ?? now;
       }
 
       const {
         error: updateError,
       } = await supabase
-        .from(
-          "attendance_records",
-        )
-        .update(
-          updatePayload,
-        )
-        .eq(
-          "id",
-          existing.id,
-        );
+        .from("attendance_records")
+        .update(payload)
+        .eq("id", existing.id);
 
       if (updateError) {
         throw new Error(
-          updateError.message,
+          `Attendance update failed: ${updateError.message}`,
         );
       }
-    } else {
-      // --------------------------------------------------------
-      // 6. Create attendance record
-      // --------------------------------------------------------
+    }
+
+    // ----------------------------------------------------------
+    // 3. Create attendance record if none exists
+    // ----------------------------------------------------------
+
+    else {
+      const {
+        data: shift,
+        error: shiftError,
+      } = await supabase
+        .from("event_shifts")
+        .select(`
+          id,
+          event_id,
+          role_id,
+          date
+        `)
+        .eq("id", volunteer.shiftId)
+        .maybeSingle();
+
+      if (shiftError) {
+        throw new Error(
+          `Shift lookup failed: ${shiftError.message}`,
+        );
+      }
+
+      if (!shift) {
+        throw new Error(
+          "Assigned shift could not be found.",
+        );
+      }
 
       const {
         error: insertError,
       } = await supabase
-        .from(
-          "attendance_records",
-        )
+        .from("attendance_records")
         .insert({
-          profile_id:
-            volunteer.id,
-
-          event_id:
-            shift.event_id,
-
-          role_id:
-            shift.role_id,
-
-          shift_id:
-            assignment.shift_id,
-
-          date:
-            shift.date ??
-            new Date()
-              .toISOString()
-              .slice(0, 10),
-
-          status:
-            nextStatus,
-
+          profile_id: volunteer.id,
+          event_id: shift.event_id,
+          role_id: shift.role_id,
+          shift_id: shift.id,
+          date: shift.date,
+          status: nextStatus,
           check_in_time:
-            action ===
-            "check-in"
+            action === "check-in"
               ? now
               : null,
-
           check_out_time:
-            action ===
-            "check-out"
+            action === "check-out"
               ? now
               : null,
         });
 
       if (insertError) {
         throw new Error(
-          insertError.message,
+          `Attendance insert failed: ${insertError.message}`,
         );
       }
     }
+
+    // ----------------------------------------------------------
+    // 4. Return updated volunteer
+    // ----------------------------------------------------------
 
     return {
       ...volunteer,
