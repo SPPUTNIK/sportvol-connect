@@ -762,44 +762,23 @@ function LeaderScannerPage() {
   const handleAttendanceAction = async (
     action: "check-in" | "check-out",
   ) => {
-    if (!selectedVolunteer) {
-      toast.error("No volunteer selected.");
-      return;
-    }
+    if (!selectedVolunteer) return;
 
-    if (processingAction !== null) {
-      return;
-    }
+    if (processingAction !== null) return;
 
     setProcessingAction(action);
 
-    const timeoutId = window.setTimeout(() => {
-      toast.error(
-        "Attendance update is taking more than 15 seconds. The request may be blocked by Supabase/RLS.",
-        {
-          duration: 15000,
-        },
-      );
-    }, 15000);
-
     try {
-      toast.info(
-        "Sending attendance update to Supabase...",
-        {
-          duration: 5000,
-        },
-      );
-
       const nextVolunteer =
         await leaderService.updateAttendanceStatus(
           selectedVolunteer,
           action,
         );
 
-      window.clearTimeout(timeoutId);
-
+      // Update volunteer status in popup immediately
       setSelectedVolunteer(nextVolunteer);
 
+      // Add to recent scans
       const newScan =
         leaderService.createRecentScan(
           nextVolunteer,
@@ -813,16 +792,16 @@ function LeaderScannerPage() {
       toast.success(
         `${nextVolunteer.firstName} ${
           nextVolunteer.lastName
-        } checked ${
-          action === "check-in" ? "in" : "out"
+        } ${
+          action === "check-in"
+            ? "checked in"
+            : "checked out"
         } successfully.`,
         {
-          duration: 7000,
+          duration: 5000,
         },
       );
     } catch (error) {
-      window.clearTimeout(timeoutId);
-
       console.error(
         "[ATTENDANCE] Update failed:",
         error,
@@ -831,14 +810,11 @@ function LeaderScannerPage() {
       const message =
         error instanceof Error
           ? error.message
-          : String(error);
+          : "Failed to update attendance.";
 
-      toast.error(
-        `Attendance failed: ${message}`,
-        {
-          duration: 15000,
-        },
-      );
+      toast.error(message, {
+        duration: 10000,
+      });
     } finally {
       setProcessingAction(null);
     }
