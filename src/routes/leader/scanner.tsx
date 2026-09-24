@@ -762,12 +762,28 @@ function LeaderScannerPage() {
     action: "check-in" | "check-out",
   ) => {
     if (!selectedVolunteer) return;
-
     if (processingAction !== null) return;
 
     setProcessingAction(action);
 
     try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user?.id) {
+        toast.error(
+          "No authenticated user found. Please sign in again.",
+          { duration: 10000 },
+        );
+        return;
+      }
+
+      toast.success(
+        `Authenticated user: ${user.id}`,
+        { duration: 10000 },
+      );
+
       const nextVolunteer =
         await leaderService.updateAttendanceStatus(
           selectedVolunteer,
@@ -795,15 +811,18 @@ function LeaderScannerPage() {
       );
     } catch (error) {
       console.error(
-        "Attendance update failed:",
+        "[ATTENDANCE] Update failed:",
         error,
       );
 
-      toast.error(
+      const message =
         error instanceof Error
           ? error.message
-          : "Failed to update attendance.",
-      );
+          : "Failed to update attendance.";
+
+      toast.error(message, {
+        duration: 10000,
+      });
     } finally {
       setProcessingAction(null);
     }
