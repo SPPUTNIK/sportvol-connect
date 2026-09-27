@@ -44,15 +44,12 @@ import { Route as LeaderShiftsRouteImport } from './routes/leader/shifts'
 import { Route as LeaderVolunteersRouteImport } from './routes/leader/volunteers'
 import { Route as VolunteerAccreditationRouteImport } from './routes/volunteer/accreditation'
 import { Route as VolunteerAchievementsRouteImport } from './routes/volunteer/achievements'
-import { Route as VolunteerApplicationsRouteImport } from './routes/volunteer/applications'
 import { Route as VolunteerAttendanceRouteImport } from './routes/volunteer/attendance'
 import { Route as VolunteerCertificatesRouteImport } from './routes/volunteer/certificates'
 import { Route as VolunteerDashboardRouteImport } from './routes/volunteer/dashboard'
-import { Route as VolunteerHoursRouteImport } from './routes/volunteer/hours'
 import { Route as VolunteerMyEventsRouteImport } from './routes/volunteer/my-events'
 import { Route as VolunteerNotificationsRouteImport } from './routes/volunteer/notifications'
 import { Route as VolunteerProfileRouteImport } from './routes/volunteer/profile'
-import { Route as VolunteerScheduleRouteImport } from './routes/volunteer/schedule'
 import { Route as VolunteerTrainingRouteImport } from './routes/volunteer/training'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AdminEventsIndexRouteImport } from './routes/admin/events/index'
@@ -240,11 +237,6 @@ const VolunteerAchievementsRoute = VolunteerAchievementsRouteImport.update({
   path: '/volunteer/achievements',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VolunteerApplicationsRoute = VolunteerApplicationsRouteImport.update({
-  id: '/volunteer/applications',
-  path: '/volunteer/applications',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const VolunteerAttendanceRoute = VolunteerAttendanceRouteImport.update({
   id: '/volunteer/attendance',
   path: '/volunteer/attendance',
@@ -260,11 +252,6 @@ const VolunteerDashboardRoute = VolunteerDashboardRouteImport.update({
   path: '/volunteer/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VolunteerHoursRoute = VolunteerHoursRouteImport.update({
-  id: '/volunteer/hours',
-  path: '/volunteer/hours',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const VolunteerMyEventsRoute = VolunteerMyEventsRouteImport.update({
   id: '/volunteer/my-events',
   path: '/volunteer/my-events',
@@ -278,11 +265,6 @@ const VolunteerNotificationsRoute = VolunteerNotificationsRouteImport.update({
 const VolunteerProfileRoute = VolunteerProfileRouteImport.update({
   id: '/volunteer/profile',
   path: '/volunteer/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const VolunteerScheduleRoute = VolunteerScheduleRouteImport.update({
-  id: '/volunteer/schedule',
-  path: '/volunteer/schedule',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VolunteerTrainingRoute = VolunteerTrainingRouteImport.update({
@@ -378,15 +360,12 @@ export interface FileRoutesByFullPath {
   '/leader/volunteers': typeof LeaderVolunteersRoute
   '/volunteer/accreditation': typeof VolunteerAccreditationRoute
   '/volunteer/achievements': typeof VolunteerAchievementsRoute
-  '/volunteer/applications': typeof VolunteerApplicationsRoute
   '/volunteer/attendance': typeof VolunteerAttendanceRoute
   '/volunteer/certificates': typeof VolunteerCertificatesRouteWithChildren
   '/volunteer/dashboard': typeof VolunteerDashboardRoute
-  '/volunteer/hours': typeof VolunteerHoursRoute
   '/volunteer/my-events': typeof VolunteerMyEventsRoute
   '/volunteer/notifications': typeof VolunteerNotificationsRoute
   '/volunteer/profile': typeof VolunteerProfileRoute
-  '/volunteer/schedule': typeof VolunteerScheduleRoute
   '/volunteer/training': typeof VolunteerTrainingRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/leader/': typeof LeaderIndexRoute
@@ -433,15 +412,12 @@ export interface FileRoutesByTo {
   '/leader/volunteers': typeof LeaderVolunteersRoute
   '/volunteer/accreditation': typeof VolunteerAccreditationRoute
   '/volunteer/achievements': typeof VolunteerAchievementsRoute
-  '/volunteer/applications': typeof VolunteerApplicationsRoute
   '/volunteer/attendance': typeof VolunteerAttendanceRoute
   '/volunteer/certificates': typeof VolunteerCertificatesRouteWithChildren
   '/volunteer/dashboard': typeof VolunteerDashboardRoute
-  '/volunteer/hours': typeof VolunteerHoursRoute
   '/volunteer/my-events': typeof VolunteerMyEventsRoute
   '/volunteer/notifications': typeof VolunteerNotificationsRoute
   '/volunteer/profile': typeof VolunteerProfileRoute
-  '/volunteer/schedule': typeof VolunteerScheduleRoute
   '/volunteer/training': typeof VolunteerTrainingRouteWithChildren
   '/admin': typeof AdminIndexRoute
   '/leader': typeof LeaderIndexRoute
@@ -491,15 +467,12 @@ export interface FileRoutesById {
   '/leader/volunteers': typeof LeaderVolunteersRoute
   '/volunteer/accreditation': typeof VolunteerAccreditationRoute
   '/volunteer/achievements': typeof VolunteerAchievementsRoute
-  '/volunteer/applications': typeof VolunteerApplicationsRoute
   '/volunteer/attendance': typeof VolunteerAttendanceRoute
   '/volunteer/certificates': typeof VolunteerCertificatesRouteWithChildren
   '/volunteer/dashboard': typeof VolunteerDashboardRoute
-  '/volunteer/hours': typeof VolunteerHoursRoute
   '/volunteer/my-events': typeof VolunteerMyEventsRoute
   '/volunteer/notifications': typeof VolunteerNotificationsRoute
   '/volunteer/profile': typeof VolunteerProfileRoute
-  '/volunteer/schedule': typeof VolunteerScheduleRoute
   '/volunteer/training': typeof VolunteerTrainingRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/leader/': typeof LeaderIndexRoute
@@ -550,15 +523,12 @@ export interface FileRouteTypes {
     | '/leader/volunteers'
     | '/volunteer/accreditation'
     | '/volunteer/achievements'
-    | '/volunteer/applications'
     | '/volunteer/attendance'
     | '/volunteer/certificates'
     | '/volunteer/dashboard'
-    | '/volunteer/hours'
     | '/volunteer/my-events'
     | '/volunteer/notifications'
     | '/volunteer/profile'
-    | '/volunteer/schedule'
     | '/volunteer/training'
     | '/admin/'
     | '/leader/'
@@ -605,15 +575,12 @@ export interface FileRouteTypes {
     | '/leader/volunteers'
     | '/volunteer/accreditation'
     | '/volunteer/achievements'
-    | '/volunteer/applications'
     | '/volunteer/attendance'
     | '/volunteer/certificates'
     | '/volunteer/dashboard'
-    | '/volunteer/hours'
     | '/volunteer/my-events'
     | '/volunteer/notifications'
     | '/volunteer/profile'
-    | '/volunteer/schedule'
     | '/volunteer/training'
     | '/admin'
     | '/leader'
@@ -662,15 +629,12 @@ export interface FileRouteTypes {
     | '/leader/volunteers'
     | '/volunteer/accreditation'
     | '/volunteer/achievements'
-    | '/volunteer/applications'
     | '/volunteer/attendance'
     | '/volunteer/certificates'
     | '/volunteer/dashboard'
-    | '/volunteer/hours'
     | '/volunteer/my-events'
     | '/volunteer/notifications'
     | '/volunteer/profile'
-    | '/volunteer/schedule'
     | '/volunteer/training'
     | '/admin/'
     | '/leader/'
@@ -698,15 +662,12 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   VolunteerAccreditationRoute: typeof VolunteerAccreditationRoute
   VolunteerAchievementsRoute: typeof VolunteerAchievementsRoute
-  VolunteerApplicationsRoute: typeof VolunteerApplicationsRoute
   VolunteerAttendanceRoute: typeof VolunteerAttendanceRoute
   VolunteerCertificatesRoute: typeof VolunteerCertificatesRouteWithChildren
   VolunteerDashboardRoute: typeof VolunteerDashboardRoute
-  VolunteerHoursRoute: typeof VolunteerHoursRoute
   VolunteerMyEventsRoute: typeof VolunteerMyEventsRoute
   VolunteerNotificationsRoute: typeof VolunteerNotificationsRoute
   VolunteerProfileRoute: typeof VolunteerProfileRoute
-  VolunteerScheduleRoute: typeof VolunteerScheduleRoute
   VolunteerTrainingRoute: typeof VolunteerTrainingRouteWithChildren
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   VolunteerEventsEventIdRoute: typeof VolunteerEventsEventIdRoute
@@ -960,13 +921,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VolunteerAchievementsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/volunteer/applications': {
-      id: '/volunteer/applications'
-      path: '/volunteer/applications'
-      fullPath: '/volunteer/applications'
-      preLoaderRoute: typeof VolunteerApplicationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/volunteer/attendance': {
       id: '/volunteer/attendance'
       path: '/volunteer/attendance'
@@ -988,13 +942,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VolunteerDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/volunteer/hours': {
-      id: '/volunteer/hours'
-      path: '/volunteer/hours'
-      fullPath: '/volunteer/hours'
-      preLoaderRoute: typeof VolunteerHoursRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/volunteer/my-events': {
       id: '/volunteer/my-events'
       path: '/volunteer/my-events'
@@ -1014,13 +961,6 @@ declare module '@tanstack/react-router' {
       path: '/volunteer/profile'
       fullPath: '/volunteer/profile'
       preLoaderRoute: typeof VolunteerProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/volunteer/schedule': {
-      id: '/volunteer/schedule'
-      path: '/volunteer/schedule'
-      fullPath: '/volunteer/schedule'
-      preLoaderRoute: typeof VolunteerScheduleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/volunteer/training': {
@@ -1215,15 +1155,12 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   VolunteerAccreditationRoute: VolunteerAccreditationRoute,
   VolunteerAchievementsRoute: VolunteerAchievementsRoute,
-  VolunteerApplicationsRoute: VolunteerApplicationsRoute,
   VolunteerAttendanceRoute: VolunteerAttendanceRoute,
   VolunteerCertificatesRoute: VolunteerCertificatesRouteWithChildren,
   VolunteerDashboardRoute: VolunteerDashboardRoute,
-  VolunteerHoursRoute: VolunteerHoursRoute,
   VolunteerMyEventsRoute: VolunteerMyEventsRoute,
   VolunteerNotificationsRoute: VolunteerNotificationsRoute,
   VolunteerProfileRoute: VolunteerProfileRoute,
-  VolunteerScheduleRoute: VolunteerScheduleRoute,
   VolunteerTrainingRoute: VolunteerTrainingRouteWithChildren,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   VolunteerEventsEventIdRoute: VolunteerEventsEventIdRoute,

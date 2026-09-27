@@ -57,30 +57,15 @@ export const volunteerNavigation: NavGroup[] = [
         icon: Search,
       },
       {
-        label: "My Applications",
-        href: "/volunteer/applications",
-        icon: CheckCircle2,
-      },
-      {
         label: "My Events",
         href: "/volunteer/my-events",
         icon: CalendarCheck,
-      },
-      {
-        label: "Schedule",
-        href: "/volunteer/schedule",
-        icon: CalendarDays,
       },
     ],
   },
   {
     label: "My impact",
     items: [
-      {
-        label: "Volunteer Hours",
-        href: "/volunteer/hours",
-        icon: Clock3,
-      },
       {
         label: "Certificates",
         href: "/volunteer/certificates",
@@ -121,16 +106,7 @@ export const volunteerNavigation: NavGroup[] = [
         href: "/volunteer/profile",
         icon: UserRound,
       },
-      {
-        label: "Notifications",
-        href: "/volunteer/notifications",
-        icon: Bell,
-      },
-      // {
-      //   label: "Settings",
-      //   href: "/settings",
-      //   icon: Settings,
-      // },
+
     ],
   },
 ];
@@ -240,27 +216,6 @@ function VolunteerNavigation({
             </div>
           ))}
         </nav>
-
-        {/* Profile card */}
-        <Link
-          to="/volunteer/profile"
-          onClick={onNavigate}
-          className="mt-8 rounded-3xl border border-border bg-background p-4 transition hover:border-primary/40"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white">
-              {firstName.slice(0, 1).toUpperCase()}
-            </div>
-
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-foreground">{firstName}</p>
-
-              <p className="truncate text-xs text-muted-foreground">Volunteer</p>
-            </div>
-          </div>
-
-          <p className="mt-3 text-xs font-semibold text-primary">View profile</p>
-        </Link>
 
         {/* Sign out */}
         <button
@@ -451,16 +406,6 @@ export function VolunteerLayout({
                 </span>
               </Link>
 
-              {/* Sign out */}
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className="rounded-xl border border-border p-2.5 text-muted-foreground transition hover:border-destructive/30 hover:bg-destructive/5 hover:text-destructive"
-                aria-label="Sign out"
-                title="Sign out"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
             </div>
           </div>
         </header>

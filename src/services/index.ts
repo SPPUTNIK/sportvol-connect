@@ -13,7 +13,6 @@ export { certificateService } from "./volunteer/certificateService";
 export { accreditationService } from "./volunteer/accreditationService";
 export { achievementsService } from "./volunteer/achievementsService";
 export { trainingService } from "./volunteer/trainingService";
-export { scheduleService } from "./volunteer/scheduleService";
 export { notificationService } from "./volunteer/notificationService";
 export { volunteerService } from "./volunteer/volunteerService";
 export { leaderService } from "./leader/leaderService";

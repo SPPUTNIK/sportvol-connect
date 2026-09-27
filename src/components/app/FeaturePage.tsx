@@ -14,6 +14,9 @@ import {
   ShieldCheck,
   Trophy,
   Users,
+  BadgeCheck,
+  ClipboardCheck,
+  GraduationCap,
 } from "lucide-react";
 
 import { AppShell } from "@/components/app/AppShell";
@@ -752,7 +755,11 @@ export function MyEventsPage() {
       .getMyEvents()
       .then(setEvents)
       .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : "Unable to load your events.");
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load your events.",
+        );
       })
       .finally(() => {
         setLoading(false);
@@ -761,100 +768,183 @@ export function MyEventsPage() {
 
   return (
     <AppShell title="My events">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto w-full max-w-7xl min-w-0">
         <VSPageHeader
           eyebrow="Your commitments"
           title="The events you are part of"
           description="Everything you need before event day, from your role to accreditation and attendance."
         />
 
+        {/* Loading */}
         {loading && (
-          <div className="mt-8">
+          <div className="mt-6 sm:mt-8">
             <VSLoadingState message="Loading your events…" />
           </div>
         )}
 
+        {/* Error */}
         {!loading && error && (
-          <div className="mt-8">
-            <VSErrorState title="Unable to load your events" description={error} />
+          <div className="mt-6 sm:mt-8">
+            <VSErrorState
+              title="Unable to load your events"
+              description={error}
+            />
           </div>
         )}
 
+        {/* Empty */}
         {!loading && !error && events.length === 0 && (
-          <div className="mt-8">
+          <div className="mt-6 sm:mt-8">
             <VSEmptyState
               title="No accepted events yet"
               description="Once an event team accepts your application, the event will appear here."
               action={
                 <Link
                   to="/volunteer/events"
-                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
+                  className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md sm:w-auto"
                 >
                   Browse events
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               }
             />
           </div>
         )}
 
+        {/* Events */}
         {!loading && !error && events.length > 0 && (
-          <div className="mt-8 grid gap-5 lg:grid-cols-2">
-            {events.map((item) => (
-              <VSCard key={item.id} className="rounded-[2rem] border-border">
-                <VSCardContent className="p-6 sm:p-8">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <VSStatusBadge status="accepted" />
+          <div className="mt-6 space-y-4 sm:mt-8 sm:space-y-5">
+            {/* Summary */}
+            <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                  <CalendarDays className="h-5 w-5 text-primary" />
+                </div>
 
-                      <h2 className="mt-4 text-2xl font-semibold text-foreground">{item.event}</h2>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    Your accepted events
+                  </p>
 
-                      <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        {item.location}
-                      </p>
+                  <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
+                    Stay on top of your upcoming commitments.
+                  </p>
+                </div>
+              </div>
+
+              <div className="w-fit rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+                {events.length} {events.length === 1 ? "event" : "events"}
+              </div>
+            </div>
+
+            {/* Event cards */}
+            <div className="grid min-w-0 gap-4 lg:grid-cols-2 lg:gap-5">
+              {events.map((item) => (
+                <VSCard
+                  key={item.id}
+                  className="group min-w-0 overflow-hidden rounded-[1.5rem] border-border bg-card transition duration-300 sm:rounded-[2rem] hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]"
+                >
+                  <VSCardContent className="p-0">
+                    {/* Card header */}
+                    <div className="border-b border-border p-4 sm:p-6 lg:p-7">
+                      <div className="flex min-w-0 items-start gap-3 sm:gap-4">
+                        <div className="min-w-0 flex-1">
+                          <VSStatusBadge status="accepted" />
+
+                          <h2 className="mt-3 break-words text-lg font-semibold leading-snug tracking-tight text-foreground sm:mt-4 sm:text-2xl">
+                            {item.event}
+                          </h2>
+
+                          {/* Location + date */}
+                          <div className="mt-3 space-y-2 text-sm text-muted-foreground sm:flex sm:flex-wrap sm:gap-x-4 sm:gap-y-2 sm:space-y-0">
+                            <span className="flex min-w-0 items-start gap-2">
+                              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+
+                              <span className="break-words">
+                                {item.location}
+                              </span>
+                            </span>
+
+                            <span className="flex min-w-0 items-start gap-2">
+                              <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+
+                              <span className="break-words">
+                                {item.date}
+                              </span>
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Event icon */}
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 sm:h-11 sm:w-11 sm:rounded-2xl">
+                          <CalendarDays className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
+                        </div>
+                      </div>
                     </div>
 
-                    <CalendarDays className="h-6 w-6 text-primary" />
-                  </div>
+                    {/* Event information */}
+                    <div className="p-4 sm:p-6 lg:p-7">
+                      <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-3">
+                        <EventInfo
+                          icon={<Users className="h-4 w-4" />}
+                          label="Role"
+                          value={item.role}
+                        />
 
-                  <div className="mt-7 grid gap-4 sm:grid-cols-2">
-                    <Info label="Date" value={item.date} />
+                        <EventInfo
+                          icon={<Clock3 className="h-4 w-4" />}
+                          label="Shift"
+                          value={item.shift}
+                        />
 
-                    <Info label="Role" value={item.role} />
+                        <EventInfo
+                          icon={<GraduationCap className="h-4 w-4" />}
+                          label="Training"
+                          value={item.training}
+                        />
 
-                    <Info label="Shift" value={item.shift} />
+                        <EventInfo
+                          icon={<BadgeCheck className="h-4 w-4" />}
+                          label="Accreditation"
+                          value={item.accreditation}
+                        />
 
-                    <Info label="Training" value={item.training} />
+                        <EventInfo
+                          icon={<ClipboardCheck className="h-4 w-4" />}
+                          label="Attendance"
+                          value={item.attendance}
+                          className="sm:col-span-2"
+                        />
+                      </div>
 
-                    <Info label="Accreditation" value={item.accreditation} />
+                      {/* Actions */}
+                      <div className="mt-5 flex flex-col gap-2.5 border-t border-border pt-5 sm:mt-6 sm:flex-row sm:gap-3 sm:pt-6">
+                        <Link
+                          to="/volunteer/events/$eventId"
+                          params={{
+                            eventId: item.eventId,
+                          }}
+                          className="group inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md sm:flex-1"
+                        >
+                          View event
 
-                    <Info label="Attendance" value={item.attendance} />
-                  </div>
+                          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                        </Link>
 
-                  <div className="mt-7 flex flex-wrap gap-4">
-                    <Link
-                      to="/volunteer/accreditation"
-                      className="inline-flex items-center gap-2 text-sm font-semibold text-primary"
-                    >
-                      View accreditation
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
+                        <Link
+                          to="/volunteer/accreditation"
+                          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-background px-4 text-sm font-semibold text-foreground transition hover:border-primary/40 hover:bg-primary/5 hover:text-primary sm:flex-1"
+                        >
+                          Accreditation
 
-                    <Link
-                      to="/volunteer/events/$eventId"
-                      params={{
-                        eventId: item.eventId,
-                      }}
-                      className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-primary"
-                    >
-                      View event
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                </VSCardContent>
-              </VSCard>
-            ))}
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </div>
+                    </div>
+                  </VSCardContent>
+                </VSCard>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -862,255 +952,42 @@ export function MyEventsPage() {
   );
 }
 
-export function SchedulePage() {
+function EventInfo({
+  icon,
+  label,
+  value,
+  className = "",
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  className?: string;
+}) {
   return (
-    <AppShell title="Schedule">
-      <div className="mx-auto max-w-5xl">
-        <VSPageHeader
-          eyebrow="Event day view"
-          title="Your schedule at a glance"
-          description="A mobile-first view for the moments when you need the right information quickly."
-        />
-        <div className="mt-8 space-y-4">
-          {volunteerContentService.getSchedule().map((item) => (
-            <VSCard key={item.id} className="rounded-[1.75rem] border-border">
-              <VSCardContent className="p-5 sm:p-6">
-                <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                  <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl bg-ink text-white">
-                    <span className="text-xs uppercase text-white/60">{item.month}</span>
-                    <span className="text-xl font-semibold">{item.date.split(" ")[0]}</span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-                      {item.start} — {item.end}
-                    </p>
-                    <h2 className="mt-1 text-lg font-semibold text-foreground">{item.event}</h2>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {item.role} · {item.shift}
-                    </p>
-                    <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      {item.location}
-                    </p>
-                  </div>
-                  <Clock3 className="hidden h-5 w-5 text-muted-foreground sm:block" />
-                </div>
-                <div className="mt-5 rounded-2xl bg-muted/60 p-4 text-sm leading-6 text-muted-foreground">
-                  <span className="font-semibold text-foreground">Instructions: </span>
-                  {item.instructions}
-                </div>
-              </VSCardContent>
-            </VSCard>
-          ))}
+    <div
+      className={`min-w-0 rounded-xl border border-border bg-background/60 p-3.5 transition hover:border-primary/30 hover:bg-primary/5 sm:rounded-2xl sm:p-4 ${className}`}
+    >
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary sm:h-9 sm:w-9 sm:rounded-xl">
+          {icon}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground sm:text-[11px] sm:tracking-wider">
+            {label}
+          </p>
+
+          <p className="mt-1 break-words text-sm font-semibold leading-5 text-foreground">
+            {value || "—"}
+          </p>
         </div>
       </div>
-    </AppShell>
+    </div>
   );
 }
 
-export function HoursPage() {
-  const [hours, setHours] = useState<VolunteerHours | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let mounted = true;
 
-    async function loadHours() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const data = await getVolunteerHours();
-
-        if (mounted) {
-          setHours(data);
-        }
-      } catch (err: unknown) {
-        console.error("Failed to load volunteer hours:", err);
-
-        if (mounted) {
-          setError(err instanceof Error ? err.message : "Unable to load your volunteer hours.");
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadHours();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  if (loading) {
-    return (
-      <AppShell title="Volunteer hours">
-        <div className="mx-auto max-w-7xl space-y-8">
-          <VSPageHeader
-            eyebrow="Your impact"
-            title="Every hour counts"
-            description="Track the time, consistency, and community impact behind your volunteer journey."
-          />
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div
-                key={index}
-                className="h-32 animate-pulse rounded-[1.5rem] border border-border bg-muted/40"
-              />
-            ))}
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="h-80 animate-pulse rounded-[2rem] border border-border bg-muted/40" />
-            <div className="h-80 animate-pulse rounded-[2rem] border border-border bg-muted/40" />
-          </div>
-        </div>
-      </AppShell>
-    );
-  }
-
-  if (error || !hours) {
-    return (
-      <AppShell title="Volunteer hours">
-        <div className="mx-auto max-w-7xl space-y-8">
-          <VSPageHeader
-            eyebrow="Your impact"
-            title="Every hour counts"
-            description="Track the time, consistency, and community impact behind your volunteer journey."
-          />
-
-          <VSCard className="rounded-[2rem] border-border">
-            <VSCardContent className="p-6 sm:p-8">
-              <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
-                  <span className="font-bold text-destructive">!</span>
-                </div>
-
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground">
-                    Unable to load your volunteer hours
-                  </p>
-
-                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    {error ?? "Something went wrong."}
-                  </p>
-                </div>
-              </div>
-            </VSCardContent>
-          </VSCard>
-        </div>
-      </AppShell>
-    );
-  }
-
-  return (
-    <AppShell title="Volunteer hours">
-      <div className="mx-auto max-w-7xl space-y-8">
-        {/* Header */}
-        <VSPageHeader
-          eyebrow="Your impact"
-          title="Every hour counts"
-          description="Track the time, consistency, and community impact behind your volunteer journey."
-        />
-
-        {/* Stats */}
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <VSStatCard
-            label="Total hours"
-            value={hours.total}
-            description="Verified volunteer hours"
-            icon={<Clock3 className="h-5 w-5" />}
-            accent
-          />
-
-          <VSStatCard
-            label="Current year"
-            value={hours.current_year}
-            description={`${new Date().getFullYear()} volunteer hours`}
-            icon={<CalendarDays className="h-5 w-5" />}
-          />
-
-          <VSStatCard
-            label="Events completed"
-            value={hours.events_completed}
-            description="Events with recorded hours"
-            icon={<CheckCircle2 className="h-5 w-5" />}
-          />
-        </section>
-
-        {/* Breakdown */}
-        <section className="grid gap-6 lg:grid-cols-2">
-          {/* By sport */}
-          <VSCard className="rounded-[2rem] border-border">
-            <VSCardContent className="p-5 sm:p-8">
-              <VSSectionHeader eyebrow="By sport" title="Where your time goes" />
-
-              {hours.by_sport.length > 0 ? (
-                <div className="mt-6 space-y-5">
-                  {hours.by_sport.map((item) => (
-                    <ProgressRow
-                      key={item.label}
-                      label={item.label}
-                      value={item.value}
-                      total={hours.total}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
-                  <Clock3 className="mx-auto h-8 w-8 text-muted-foreground" />
-
-                  <p className="mt-3 text-sm font-semibold text-foreground">
-                    No hours recorded yet
-                  </p>
-
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Your sports breakdown will appear here after you complete volunteer work.
-                  </p>
-                </div>
-              )}
-            </VSCardContent>
-          </VSCard>
-
-          {/* By event */}
-          <VSCard className="rounded-[2rem] border-border">
-            <VSCardContent className="p-5 sm:p-8">
-              <VSSectionHeader eyebrow="By event" title="Your event history" />
-
-              {hours.by_event.length > 0 ? (
-                <div className="mt-6 space-y-5">
-                  {hours.by_event.map((item) => (
-                    <ProgressRow
-                      key={item.label}
-                      label={item.label}
-                      value={item.value}
-                      total={hours.total}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
-                  <CalendarDays className="mx-auto h-8 w-8 text-muted-foreground" />
-
-                  <p className="mt-3 text-sm font-semibold text-foreground">No event history yet</p>
-
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Your completed events and hours will appear here.
-                  </p>
-                </div>
-              )}
-            </VSCardContent>
-          </VSCard>
-        </section>
-      </div>
-    </AppShell>
-  );
-}
 
 // export function CertificatesPage() {
 //   return (
