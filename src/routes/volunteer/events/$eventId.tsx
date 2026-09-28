@@ -45,6 +45,53 @@ function EventDetails() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const [existingApplication, setExistingApplication] = useState<{
+    id: string;
+    role_id: string;
+    status: string;
+  } | null>(null);
+
+  const [checkingApplication, setCheckingApplication] = useState(false);
+
+  useEffect(() => {
+    if (!profile?.id || !params.eventId) {
+      setExistingApplication(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    const checkApplication = async () => {
+      try {
+        setCheckingApplication(true);
+
+        const application = await applicationService.getMyEventApplication(
+          params.eventId,
+        );
+
+        if (!cancelled) {
+          setExistingApplication(application);
+        }
+      } catch (err) {
+        console.error("Unable to check existing application:", err);
+
+        if (!cancelled) {
+          setExistingApplication(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setCheckingApplication(false);
+        }
+      }
+    };
+
+    void checkApplication();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [profile?.id, params.eventId]);
+
   useEffect(() => {
     eventService
       .getEventById(params.eventId)
@@ -62,23 +109,24 @@ function EventDetails() {
 
   if (loading)
     return (
-      <PublicLayout>
+      <AppShell title="Event Details">
         <div className="shell min-h-screen py-24">
           <VSLoadingState message="Loading event details…" />
         </div>
-      </PublicLayout>
+      </AppShell>
     );
   if (error)
     return (
-      <PublicLayout>
+      <AppShell title="Event Details">
         <div className="shell min-h-screen py-24">
           <VSErrorState title="Unable to load event" description={error} />
         </div>
-      </PublicLayout>
+      </AppShell>
     );
   if (!event)
     return (
-      <PublicLayout>
+      <AppShell title="Event Details">
+
         <div className="shell min-h-screen py-24">
           <VSEmptyState
             title="Event not found"
@@ -90,7 +138,7 @@ function EventDetails() {
             }
           />
         </div>
-      </PublicLayout>
+      </AppShell>
     );
 
   const cover = event.cover_url ?? eventCoverDefaults[event.sport] ?? eventCoverDefaults.Running;
@@ -103,23 +151,37 @@ function EventDetails() {
       setSubmitError("Sign in to apply for this opportunity.");
       return;
     }
+    if (existingApplication) {
+      setSubmitError("You have already applied for this event.");
+      return;
+    }
     if (!selectedRole) {
       setSubmitError("Choose a volunteer role before submitting.");
       return;
     }
     try {
-      setSubmitting(true);
-      await applicationService.applyForRole({
-        eventId: event.id,
-        roleId: selectedRole.id,
-        availability,
-        experience,
-        motivation,
-      });
-      setSubmitted(true);
+  setSubmitting(true);
+
+  const result = await applicationService.applyForRole({
+    eventId: event.id,
+    roleId: selectedRole.id,
+    availability,
+    experience,
+    motivation,
+  });
+
+  setExistingApplication({
+    id: result.applicationId,
+    role_id: selectedRole.id,
+    status: "pending",
+  });
+
+  setSubmitted(true);
     } catch (submitErr) {
       setSubmitError(
-        submitErr instanceof Error ? submitErr.message : "Unable to submit your application.",
+        submitErr instanceof Error
+          ? submitErr.message
+          : "Unable to submit your application.",
       );
     } finally {
       setSubmitting(false);
@@ -206,15 +268,26 @@ function EventDetails() {
                   </div>
                 )}
                 <div>
-                  <div className="flex items-end justify-between gap-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                      <p className="eyebrow">Find your role</p>
-                      <h2 className="mt-2 text-2xl font-semibold text-foreground">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
+                          01
+                        </span>
+                        <p className="eyebrow">Choose your role</p>
+                      </div>
+
+                      <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                         How will you contribute?
                       </h2>
+
+                      <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+                        Select the role that best matches your skills and experience.
+                      </p>
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {event.event_roles?.length ?? 0} roles
+
+                    <span className="w-fit rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+                      {event.event_roles?.length ?? 0} roles available
                     </span>
                   </div>
                   <div className="mt-5 grid gap-4">
@@ -225,6 +298,15 @@ function EventDetails() {
                         onClick={() => setSelectedRoleId(role.id)}
                         className="text-left"
                       >
+
+                        {selectedRoleId === role.id && (
+                          <div className="mb-2 flex items-center justify-between px-1">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              Selected
+                            </span>
+                          </div>
+                        )}
                         <VSRoleCard
                           name={role.name}
                           description={role.description ?? undefined}
@@ -241,8 +323,8 @@ function EventDetails() {
                           }
                           className={
                             selectedRoleId === role.id
-                              ? "border-primary bg-primary/5 ring-2 ring-primary/20"
-                              : ""
+                              ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)]"
+                              : "transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[var(--shadow-float)]"
                           }
                         />
                       </button>
@@ -274,74 +356,196 @@ function EventDetails() {
                   </p>
                 )}
               </section>
-              <section className="rounded-[2rem] border border-border bg-card p-6 shadow-[var(--shadow-float)]">
-                <p className="eyebrow">Application</p>
-                <h2 className="mt-2 text-2xl font-semibold text-foreground">Tell us about you.</h2>
-                {submitted ? (
-                  <div className="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-5">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-700" />
-                    <p className="mt-3 font-semibold text-foreground">Application submitted</p>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                      The event team will review your application and update you soon.
+                <section className="rounded-[2rem] border border-border bg-card p-5 shadow-[var(--shadow-float)] sm:p-7">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
+                      02
+                    </span>
+
+                    <p className="eyebrow">Application</p>
+                  </div>
+
+                  <h2 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
+                    Apply for this role
+                  </h2>
+
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    A few details will help the event team understand how you can contribute.
+                  </p>
+                </div>
+
+                {selectedRole ? (
+                  <div className="mt-5 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+                      Selected role
                     </p>
+
+                    <div className="mt-2 flex items-start gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                        <CheckCircle2 className="h-4 w-4" />
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className="font-semibold text-foreground">
+                          {selectedRole.name}
+                        </p>
+
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                          {selectedRole.positions - selectedRole.filled_positions} spots remaining
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 ) : (
+                  <div className="mt-5 rounded-2xl border border-dashed border-border bg-muted/40 p-4">
+                    <p className="text-sm font-semibold text-foreground">
+                      Choose a role first
+                    </p>
+
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      Select one of the volunteer roles above to continue your application.
+                    </p>
+                  </div>
+                )}
+                {checkingApplication ? (
+                  <div className="mt-6 rounded-3xl border border-border bg-muted/40 p-5">
+                    <div className="flex items-center gap-3">
+                      <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-primary" />
+
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Checking your application…
+                      </p>
+                    </div>
+                  </div>
+                ) : submitted || existingApplication ? (
+                  <ApplicationSubmittedCard
+                    status={existingApplication?.status ?? "pending"}
+                    roleName={
+                      event.event_roles?.find(
+                        (role) =>
+                          role.id ===
+                          (existingApplication?.role_id ?? selectedRoleId),
+                      )?.name ?? selectedRole?.name
+                    }
+                  />
+                ) : (
                   <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-                    <label className="block text-sm font-medium text-foreground">
-                      Availability
-                      <select
-                        value={availability}
-                        onChange={(formEvent) => setAvailability(formEvent.target.value)}
-                        required
-                        className="mt-2 h-11 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none focus:border-primary"
-                      >
-                        <option value="">Select your availability</option>
+                    
+                    <div>
+                      <label className="text-sm font-semibold text-foreground">
+                        Availability
+                      </label>
 
-                        <option value="Fully available">Fully available</option>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        When are you available during the event?
+                      </p>
 
-                        <option value="Mornings only">Mornings only</option>
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        {[
+                          "Fully available",
+                          "Mornings only",
+                          "Afternoons only",
+                          "Evenings only",
+                          "Flexible",
+                        ].map((option) => (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => setAvailability(option)}
+                            className={[
+                              "rounded-xl border px-3 py-3 text-left text-xs font-semibold transition",
+                              availability === option
+                                ? "border-primary bg-primary/10 text-primary ring-1 ring-primary/20"
+                                : "border-border bg-background text-foreground hover:border-primary/40",
+                              option === "Flexible" ? "col-span-2" : "",
+                            ].join(" ")}
+                          >
+                            <span
+                              className={[
+                                "mr-2 inline-block h-2 w-2 rounded-full",
+                                availability === option ? "bg-primary" : "bg-muted-foreground/30",
+                              ].join(" ")}
+                            />
 
-                        <option value="Afternoons only">Afternoons only</option>
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
 
-                        <option value="Evenings only">Evenings only</option>
+                    <div>
+                      <div className="flex items-end justify-between gap-3">
+                        <div>
+                          <label className="text-sm font-semibold text-foreground">
+                            Experience
+                          </label>
 
-                        <option value="Flexible">Flexible</option>
-                      </select>
-                    </label>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Tell us about relevant experience, skills or previous volunteering.
+                          </p>
+                        </div>
 
-                    <label className="block text-sm font-medium text-foreground">
-                      Experience
+                        <span className="text-[11px] text-muted-foreground">
+                          {experience.length}/500
+                        </span>
+                      </div>
+
                       <textarea
                         value={experience}
-                        onChange={(formEvent) => setExperience(formEvent.target.value)}
-                        rows={4}
-                        placeholder="What experience would you bring?"
+                        onChange={(formEvent) =>
+                          setExperience(formEvent.target.value.slice(0, 500))
+                        }
+                        rows={5}
+                        placeholder="Example: I have experience helping at sports events..."
                         required
-                        className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
+                        className="mt-3 w-full resize-none rounded-2xl border border-border bg-background px-4 py-3.5 text-sm leading-6 outline-none transition placeholder:text-muted-foreground/60 focus:border-primary focus:ring-2 focus:ring-primary/10"
                       />
-                    </label>
+                    </div>
 
-                    <label className="block text-sm font-medium text-foreground">
-                      Motivation
+                    <div>
+                      <div className="flex items-end justify-between gap-3">
+                        <div>
+                          <label className="text-sm font-semibold text-foreground">
+                            Motivation
+                          </label>
+
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Why would you like to volunteer at this event?
+                          </p>
+                        </div>
+
+                        <span className="text-[11px] text-muted-foreground">
+                          {motivation.length}/400
+                        </span>
+                      </div>
+
                       <textarea
                         value={motivation}
-                        onChange={(formEvent) => setMotivation(formEvent.target.value)}
-                        rows={3}
-                        placeholder="What excites you about this event?"
+                        onChange={(formEvent) =>
+                          setMotivation(formEvent.target.value.slice(0, 400))
+                        }
+                        rows={4}
+                        placeholder="Tell the event team what motivates you..."
                         required
-                        className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
+                        className="mt-3 w-full resize-none rounded-2xl border border-border bg-background px-4 py-3.5 text-sm leading-6 outline-none transition placeholder:text-muted-foreground/60 focus:border-primary focus:ring-2 focus:ring-primary/10"
                       />
-                    </label>
+                    </div>
 
                     {submitError && <p className="text-sm text-destructive">{submitError}</p>}
-
+                    {!selectedRole && (
+                      <div className="rounded-xl bg-muted/60 px-3 py-2.5 text-xs leading-5 text-muted-foreground">
+                        Select a volunteer role above to continue.
+                      </div>
+                    )}
                     <VSButton
                       type="submit"
                       disabled={submitting || !selectedRole}
-                      className="w-full"
+                      className="h-12 w-full justify-center rounded-2xl"
                     >
-                      {submitting ? "Submitting…" : "Submit application"}
-                      <ArrowRight className="h-4 w-4" />
+                      {submitting ? "Submitting application…" : "Submit application"}
+                      {!submitting && <ArrowRight className="h-4 w-4" />}
                     </VSButton>
                   </form>
                 )}
@@ -351,6 +555,114 @@ function EventDetails() {
         </div>
       </div>
     </AppShell>
+  );
+}
+
+
+function ApplicationSubmittedCard({
+  status,
+  roleName,
+}: {
+  status: string;
+  roleName?: string;
+}) {
+  const statusConfig: Record<
+    string,
+    {
+      label: string;
+      description: string;
+      className: string;
+      dotClassName: string;
+    }
+  > = {
+    pending: {
+      label: "Pending review",
+      description:
+        "Your application has been received. The event team will review it and update your application status.",
+      className: "border-amber-200 bg-amber-50",
+      dotClassName: "bg-amber-500",
+    },
+
+    accepted: {
+      label: "Application accepted",
+      description:
+        "Your application has been accepted. You can follow your event details from My Events.",
+      className: "border-emerald-200 bg-emerald-50",
+      dotClassName: "bg-emerald-500",
+    },
+
+    rejected: {
+      label: "Application not accepted",
+      description:
+        "This application was not selected for the event. You can explore other volunteer opportunities.",
+      className: "border-red-200 bg-red-50",
+      dotClassName: "bg-red-500",
+    },
+
+    waitlisted: {
+      label: "Waitlisted",
+      description:
+        "You are currently on the waiting list. The event team may contact you if a position becomes available.",
+      className: "border-blue-200 bg-blue-50",
+      dotClassName: "bg-blue-500",
+    },
+
+    withdrawn: {
+      label: "Application withdrawn",
+      description:
+        "This application has been withdrawn.",
+      className: "border-border bg-muted/50",
+      dotClassName: "bg-muted-foreground",
+    },
+  };
+
+  const config =
+    statusConfig[status] ?? {
+      label: status,
+      description:
+        "Your application has already been submitted for this event.",
+      className: "border-border bg-muted/50",
+      dotClassName: "bg-muted-foreground",
+    };
+
+  return (
+    <div
+      className={`mt-6 rounded-3xl border p-5 ${config.className}`}
+    >
+      <div className="flex items-start gap-4">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-background/70">
+          {status === "accepted" ? (
+            <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+          ) : (
+            <span
+              className={`h-2.5 w-2.5 rounded-full ${config.dotClassName}`}
+            />
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-semibold text-foreground">
+              Application already submitted
+            </p>
+
+            <span className="rounded-full bg-background/70 px-2.5 py-1 text-[11px] font-semibold text-foreground">
+              {config.label}
+            </span>
+          </div>
+
+          {roleName && (
+            <p className="mt-2 text-sm font-medium text-foreground">
+              Role: {roleName}
+            </p>
+          )}
+
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            {config.description}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 

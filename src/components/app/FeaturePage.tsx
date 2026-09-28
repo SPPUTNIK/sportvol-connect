@@ -58,18 +58,23 @@ export function DashboardPage() {
   const dragStartX = useRef<number | null>(null);
   const dragCurrentX = useRef<number | null>(null);
 
-  const currentDashboardEvent = upcomingEventsList[currentEventIndex] ?? null;
+  const currentDashboardEvent =
+    upcomingEventsList[currentEventIndex] ?? null;
 
   const goToNextEvent = () => {
     if (upcomingEventsList.length <= 1) return;
 
-    setCurrentEventIndex((current) => (current >= upcomingEventsList.length - 1 ? 0 : current + 1));
+    setCurrentEventIndex((current) =>
+      current >= upcomingEventsList.length - 1 ? 0 : current + 1,
+    );
   };
 
   const goToPreviousEvent = () => {
     if (upcomingEventsList.length <= 1) return;
 
-    setCurrentEventIndex((current) => (current <= 0 ? upcomingEventsList.length - 1 : current - 1));
+    setCurrentEventIndex((current) =>
+      current <= 0 ? upcomingEventsList.length - 1 : current - 1,
+    );
   };
 
   useEffect(() => {
@@ -90,7 +95,9 @@ export function DashboardPage() {
 
         if (mounted) {
           setDashboardError(
-            error instanceof Error ? error.message : "Failed to load your dashboard.",
+            error instanceof Error
+              ? error.message
+              : "Failed to load your dashboard.",
           );
         }
       } finally {
@@ -116,31 +123,41 @@ export function DashboardPage() {
       );
     }, 4000);
 
-    return () => {
-      window.clearInterval(interval);
-    };
+    return () => window.clearInterval(interval);
   }, [upcomingEventsList.length]);
 
-  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+  useEffect(() => {
+    if (currentEventIndex >= upcomingEventsList.length) {
+      setCurrentEventIndex(0);
+    }
+  }, [currentEventIndex, upcomingEventsList.length]);
+
+  const handlePointerDown = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
     dragStartX.current = event.clientX;
     dragCurrentX.current = event.clientX;
     setIsDragging(true);
   };
 
-  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerMove = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
     if (!isDragging) return;
 
     dragCurrentX.current = event.clientX;
   };
 
   const handlePointerUp = () => {
-    if (dragStartX.current === null || dragCurrentX.current === null) {
+    if (
+      dragStartX.current === null ||
+      dragCurrentX.current === null
+    ) {
       setIsDragging(false);
       return;
     }
 
     const distance = dragStartX.current - dragCurrentX.current;
-
     const threshold = 60;
 
     if (Math.abs(distance) >= threshold) {
@@ -165,27 +182,27 @@ export function DashboardPage() {
   if (dashboardLoading) {
     return (
       <AppShell title="Dashboard">
-        <div className="mx-auto max-w-7xl space-y-8">
+        <div className="mx-auto max-w-7xl space-y-6 px-1 sm:space-y-8">
           <VSPageHeader
             eyebrow="Your volunteer journey"
             title={`Welcome, ${firstName}.`}
             description="Everything you need to keep showing up for the moments that matter."
           />
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className="h-32 animate-pulse rounded-[1.5rem] border border-border bg-muted/40"
+                className="h-28 animate-pulse rounded-2xl border border-border bg-muted/40 sm:h-32 sm:rounded-[1.5rem]"
               />
             ))}
           </div>
 
-          <div className="h-72 animate-pulse rounded-[2rem] border border-border bg-muted/40" />
+          <div className="h-80 animate-pulse rounded-3xl border border-border bg-muted/40 sm:h-96 sm:rounded-[2rem]" />
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="h-64 animate-pulse rounded-[2rem] border border-border bg-muted/40" />
-            <div className="h-64 animate-pulse rounded-[2rem] border border-border bg-muted/40" />
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+            <div className="h-64 animate-pulse rounded-3xl border border-border bg-muted/40" />
+            <div className="h-64 animate-pulse rounded-3xl border border-border bg-muted/40" />
           </div>
         </div>
       </AppShell>
@@ -195,26 +212,30 @@ export function DashboardPage() {
   if (dashboardError) {
     return (
       <AppShell title="Dashboard">
-        <div className="mx-auto max-w-7xl space-y-8">
+        <div className="mx-auto max-w-7xl space-y-6 px-1 sm:space-y-8">
           <VSPageHeader
             eyebrow="Your volunteer journey"
             title={`Welcome, ${firstName}.`}
             description="Everything you need to keep showing up for the moments that matter."
           />
 
-          <VSCard className="rounded-[2rem] border-border">
-            <VSCardContent className="p-8">
-              <div className="flex items-start gap-4">
+          <VSCard className="rounded-3xl border-border sm:rounded-[2rem]">
+            <VSCardContent className="p-5 sm:p-8">
+              <div className="flex items-start gap-3 sm:gap-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
-                  <span className="text-sm font-bold text-destructive">!</span>
+                  <span className="text-sm font-bold text-destructive">
+                    !
+                  </span>
                 </div>
 
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-semibold text-foreground">
                     Unable to load your dashboard
                   </p>
 
-                  <p className="mt-1 text-sm text-muted-foreground">{dashboardError}</p>
+                  <p className="mt-1 break-words text-sm text-muted-foreground">
+                    {dashboardError}
+                  </p>
 
                   <button
                     type="button"
@@ -236,19 +257,25 @@ export function DashboardPage() {
     return null;
   }
 
-  const upcomingEvent = dashboard?.upcomingEvent;
-  const profileCompletion = dashboard?.profileCompletion;
+  const upcomingEvent = dashboard.upcomingEvent;
+  const profileCompletion = dashboard.profileCompletion;
 
   return (
     <AppShell title="Dashboard">
-      <div className="mx-auto max-w-7xl space-y-8">
-        {/* Header */}
+      <div className="mx-auto max-w-7xl space-y-7 px-1 sm:space-y-9">
+        {/* ====================================================== */}
+        {/* HEADER */}
+        {/* ====================================================== */}
+
         <VSPageHeader
           eyebrow="Your volunteer journey"
           title={`Welcome, ${firstName}.`}
           description="Everything you need to keep showing up for the moments that matter."
           action={
-            <VSButton asChild>
+            <VSButton
+              asChild
+              className="w-full sm:w-auto"
+            >
               <Link to="/volunteer/events">
                 Discover events
                 <ArrowRight className="h-4 w-4" />
@@ -257,7 +284,10 @@ export function DashboardPage() {
           }
         />
 
-        {/* Hero */}
+        {/* ====================================================== */}
+        {/* HERO */}
+        {/* ====================================================== */}
+
         <section className="relative overflow-hidden rounded-[2rem] bg-ink p-7 text-white shadow-[var(--shadow-lift)] sm:p-10">
           <div className="pointer-events-none absolute inset-0 zellij-tile" />
 
@@ -286,13 +316,18 @@ export function DashboardPage() {
           </div>
         </section>
 
-        {/* Stats */}
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {/* ====================================================== */}
+        {/* STATS */}
+        {/* ====================================================== */}
+
+        <section className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
           <VSStatCard
             label="Upcoming events"
             value={dashboard.upcomingEvents}
             description={
-              dashboard.upcomingEvents === 1 ? "One confirmed assignment" : "Confirmed assignments"
+              dashboard.upcomingEvents === 1
+                ? "One confirmed assignment"
+                : "Confirmed assignments"
             }
             icon={<CalendarDays className="h-5 w-5" />}
           />
@@ -321,57 +356,75 @@ export function DashboardPage() {
           />
         </section>
 
-        {/* Upcoming Event + Quick Actions */}
-        <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-          <VSCard className="rounded-[2rem] border-border shadow-[var(--shadow-float)]">
-            <VSCardContent className="p-6 sm:p-8">
-              <VSSectionHeader eyebrow="Upcoming events" title="Your next opportunities" />
+        {/* ====================================================== */}
+        {/* UPCOMING EVENT */}
+        {/* ====================================================== */}
 
-              {upcomingEventsList.length > 0 && currentDashboardEvent ? (
-                <div className="mt-6">
-                  <div
-                    className={`relative select-none overflow-hidden rounded-[1.5rem] border border-border bg-card ${
-                      isDragging ? "cursor-grabbing" : "cursor-grab"
-                    }`}
-                    onPointerDown={handlePointerDown}
-                    onPointerMove={handlePointerMove}
-                    onPointerUp={handlePointerUp}
-                    onPointerCancel={handlePointerCancel}
-                    onPointerLeave={() => {
-                      if (isDragging) {
-                        handlePointerUp();
-                      }
-                    }}
-                    style={{
-                      touchAction: "pan-y",
-                    }}
-                  >
-                    {/* Event Image */}
-                    <div className="relative aspect-[16/8] overflow-hidden bg-ink sm:aspect-[16/7]">
-                      {currentDashboardEvent.cover_url ? (
-                        <img
-                          src={currentDashboardEvent.cover_url}
-                          alt={currentDashboardEvent.title}
-                          draggable={false}
-                          className={`h-full w-full object-cover transition-transform duration-500 ${
-                            isDragging ? "scale-[1.02]" : "hover:scale-105"
-                          }`}
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center">
-                          <CalendarDays className="h-10 w-10 text-white/40" />
-                        </div>
-                      )}
+        <section>
+          <VSSectionHeader
+            eyebrow="Upcoming events"
+            title="Your next opportunities"
+          />
 
-                      {/* Overlay */}
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-5">
-                        <span className="inline-flex rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-black">
-                          Upcoming
-                        </span>
+          <VSCard className="mt-5 overflow-hidden rounded-[1.75rem] border-border shadow-[var(--shadow-float)] sm:rounded-[2rem]">
+            <VSCardContent className="p-3 sm:p-5 lg:p-6">
+              {upcomingEventsList.length > 0 &&
+              currentDashboardEvent ? (
+                <div
+                  className={`relative select-none overflow-hidden rounded-[1.35rem] border border-border bg-card ${
+                    isDragging
+                      ? "cursor-grabbing"
+                      : "cursor-grab"
+                  }`}
+                  onPointerDown={handlePointerDown}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerUp}
+                  onPointerCancel={handlePointerCancel}
+                  onPointerLeave={() => {
+                    if (isDragging) {
+                      handlePointerUp();
+                    }
+                  }}
+                  style={{ touchAction: "pan-y" }}
+                >
+                  {/* Image */}
+                  <div className="relative aspect-[16/10] overflow-hidden bg-ink sm:aspect-[16/7]">
+                    {currentDashboardEvent.cover_url ? (
+                      <img
+                        src={currentDashboardEvent.cover_url}
+                        alt={currentDashboardEvent.title}
+                        draggable={false}
+                        className={`h-full w-full object-cover transition-transform duration-500 ${
+                          isDragging
+                            ? "scale-[1.02]"
+                            : "hover:scale-105"
+                        }`}
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <CalendarDays className="h-10 w-10 text-white/30" />
                       </div>
+                    )}
 
-                      {/* Previous */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                    {/* Image top controls */}
+                    <div className="absolute left-4 right-4 top-4 flex items-center justify-between sm:left-5 sm:right-5 sm:top-5">
+                      <span className="rounded-full bg-white/90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-black backdrop-blur-sm">
+                        Upcoming
+                      </span>
+
                       {upcomingEventsList.length > 1 && (
+                        <span className="rounded-full bg-black/40 px-3 py-1.5 text-[11px] font-semibold text-white backdrop-blur-md">
+                          {currentEventIndex + 1} /{" "}
+                          {upcomingEventsList.length}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Navigation */}
+                    {upcomingEventsList.length > 1 && (
+                      <>
                         <button
                           type="button"
                           aria-label="Previous event"
@@ -379,14 +432,11 @@ export function DashboardPage() {
                             event.stopPropagation();
                             goToPreviousEvent();
                           }}
-                          className="absolute left-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-md transition hover:bg-black/65"
+                          className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md transition hover:bg-black/65 sm:left-4 sm:h-10 sm:w-10"
                         >
-                          <ChevronLeft className="h-5 w-5" />
+                          <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                         </button>
-                      )}
 
-                      {/* Next */}
-                      {upcomingEventsList.length > 1 && (
                         <button
                           type="button"
                           aria-label="Next event"
@@ -394,90 +444,65 @@ export function DashboardPage() {
                             event.stopPropagation();
                             goToNextEvent();
                           }}
-                          className="absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-md transition hover:bg-black/65"
+                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md transition hover:bg-black/65 sm:right-4 sm:h-10 sm:w-10"
                         >
-                          <ChevronRight className="h-5 w-5" />
+                          <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
                         </button>
-                      )}
+                      </>
+                    )}
+
+                    {/* Image title */}
+                    <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-7">
+                      <p className="text-xs font-medium text-white/65">
+                        {currentDashboardEvent.role}
+                      </p>
+
+                      <h3 className="mt-1 max-w-3xl text-2xl font-semibold leading-tight text-white sm:text-3xl">
+                        {currentDashboardEvent.title}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Details */}
+                  <div className="p-4 sm:p-6">
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      <EventMeta
+                        icon={<CalendarDays className="h-4 w-4" />}
+                        label="Date"
+                        value={currentDashboardEvent.date}
+                      />
+
+                      <EventMeta
+                        icon={<Users className="h-4 w-4" />}
+                        label="Role"
+                        value={currentDashboardEvent.role}
+                      />
+
+                      <EventMeta
+                        icon={<Clock3 className="h-4 w-4" />}
+                        label="Shift"
+                        value={currentDashboardEvent.shift}
+                      />
+
+                      <EventMeta
+                        icon={<MapPin className="h-4 w-4" />}
+                        label="Location"
+                        value={currentDashboardEvent.location}
+                      />
                     </div>
 
-                    {/* Content */}
-                    <div className="p-5 sm:p-6">
-                      <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0 flex-1">
-                          <h3 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-                            {currentDashboardEvent.title}
-                          </h3>
-
-                          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                            <div className="flex items-center gap-3">
-                              <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
-
-                              <span className="text-sm text-muted-foreground">
-                                {currentDashboardEvent.date}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                              <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
-
-                              <span className="text-sm text-muted-foreground">
-                                {currentDashboardEvent.role}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                              <Clock3 className="h-4 w-4 shrink-0 text-muted-foreground" />
-
-                              <span className="text-sm text-muted-foreground">
-                                {currentDashboardEvent.shift}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                              <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
-
-                              <span className="line-clamp-1 text-sm text-muted-foreground">
-                                {currentDashboardEvent.location}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <VSButton
-                          asChild
-                          variant="outline"
-                          className="w-full shrink-0 rounded-xl sm:w-auto"
-                        >
-                          <Link
-                            to="/volunteer/events/$eventId"
-                            params={{
-                              eventId: currentDashboardEvent.id,
-                            }}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                            }}
-                          >
-                            View event details
-                            <ArrowRight className="h-4 w-4" />
-                          </Link>
-                        </VSButton>
-                      </div>
-
-                      {/* Carousel indicators */}
-                      {upcomingEventsList.length > 1 && (
-                        <div className="mt-6 flex items-center justify-between gap-4 border-t border-border pt-5">
-                          <p className="text-xs text-muted-foreground">
-                            {currentEventIndex + 1} of {upcomingEventsList.length}
-                          </p>
-
+                    <div className="mt-5 flex flex-col gap-4 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+                      {upcomingEventsList.length > 1 ? (
+                        <div className="flex items-center gap-3">
                           <div className="flex items-center gap-1.5">
                             {upcomingEventsList.map((event, index) => (
                               <button
                                 key={event.id}
                                 type="button"
                                 aria-label={`Go to event ${index + 1}`}
-                                onClick={() => setCurrentEventIndex(index)}
+                                onClick={() =>
+                                  setCurrentEventIndex(index)
+                                }
                                 className={`h-1.5 rounded-full transition-all duration-300 ${
                                   index === currentEventIndex
                                     ? "w-7 bg-primary"
@@ -487,23 +512,53 @@ export function DashboardPage() {
                             ))}
                           </div>
 
-                          <p className="hidden text-xs text-muted-foreground sm:block"></p>
+                          <span className="text-xs text-muted-foreground">
+                            Swipe to explore
+                          </span>
                         </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">
+                          Your upcoming assignment
+                        </span>
                       )}
+
+                      <VSButton
+                        asChild
+                        variant="outline"
+                        className="w-full rounded-xl sm:w-auto"
+                      >
+                        <Link
+                          to="/volunteer/events/$eventId"
+                          params={{
+                            eventId: currentDashboardEvent.id,
+                          }}
+                          onClick={(event) =>
+                            event.stopPropagation()
+                          }
+                        >
+                          View event details
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </VSButton>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
-                  <CalendarDays className="mx-auto h-8 w-8 text-muted-foreground" />
+                <div className="rounded-2xl border border-dashed border-border p-7 text-center sm:p-10">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
+                    <CalendarDays className="h-5 w-5 text-primary" />
+                  </div>
 
-                  <p className="mt-3 text-sm font-semibold text-foreground">No upcoming events</p>
-
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Find your next opportunity and start volunteering.
+                  <p className="mt-4 text-sm font-semibold text-foreground">
+                    No upcoming events
                   </p>
 
-                  <VSButton asChild className="mt-4">
+                  <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-muted-foreground">
+                    Find your next opportunity and start
+                    volunteering.
+                  </p>
+
+                  <VSButton asChild className="mt-5">
                     <Link to="/volunteer/events">
                       Browse events
                       <ArrowRight className="h-4 w-4" />
@@ -513,35 +568,12 @@ export function DashboardPage() {
               )}
             </VSCardContent>
           </VSCard>
+        </section>
 
-          <VSCard className="rounded-[2rem] border-border shadow-[var(--shadow-float)]">
-            <VSCardContent className="p-6 sm:p-8">
-              <VSSectionHeader eyebrow="Quick actions" title="Keep moving" />
+        {/* ====================================================== */}
+        {/* APPLICATIONS + PROFILE */}
+        {/* ====================================================== */}
 
-              <div className="mt-6 space-y-3">
-                <QuickAction
-                  href="/schedule"
-                  icon={<CalendarDays className="h-4 w-4" />}
-                  label="View schedule"
-                />
-
-                <QuickAction
-                  href="/training"
-                  icon={<ShieldCheck className="h-4 w-4" />}
-                  label="Continue training"
-                />
-
-                <QuickAction
-                  href="/hours"
-                  icon={<Clock3 className="h-4 w-4" />}
-                  label="Review impact"
-                />
-              </div>
-            </VSCardContent>
-          </VSCard>
-        </div>
-
-        {/* Applications + Profile */}
         <div className="grid min-w-0 gap-5 sm:gap-6 lg:grid-cols-2">
           {/* Applications */}
           <VSCard className="min-w-0 overflow-hidden rounded-[1.5rem] border-border sm:rounded-[2rem]">
@@ -551,7 +583,7 @@ export function DashboardPage() {
                 title="Recent applications"
                 action={
                   <Link
-                    to="/volunteer/applications"
+                    to="/volunteer/my-events"
                     className="shrink-0 text-xs font-semibold text-primary sm:text-sm"
                   >
                     View all
@@ -560,188 +592,264 @@ export function DashboardPage() {
               />
 
               {dashboard.applications.length > 0 ? (
-                <div className="mt-5 space-y-3 sm:mt-6">
+                <div className="mt-5 space-y-2.5 sm:mt-6 sm:space-y-3">
                   {dashboard.applications.slice(0, 3).map((item) => (
                     <div
                       key={item.id}
-                      className="
-                        flex
-                        min-w-0
-                        flex-col
-                        gap-3
-                        rounded-2xl
-                        border
-                        border-border
-                        p-3.5
-                        transition-colors
-                        hover:bg-muted/30
-                        sm:flex-row
-                        sm:items-center
-                        sm:justify-between
-                        sm:gap-4
-                        sm:p-4
-                      "
+                      className="flex min-w-0 items-center gap-3 rounded-2xl border border-border p-3 transition-colors hover:bg-muted/30 sm:gap-4 sm:p-4"
                     >
-                      {/* Application information */}
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                        <CalendarDays className="h-4 w-4 text-primary" />
+                      </div>
+
                       <div className="min-w-0 flex-1">
-                        <p
-                          className="
-                            overflow-hidden
-                            text-sm
-                            font-semibold
-                            leading-5
-                            text-foreground
-                            [display:-webkit-box]
-                            [-webkit-box-orient:vertical]
-                            [-webkit-line-clamp:2]
-                          "
-                        >
+                        <p className="truncate text-sm font-semibold text-foreground">
                           {item.event_title}
                         </p>
 
-                        <p className="mt-1.5 overflow-hidden text-xs leading-5 text-muted-foreground">
-                          <span className="break-words">{item.role_name}</span>
-
-                          <span className="mx-1">·</span>
-
-                          <span>{item.submitted_at}</span>
+                        <p className="mt-1 truncate text-xs text-muted-foreground">
+                          {item.role_name}
+                          <span className="mx-1.5">·</span>
+                          {item.submitted_at}
                         </p>
                       </div>
 
-                      {/* Status */}
-                      <div className="flex shrink-0 items-center sm:self-center">
+                      <div className="shrink-0">
                         <VSStatusBadge status={item.status} />
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="mt-5 rounded-2xl border border-dashed border-border p-5 text-center sm:mt-6 sm:p-6">
-                  <p className="text-sm font-semibold text-foreground">No applications yet</p>
-
-                  <p className="mx-auto mt-1 max-w-xs text-xs leading-5 text-muted-foreground">
-                    Start exploring events and apply for a volunteer role.
-                  </p>
-
-                  <Link
-                    to="/volunteer/events"
-                    className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary"
-                  >
-                    Discover events
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
+                <EmptyDashboardState
+                  icon={<CalendarDays className="h-5 w-5" />}
+                  title="No applications yet"
+                  description="Start exploring events and apply for a volunteer role."
+                  action={
+                    <Link
+                      to="/volunteer/events"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-primary"
+                    >
+                      Discover events
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  }
+                />
               )}
             </VSCardContent>
           </VSCard>
 
-          {/* Profile completion */}
+          {/* Profile */}
           <VSCard className="min-w-0 overflow-hidden rounded-[1.5rem] border-border sm:rounded-[2rem]">
             <VSCardContent className="p-4 sm:p-6 lg:p-8">
-              <VSSectionHeader eyebrow="Profile completion" title="Make your profile work harder" />
+              <VSSectionHeader
+                eyebrow="Profile completion"
+                title="Make your profile work harder"
+              />
 
-              <div className="mt-5 flex min-w-0 flex-col gap-5 sm:mt-6 sm:flex-row sm:items-center sm:gap-5">
-                {/* Progress circle */}
-                <div className="relative mx-auto h-20 w-20 shrink-0 rounded-full bg-muted sm:mx-0">
-                  <div className="absolute inset-1 rounded-full bg-card" />
+              <div className="mt-6">
+                <div className="flex items-end justify-between gap-4">
+                  <div>
+                    <p className="text-3xl font-semibold tracking-tight text-foreground">
+                      {profileCompletion}%
+                    </p>
 
-                  <div
-                    className="absolute inset-0 rounded-full border-4 border-primary"
-                    style={{
-                      clipPath: `inset(${100 - profileCompletion}% 0 0 0)`,
-                    }}
-                  />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Profile completed
+                    </p>
+                  </div>
 
-                  <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-foreground">
-                    {profileCompletion}%
+                  <span className="text-xs font-semibold text-primary">
+                    {profileCompletion >= 100
+                      ? "Complete"
+                      : "Almost there"}
                   </span>
                 </div>
 
-                {/* Profile text */}
-                <div className="min-w-0 flex-1 text-center sm:text-left">
-                  <p className="text-sm font-semibold leading-5 text-foreground">
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all duration-700"
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        Math.max(0, profileCompletion),
+                      )}%`,
+                    }}
+                  />
+                </div>
+
+                <div className="mt-5 rounded-2xl bg-muted/50 p-4">
+                  <p className="text-sm font-semibold text-foreground">
                     {profileCompletion >= 100
                       ? "Your profile is complete."
                       : "Add your skills and languages."}
                   </p>
 
-                  <p className="mx-auto mt-1 max-w-md text-xs leading-5 text-muted-foreground sm:mx-0">
-                    A complete profile helps event teams place you in the right role.
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    A complete profile helps event teams place you
+                    in the right role.
                   </p>
-
-                  <Link
-                    to="/volunteer/profile"
-                    className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary"
-                  >
-                    {profileCompletion >= 100 ? "View profile" : "Update profile"}
-
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
                 </div>
+
+                <Link
+                  to="/volunteer/profile"
+                  className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-primary"
+                >
+                  {profileCompletion >= 100
+                    ? "View profile"
+                    : "Update profile"}
+
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
               </div>
             </VSCardContent>
           </VSCard>
         </div>
 
-        {/* Achievements */}
+        {/* ====================================================== */}
+        {/* ACHIEVEMENTS */}
+        {/* ====================================================== */}
+
         <section>
           <VSSectionHeader
             eyebrow="Milestones"
             title="Achievements"
             action={
-              <Link to="/volunteer/achievements" className="text-sm font-semibold text-primary">
+              <Link
+                to="/volunteer/achievements"
+                className="text-xs font-semibold text-primary sm:text-sm"
+              >
                 See all
               </Link>
             }
           />
 
           {dashboard.achievements.length > 0 ? (
-            <div className="mt-5 grid gap-4 md:grid-cols-3">
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
               {dashboard.achievements.slice(0, 3).map((item) => (
-                <VSCard key={item.title} className="rounded-[1.5rem] border-border">
-                  <VSCardContent className="p-5">
-                    <Trophy
-                      className={
-                        item.unlocked ? "h-6 w-6 text-primary" : "h-6 w-6 text-muted-foreground"
-                      }
-                    />
-
-                    <p className="mt-4 text-sm font-semibold text-foreground">{item.title}</p>
-
-                    <div className="mt-4 h-1.5 rounded-full bg-muted">
+                <VSCard
+                  key={item.title}
+                  className="rounded-[1.5rem] border-border transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-float)]"
+                >
+                  <VSCardContent className="p-5 sm:p-6">
+                    <div className="flex items-start justify-between gap-4">
                       <div
-                        className={
+                        className={`flex h-10 w-10 items-center justify-center rounded-xl ${
                           item.unlocked
-                            ? "h-full rounded-full bg-primary"
-                            : "h-full rounded-full bg-muted-foreground/40"
-                        }
-                        style={{
-                          width: `${Math.min(100, Math.max(0, item.progress))}%`,
-                        }}
-                      />
+                            ? "bg-primary/10"
+                            : "bg-muted"
+                        }`}
+                      >
+                        <Trophy
+                          className={
+                            item.unlocked
+                              ? "h-5 w-5 text-primary"
+                              : "h-5 w-5 text-muted-foreground"
+                          }
+                        />
+                      </div>
+
+                      {item.unlocked && (
+                        <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary">
+                          Unlocked
+                        </span>
+                      )}
                     </div>
 
-                    <p className="mt-2 text-xs text-muted-foreground">{item.progress}% complete</p>
+                    <p className="mt-5 text-sm font-semibold text-foreground">
+                      {item.title}
+                    </p>
+
+                    <div className="mt-4 flex items-center gap-3">
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all duration-700"
+                          style={{
+                            width: `${Math.min(
+                              100,
+                              Math.max(0, item.progress),
+                            )}%`,
+                          }}
+                        />
+                      </div>
+
+                      <span className="shrink-0 text-[11px] font-semibold text-muted-foreground">
+                        {item.progress}%
+                      </span>
+                    </div>
                   </VSCardContent>
                 </VSCard>
               ))}
             </div>
           ) : (
-            <div className="mt-5 rounded-[1.5rem] border border-dashed border-border p-8 text-center">
-              <Trophy className="mx-auto h-8 w-8 text-muted-foreground" />
-
-              <p className="mt-3 text-sm font-semibold text-foreground">
-                Your achievements will appear here
-              </p>
-
-              <p className="mt-1 text-xs text-muted-foreground">
-                Keep volunteering to unlock your first milestones.
-              </p>
-            </div>
+            <EmptyDashboardState
+              icon={<Trophy className="h-5 w-5" />}
+              title="Your achievements will appear here"
+              description="Keep volunteering to unlock your first milestones."
+            />
           )}
         </section>
       </div>
     </AppShell>
+  );
+}
+
+/* ============================================================ */
+/* SMALL UI HELPERS */
+/* ============================================================ */
+
+function EventMeta({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="min-w-0 rounded-xl bg-muted/50 p-3 sm:rounded-2xl sm:p-3.5">
+      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+        {icon}
+        <span>{label}</span>
+      </div>
+
+      <p className="mt-2 truncate text-xs font-semibold text-foreground sm:text-sm">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function EmptyDashboardState({
+  icon,
+  title,
+  description,
+  action,
+}: {
+  icon?: React.ReactNode;
+  title: string;
+  description: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="mt-5 rounded-2xl border border-dashed border-border p-6 text-center sm:mt-6 sm:p-8">
+      {icon && (
+        <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+          {icon}
+        </div>
+      )}
+
+      <p className="mt-4 text-sm font-semibold text-foreground">
+        {title}
+      </p>
+
+      <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-muted-foreground">
+        {description}
+      </p>
+
+      {action && <div className="mt-4">{action}</div>}
+    </div>
   );
 }
 
@@ -849,7 +957,7 @@ export function MyEventsPage() {
                     <div className="border-b border-border p-4 sm:p-6 lg:p-7">
                       <div className="flex min-w-0 items-start gap-3 sm:gap-4">
                         <div className="min-w-0 flex-1">
-                          <VSStatusBadge status="accepted" />
+                          <VSStatusBadge status={item.status} />
 
                           <h2 className="mt-3 break-words text-lg font-semibold leading-snug tracking-tight text-foreground sm:mt-4 sm:text-2xl">
                             {item.event}

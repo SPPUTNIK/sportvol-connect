@@ -25,6 +25,7 @@ export interface MyEvent {
   date: string;
   role: string;
   roleId: string;
+  status: string;
   shift: string;
   shiftId: string | null;
   training: string;
@@ -320,7 +321,6 @@ export const eventService = {
         `,
       )
       .eq("profile_id", user.id)
-      .eq("status", "accepted")
       .order("applied_at", {
         ascending: false,
       });
@@ -546,6 +546,8 @@ export const eventService = {
 
         role: role.name,
         roleId: role.id,
+
+        status: application.status,
 
         shift: shiftLabel,
         shiftId: shift?.id ?? null,

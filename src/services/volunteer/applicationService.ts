@@ -122,6 +122,43 @@ export const applicationService = {
     return (data ?? []) as EventRole[];
   },
 
+
+  async getMyEventApplication(eventId: string): Promise<{
+    id: string;
+    role_id: string;
+    status: string;
+  } | null> {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError) {
+      throw new Error(authError.message);
+    }
+
+    if (!user) {
+      return null;
+    }
+
+    if (!eventId) {
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from("applications")
+      .select("id, role_id, status")
+      .eq("profile_id", user.id)
+      .eq("event_id", eventId)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  },
+
   /**
    * ============================================================
    * APPLY FOR ROLE
