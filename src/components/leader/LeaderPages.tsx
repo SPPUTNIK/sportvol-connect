@@ -1130,175 +1130,6 @@ export function LeaderEventPage() {
   );
 }
 
-export function LeaderCommitteePage() {
-  const [committees, setCommittees] = useState<LeaderCommittee[]>([]);
-  const [members, setMembers] = useState<LeaderMember[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let ignore = false;
-
-    async function load() {
-      try {
-        const [leaderCommittees, committeeMembers] =
-          await Promise.all([
-            leaderService.getLeaderCommittees(),
-            leaderService.getCommitteeMembers(),
-          ]);
-
-        if (ignore) return;
-
-        setCommittees(leaderCommittees);
-        setMembers(committeeMembers);
-        setLoading(false);
-      } catch (error) {
-        console.error(
-          "Failed to load leader committees:",
-          error,
-        );
-
-        if (!ignore) {
-          setCommittees([]);
-          setMembers([]);
-          setLoading(false);
-        }
-      }
-    }
-
-    void load();
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
-
-  if (loading) {
-    return (
-      <VSLoadingState message="Loading your committees…" />
-    );
-  }
-
-  if (!committees.length) {
-    return (
-      <VSEmptyState
-        title="No committees assigned"
-        description="You are not currently assigned as a committee leader."
-      />
-    );
-  }
-
-  return (
-    <div className="mx-auto max-w-6xl space-y-8">
-      <VSPageHeader
-        eyebrow="Your teams"
-        title="My Committees"
-        description="Operational visibility for the committees you lead."
-      />
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        {committees.map((committee) => {
-          const committeeMembers = members.filter(
-            (member) =>
-              member.committeeId === committee.id,
-          );
-
-          return (
-            <VSCard
-              key={committee.id}
-              className="rounded-[2rem] border-border"
-            >
-              <VSCardHeader>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <VSCardTitle>
-                      {committee.name}
-                    </VSCardTitle>
-
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {committee.description ??
-                        "No committee description available."}
-                    </p>
-                  </div>
-
-                  <VSStatusBadge
-                    status={committee.status}
-                  />
-                </div>
-              </VSCardHeader>
-
-              <VSCardContent className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-2xl border border-border bg-background p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                      Volunteers
-                    </p>
-
-                    <p className="mt-2 text-2xl font-bold text-foreground">
-                      {committeeMembers.length}
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl border border-border bg-background p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                      Assigned
-                    </p>
-
-                    <p className="mt-2 text-2xl font-bold text-foreground">
-                      {committee.memberCount}
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-foreground">
-                      Committee members
-                    </h3>
-
-                    <span className="text-xs text-muted-foreground">
-                      {committeeMembers.length} members
-                    </span>
-                  </div>
-
-                  {committeeMembers.length === 0 ? (
-                    <div className="mt-3 rounded-2xl border border-dashed border-border p-5 text-sm text-muted-foreground">
-                      No volunteers assigned to this committee yet.
-                    </div>
-                  ) : (
-                    <div className="mt-3 space-y-2">
-                      {committeeMembers.map((member) => (
-                        <div
-                          key={member.id}
-                          className="flex items-center justify-between rounded-2xl border border-border bg-background p-4"
-                        >
-                          <div>
-                            <p className="font-medium text-foreground">
-                              {member.firstName}{" "}
-                              {member.lastName}
-                            </p>
-                            <p className="mt-1 text-xs text-muted-foreground">
-                              {member.role}
-                            </p>
-                          </div>
-
-                          <VSStatusBadge
-                            status={
-                              member.attendance
-                            }
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </VSCardContent>
-            </VSCard>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 export function LeaderVolunteersPage() {
   const [query, setQuery] = useState("");
@@ -1566,15 +1397,36 @@ export function LeaderVolunteersPage() {
                       View
                     </VSButton>
 
-                    <VSButton
-                      className="h-9"
-                      onClick={() => {
-                        setSelectedMember(member);
-                        setModal("feedback");
-                      }}
-                    >
-                      Add feedback
-                    </VSButton>
+                    {member.feedbackSubmitted ? (
+                      <VSButton
+                        variant="secondary"
+                        className="h-9"
+                        disabled
+                      >
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Feedback submitted
+                      </VSButton>
+                    ) : member.feedbackStatus === "Pending" ? (
+                      <VSButton
+                        className="h-9"
+                        onClick={() => {
+                          setSelectedMember(member);
+                          setModal("feedback");
+                        }}
+                      >
+                        <MessageSquareText className="mr-2 h-4 w-4" />
+                        Add feedback
+                      </VSButton>
+                    ) : (
+                      <VSButton
+                        variant="secondary"
+                        className="h-9"
+                        disabled
+                      >
+                        <Clock3 className="mr-2 h-4 w-4" />
+                        Feedback unavailable
+                      </VSButton>
+                    )}
                   </div>
                 </div>
               ))}
@@ -1722,6 +1574,22 @@ export function LeaderVolunteersPage() {
                   eventId={selectedMember.eventId}
                   memberProfileId={selectedMember.id}
                   onSaved={() => {
+                    if (selectedMember) {
+                      setMembers((current) =>
+                        current.map((member) =>
+                          member.id === selectedMember.id &&
+                          member.committeeId ===
+                            selectedMember.committeeId
+                            ? {
+                                ...member,
+                                feedbackSubmitted: true,
+                                feedbackStatus: "Submitted",
+                              }
+                            : member,
+                        ),
+                      );
+                    }
+
                     setSelectedMember(null);
                     setModal(null);
                   }}
@@ -1738,73 +1606,7 @@ export function LeaderVolunteersPage() {
   );
 }
 
-export function LeaderShiftsPage() {
-  const [activeTab, setActiveTab] = useState<"Today" | "Upcoming" | "Completed">("Today");
-  const [shifts, setShifts] = useState<LeaderShift[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let ignore = false;
-    async function load() {
-      const data = await leaderService.getEventShifts();
-      if (!ignore) {
-        setShifts(data);
-        setLoading(false);
-      }
-    }
-    void load();
-    return () => {
-      ignore = true;
-    };
-  }, []);
-
-  const visibleShifts = activeTab === "Today" ? shifts.filter((shift) => shift.status !== "Completed") : activeTab === "Upcoming" ? shifts.filter((shift) => shift.status === "Open" || shift.status === "Filled") : shifts.filter((shift) => shift.status === "Completed");
-
-  if (loading) return <VSLoadingState message="Loading shift coverage…" />;
-
-  return (
-    <div className="mx-auto max-w-6xl space-y-8">
-      <VSPageHeader eyebrow="Coverage" title="Shifts" description="Track staffing, availability, and team coverage across your event responsibility." />
-      <VSCard className="rounded-[2rem] border-border">
-        <VSCardContent className="p-4 sm:p-6">
-          <div className="flex flex-wrap gap-2">
-            {(["Today", "Upcoming", "Completed"] as const).map((tab) => (
-              <button key={tab} type="button" onClick={() => setActiveTab(tab)} className={cn("rounded-full border px-4 py-2 text-sm font-medium transition", activeTab === tab ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-foreground hover:border-primary/50")}>{tab}</button>
-            ))}
-          </div>
-
-          <div className="mt-6 grid gap-4">
-            {visibleShifts.length === 0 ? (
-              <VSEmptyState title="No shifts in this view" description="There are currently no shifts scheduled for this filter." />
-            ) : (
-              visibleShifts.map((shift) => (
-                <div key={shift.id} className="rounded-[1.6rem] border border-border bg-background p-5">
-                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">{shift.startTime} – {shift.endTime}</p>
-                      <h3 className="mt-2 text-xl font-semibold text-foreground">{shift.title}</h3>
-                      <p className="mt-1 text-sm text-muted-foreground">{shift.location}</p>
-                    </div>
-                    <VSStatusBadge status={shift.status} />
-                  </div>
-                  <div className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{shift.assignedVolunteers.length} / {shift.capacity} volunteers assigned</p>
-                      <p className="mt-2 text-sm text-muted-foreground">{shift.summary}</p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {shift.assignedVolunteers.map((name) => <span key={name} className="rounded-full border border-border bg-muted/30 px-2.5 py-1 text-xs font-medium text-muted-foreground">{name}</span>)}
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </VSCardContent>
-      </VSCard>
-    </div>
-  );
-}
 
 export function LeaderNotificationsPage() {
   const [items, setItems] = useState<{ id: string; title: string; body: string }[]>([]);
@@ -1832,56 +1634,6 @@ export function LeaderNotificationsPage() {
           ))
         )}
       </div>
-    </div>
-  );
-}
-
-export function LeaderProfilePage() {
-  const [profile, setProfile] = useState<{ firstName: string; lastName: string; role: string } | null>(null);
-  const [event, setEvent] = useState<LeaderEvent | null>(null);
-  const [committee, setCommittee] = useState<LeaderCommittee | null>(null);
-
-  useEffect(() => {
-    let ignore = false;
-    async function load() {
-      const [leader, currentCommittee, currentEvent] = await Promise.all([
-        leaderService.getCurrentLeaderProfile(),
-        leaderService.getCurrentCommittee(),
-        leaderService.getCurrentEvent(),
-      ]);
-      if (ignore) return;
-      setProfile(
-        leader ? { firstName: leader.firstName, lastName: leader.lastName, role: leader.role } : { firstName: "Leader", lastName: "", role: "leader" },
-      );
-      setCommittee(currentCommittee);
-      setEvent(currentEvent);
-    }
-    void load();
-    return () => {
-      ignore = true;
-    };
-  }, []);
-
-  if (!profile) return <VSLoadingState message="Loading profile…" />;
-
-  return (
-    <div className="mx-auto max-w-4xl space-y-8">
-      <VSPageHeader eyebrow="Account" title="Profile" description="Leader profile and continuity details for event operations." />
-      <VSCard className="rounded-[2rem] border-border">
-        <VSCardContent className="p-6 sm:p-8">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-            <VSAvatar name={`${profile.firstName} ${profile.lastName}`} size="lg" />
-            <div>
-              <h2 className="text-2xl font-semibold text-foreground">{profile.firstName} {profile.lastName}</h2>
-              <p className="mt-2 text-sm text-muted-foreground">{profile.role}</p>
-            </div>
-          </div>
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-border bg-background p-4"><p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Event</p><p className="mt-2 text-lg font-semibold text-foreground">{event?.title ?? "No event assigned"}</p></div>
-            <div className="rounded-2xl border border-border bg-background p-4"><p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Committee</p><p className="mt-2 text-lg font-semibold text-foreground">{committee?.name ?? "No committee assigned"}</p></div>
-          </div>
-        </VSCardContent>
-      </VSCard>
     </div>
   );
 }

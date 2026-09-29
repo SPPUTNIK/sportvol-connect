@@ -3,9 +3,13 @@ import {
   CheckCircle2,
   Clock3,
   QrCode,
-  ScanLine,
   Camera,
   CameraOff,
+  UserCheck,
+  UserRoundCheck,
+  LogOut,
+  ShieldCheck,
+  ScanLine,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { BrowserMultiFormatReader } from "@zxing/browser";
@@ -20,7 +24,6 @@ import {
   VSSectionHeader,
   VSStatusBadge,
 } from "@/components/design-system";
-import { supabase } from "@/lib/supabase";
 import { type LeaderScannerVolunteer } from "@/services/leader/leaderService";
 import { leaderService } from "@/services/leader/leaderService";
 
@@ -76,169 +79,182 @@ function VolunteerAttendanceModal({
   onCheckOut: () => void;
   onClose: () => void;
 }) {
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[2rem] border border-border bg-card p-6 shadow-2xl sm:p-8">
+  const statusLabel = formatDisplayStatus(currentStatus);
 
-        {/* Close */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground"
-          aria-label="Close"
-        >
-          ×
-        </button>
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-md">
+      <div className="relative max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-[2rem] border border-border bg-card shadow-2xl">
 
         {/* Header */}
-        <div className="pr-10">
-          <div className="flex items-center gap-2 text-sm font-medium text-emerald-600">
-            <CheckCircle2 className="h-5 w-5" />
-            Accreditation verified
-          </div>
+        <div className="border-b border-border px-5 py-5 sm:px-7">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={processingAction !== null}
+            className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-lg text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+            aria-label="Close"
+          >
+            ×
+          </button>
 
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-            Volunteer details
-          </h2>
-        </div>
+          <div className="flex items-center gap-2 pr-12">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
 
-        {/* Volunteer */}
-        <div className="mt-6 rounded-2xl border border-border bg-background p-5">
-          <div className="flex items-center gap-4">
-            <VSAvatar
-              name={`${volunteer.firstName} ${volunteer.lastName}`}
-              src={volunteer.avatar}
-              size="lg"
-            />
-
-            <div className="min-w-0 flex-1">
-              <h3 className="text-xl font-semibold text-foreground">
-                {volunteer.firstName}{" "}
-                {volunteer.lastName}
-              </h3>
-
-              <p className="mt-1 text-sm text-muted-foreground">
-                {volunteer.role}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Accreditation
               </p>
+
+              <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+                Volunteer verified
+              </h2>
             </div>
           </div>
         </div>
 
-        {/* Assignment details */}
-        <div className="mt-4 space-y-3">
+        <div className="space-y-5 p-5 sm:p-7">
 
-          <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted/20 p-4">
-            <span className="text-sm text-muted-foreground">
-              Committee
-            </span>
+          {/* Volunteer identity */}
+          <div className="rounded-2xl border border-border bg-background p-4 sm:p-5">
+            <div className="flex items-center gap-4">
+              <VSAvatar
+                name={`${volunteer.firstName} ${volunteer.lastName}`}
+                src={volunteer.avatar}
+                size="lg"
+              />
 
-            <span className="text-right text-sm font-semibold text-foreground">
-              {volunteer.committeeName ??
-                "Assigned committee"}
-            </span>
+              <div className="min-w-0 flex-1">
+                <h3 className="truncate text-lg font-semibold text-foreground sm:text-xl">
+                  {volunteer.firstName} {volunteer.lastName}
+                </h3>
+
+                <p className="mt-1 truncate text-sm text-muted-foreground">
+                  {volunteer.role}
+                </p>
+              </div>
+
+              <VSStatusBadge
+                status={statusLabel}
+              />
+            </div>
           </div>
 
-          <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted/20 p-4">
-            <span className="text-sm text-muted-foreground">
-              Role
-            </span>
+          {/* Assignment */}
+          <div>
+            <p className="mb-3 text-sm font-semibold text-foreground">
+              Assignment
+            </p>
 
-            <span className="text-right text-sm font-semibold text-foreground">
-              {volunteer.role}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted/20 p-4">
-            <span className="text-sm text-muted-foreground">
-              Event
-            </span>
-
-            <span className="text-right text-sm font-semibold text-foreground">
-              {volunteer.eventTitle ??
-                "Assigned event"}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted/20 p-4">
-            <span className="text-sm text-muted-foreground">
-              Shift
-            </span>
-
-            <span className="text-right text-sm font-semibold text-foreground">
-              {volunteer.shiftTitle ??
-                "Assigned shift"}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted/20 p-4">
-            <span className="text-sm text-muted-foreground">
-              Attendance
-            </span>
-
-            <VSStatusBadge
-              status={formatDisplayStatus(
-                currentStatus,
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Attendance actions */}
-        <div className="mt-6">
-
-          {isCheckedOut ? (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="mt-0.5 h-5 w-5" />
-
-                <div>
-                  <p className="font-semibold">
-                    Checked out
+            <div className="overflow-hidden rounded-2xl border border-border">
+              <div className="grid grid-cols-1 divide-y divide-border sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+                <div className="p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Committee
                   </p>
 
-                  <p className="mt-1 text-sm leading-6">
-                    This volunteer has already been
-                    checked out for this shift.
+                  <p className="mt-1.5 truncate text-sm font-semibold text-foreground">
+                    {volunteer.committeeName ??
+                      "Assigned committee"}
+                  </p>
+                </div>
+
+                <div className="p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Role
+                  </p>
+
+                  <p className="mt-1.5 truncate text-sm font-semibold text-foreground">
+                    {volunteer.role}
+                  </p>
+                </div>
+
+                <div className="border-t border-border p-4 sm:col-span-2">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Event
+                  </p>
+
+                  <p className="mt-1.5 text-sm font-semibold text-foreground">
+                    {volunteer.eventTitle ??
+                      "Assigned event"}
+                  </p>
+                </div>
+
+                <div className="border-t border-border p-4 sm:col-span-2">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Shift
+                  </p>
+
+                  <p className="mt-1.5 text-sm font-semibold text-foreground">
+                    {volunteer.shiftTitle ??
+                      "Assigned shift"}
                   </p>
                 </div>
               </div>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          </div>
 
-              <VSButton
-                className="h-12 w-full"
-                onClick={onCheckIn}
-                disabled={
-                  processingAction !== null ||
-                  !canCheckIn
-                }
-              >
-                {processingAction === "check-in"
-                  ? "Checking in..."
-                  : "Check in"}
-              </VSButton>
+          {/* Attendance state */}
+          <div>
+            <p className="mb-3 text-sm font-semibold text-foreground">
+              Attendance
+            </p>
 
-              <VSButton
-                variant="outline"
-                className="h-12 w-full"
-                onClick={onCheckOut}
-                disabled={
-                  processingAction !== null ||
-                  !canCheckOut
-                }
-              >
-                {processingAction === "check-out"
-                  ? "Checking out..."
-                  : "Check out"}
-              </VSButton>
+            {isCheckedOut ? (
+              <div className="flex items-start gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
 
-            </div>
-          )}
-        </div>
+                <div>
+                  <p className="font-semibold text-foreground">
+                    Attendance completed
+                  </p>
 
-        {/* Close */}
-        <div className="mt-4">
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    This volunteer has already checked out
+                    from this shift.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <VSButton
+                  className="h-12 w-full"
+                  onClick={onCheckIn}
+                  disabled={
+                    processingAction !== null ||
+                    !canCheckIn
+                  }
+                >
+                  <UserCheck className="mr-2 h-4 w-4" />
+
+                  {processingAction === "check-in"
+                    ? "Checking in..."
+                    : "Check in"}
+                </VSButton>
+
+                <VSButton
+                  variant="outline"
+                  className="h-12 w-full"
+                  onClick={onCheckOut}
+                  disabled={
+                    processingAction !== null ||
+                    !canCheckOut
+                  }
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+
+                  {processingAction === "check-out"
+                    ? "Checking out..."
+                    : "Check out"}
+                </VSButton>
+              </div>
+            )}
+          </div>
+
+          {/* Close */}
           <VSButton
             variant="outline"
             className="h-11 w-full"
@@ -585,14 +601,6 @@ function LeaderScannerPage() {
                 "Volunteer verified.",
               );
 
-              setSelectedVolunteer(
-                volunteer,
-              );
-
-              toast.success(
-                "Accreditation verified.",
-              );
-
               console.log(
                 "[QR] VOLUNTEER VERIFIED:",
                 volunteer,
@@ -865,148 +873,360 @@ function LeaderScannerPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
+
       <VSPageHeader
         eyebrow="Operations"
         title="QR Scanner"
-        description="Scan a volunteer accreditation to check them in or out."
+        description="Scan a volunteer accreditation to verify their identity and manage attendance."
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+
         {/* ======================================================
-            REAL SCANNER
+            SCANNER
         ====================================================== */}
 
-        <VSCard className="rounded-[2rem] border-border bg-card shadow-[var(--shadow-float)]">
-          <VSCardContent className="p-6 sm:p-8">
-            <div className="flex items-center justify-between gap-4">
+        <VSCard className="overflow-hidden rounded-[2rem] border-border bg-card shadow-[var(--shadow-float)]">
+          <VSCardContent className="p-0">
+
+            {/* Scanner header */}
+            <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-5 sm:px-7">
               <div>
                 <p className="eyebrow">
-                  Scan accreditation
+                  Attendance
                 </p>
 
-                <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
-                  QR Scanner
+                <h2 className="mt-1.5 text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+                  Scan accreditation
                 </h2>
+
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Use the camera to scan a volunteer QR code.
+                </p>
               </div>
 
-              <div className="flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                {isScanning ? (
-                  <>
-                    <Camera className="h-3.5 w-3.5 text-primary" />
-                    Live camera
-                  </>
-                ) : (
-                  <>
-                    <CameraOff className="h-3.5 w-3.5" />
-                    Camera off
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Camera viewport */}
-
-            <div className="mt-6 overflow-hidden rounded-[2rem] border border-border bg-black">
-              <div className="relative aspect-video w-full">
-                <video
-                  ref={videoRef}
-                  className={`h-full w-full object-cover ${
+              <div
+                className={`flex shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold ${
+                  isScanning
+                    ? "border-primary/20 bg-primary/5 text-primary"
+                    : "border-border bg-background text-muted-foreground"
+                }`}
+              >
+                <span
+                  className={`h-2 w-2 rounded-full ${
                     isScanning
-                      ? "opacity-100"
-                      : "opacity-0"
+                      ? "animate-pulse bg-primary"
+                      : "bg-muted-foreground/40"
                   }`}
-                  muted
-                  playsInline
-                  autoPlay
                 />
 
-                {!isScanning && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/30 p-6 text-center">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-primary/20 bg-primary/5 text-primary">
-                      <QrCode
-                        className="h-10 w-10"
-                        aria-hidden="true"
-                      />
-                    </div>
-
-                    <p className="mt-5 text-sm leading-6 text-muted-foreground">
-                      Start the camera and point it at
-                      the volunteer's accreditation QR
-                      code.
-                    </p>
-                  </div>
-                )}
-
-                {isScanning && (
-                  <>
-                    {/* Scanner frame */}
-
-                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                      <div className="relative h-56 w-56 rounded-3xl border-2 border-primary">
-                        <span className="absolute left-0 top-0 h-8 w-8 border-l-4 border-t-4 border-primary" />
-                        <span className="absolute right-0 top-0 h-8 w-8 border-r-4 border-t-4 border-primary" />
-                        <span className="absolute bottom-0 left-0 h-8 w-8 border-b-4 border-l-4 border-primary" />
-                        <span className="absolute bottom-0 right-0 h-8 w-8 border-b-4 border-r-4 border-primary" />
-
-                        <div className="absolute left-4 right-4 top-1/2 h-0.5 animate-pulse bg-primary" />
-                      </div>
-                    </div>
-
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/70 px-4 py-2 text-xs font-medium text-white backdrop-blur">
-                      {scanMessage}
-                    </div>
-                  </>
-                )}
+                {isScanning
+                  ? "Camera live"
+                  : "Camera off"}
               </div>
             </div>
 
-            {/* Camera error */}
+            <div className="p-5 sm:p-7">
 
-            {cameraError && (
-              <div className="mt-4 rounded-2xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
-                {cameraError}
+              {/* Camera */}
+              <div className="relative overflow-hidden rounded-[1.75rem] border border-border bg-black shadow-[var(--shadow-float)]">
+                <div className="relative aspect-[4/3] w-full sm:aspect-video">
+
+                  {/* Camera */}
+                  <video
+                    ref={videoRef}
+                    className={`h-full w-full object-cover transition-all duration-500 ${
+                      isScanning
+                        ? "scale-100 opacity-100"
+                        : "scale-[1.02] opacity-0"
+                    }`}
+                    muted
+                    playsInline
+                    autoPlay
+                  />
+
+                  {/* Empty state */}
+                  {!isScanning && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-background">
+                      <div className="flex max-w-sm flex-col items-center px-6 text-center">
+
+                        {/* Icon */}
+                        <div className="relative flex h-20 w-20 items-center justify-center rounded-[1.5rem] border border-primary/20 bg-primary/10 text-primary shadow-sm">
+                          <div className="absolute inset-2 rounded-xl border border-primary/10" />
+                          <QrCode className="relative h-9 w-9" />
+                        </div>
+
+                        <div className="mt-6">
+                          <h3 className="text-lg font-semibold tracking-tight text-foreground">
+                            Ready to scan
+                          </h3>
+
+                          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                            Start the camera and position the volunteer's
+                            accreditation QR code inside the frame.
+                          </p>
+                        </div>
+
+                        {/* Status */}
+                        <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-2 text-xs font-medium text-muted-foreground">
+                          <span className="h-2 w-2 rounded-full bg-muted-foreground/50" />
+                          Camera is off
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Active scanner */}
+                  {isScanning && (
+                    <>
+                      {/* Dark cinematic overlay */}
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/65" />
+
+                      {/* Top status */}
+                      <div className="absolute left-4 right-4 top-4 flex items-center justify-between gap-3">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/55 px-3.5 py-2 text-xs font-medium text-white shadow-lg backdrop-blur-xl">
+                          <span className="relative flex h-2 w-2">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+                            <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                          </span>
+
+                          Live camera
+                        </div>
+
+                        <div className="hidden rounded-full border border-white/10 bg-black/55 px-3.5 py-2 text-xs font-medium text-white backdrop-blur-xl sm:block">
+                          Scan accreditation
+                        </div>
+                      </div>
+
+                      {/* Scanner frame */}
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6">
+                        <div className="relative h-60 w-60 max-w-[68vw] max-h-[68vw] rounded-[2rem] border border-white/20">
+
+                          {/* Soft glow */}
+                          <div className="absolute -inset-3 rounded-[2.25rem] border border-primary/10" />
+
+                          {/* Corners */}
+                          <span className="absolute -left-px -top-px h-11 w-11 rounded-tl-[1.9rem] border-l-[4px] border-t-[4px] border-primary shadow-[-2px_-2px_14px_rgba(139,216,208,0.25)]" />
+
+                          <span className="absolute -right-px -top-px h-11 w-11 rounded-tr-[1.9rem] border-r-[4px] border-t-[4px] border-primary shadow-[2px_-2px_14px_rgba(139,216,208,0.25)]" />
+
+                          <span className="absolute -bottom-px -left-px h-11 w-11 rounded-bl-[1.9rem] border-b-[4px] border-l-[4px] border-primary shadow-[-2px_2px_14px_rgba(139,216,208,0.25)]" />
+
+                          <span className="absolute -bottom-px -right-px h-11 w-11 rounded-br-[1.9rem] border-b-[4px] border-r-[4px] border-primary shadow-[2px_2px_14px_rgba(139,216,208,0.25)]" />
+
+                          {/* Scan line */}
+                          <div className="absolute left-6 right-6 top-1/2 h-[2px] -translate-y-1/2 bg-primary shadow-[0_0_16px_currentColor] animate-pulse" />
+
+                          {/* Center indicator */}
+                          <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary shadow-[0_0_14px_currentColor]" />
+                        </div>
+                      </div>
+
+                      {/* Bottom message */}
+                      <div className="absolute bottom-4 left-4 right-4 flex justify-center">
+                        <div className="inline-flex max-w-full items-center gap-2.5 rounded-full border border-white/10 bg-black/60 px-4 py-2.5 text-xs font-medium text-white shadow-xl backdrop-blur-xl">
+                          <ScanLine className="h-3.5 w-3.5 shrink-0 text-primary" />
+                          <span className="truncate">
+                            {scanMessage}
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
-            )}
 
-            {/* Controls */}
+              {/* Message / error */}
+              {cameraError ? (
+                <div className="mt-4 rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
+                  <div className="flex items-start gap-3">
+                    <CameraOff className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              {!isScanning ? (
-                <VSButton
-                  onClick={() => {
-                    void startScanner();
-                  }}
-                  className="h-11 flex-1"
-                  disabled={loading}
-                >
-                  <Camera
-                    className="mr-2 h-4 w-4"
-                    aria-hidden="true"
-                  />
+                    <div>
+                      <p className="text-sm font-semibold text-destructive">
+                        Camera unavailable
+                      </p>
 
-                  {loading
-                    ? "Loading scanner..."
-                    : "Start QR Scanner"}
-                </VSButton>
+                      <p className="mt-1 text-sm leading-6 text-destructive/80">
+                        {cameraError}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               ) : (
-                <VSButton
-                  onClick={stopScanner}
-                  variant="outline"
-                  className="h-11 flex-1"
-                >
-                  <CameraOff
-                    className="mr-2 h-4 w-4"
-                    aria-hidden="true"
-                  />
+                <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                  <QrCode className="h-4 w-4 shrink-0 text-primary" />
 
-                  Stop Scanner
-                </VSButton>
+                  <span>
+                    {isScanning
+                      ? scanMessage
+                      : "The scanner is ready when you are."}
+                  </span>
+                </div>
               )}
+
+              {/* Controls */}
+              <div className="mt-5">
+                {!isScanning ? (
+                  <VSButton
+                    onClick={() => {
+                      void startScanner();
+                    }}
+                    className="h-12 w-full"
+                    disabled={loading}
+                  >
+                    <Camera className="mr-2 h-4 w-4" />
+
+                    {loading
+                      ? "Loading scanner..."
+                      : "Start QR Scanner"}
+                  </VSButton>
+                ) : (
+                  <VSButton
+                    onClick={stopScanner}
+                    variant="outline"
+                    className="h-12 w-full"
+                  >
+                    <CameraOff className="mr-2 h-4 w-4" />
+                    Stop Scanner
+                  </VSButton>
+                )}
+              </div>
+
+              {/* Tips */}
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-border bg-muted/20 p-3.5">
+                  <p className="text-xs font-semibold text-foreground">
+                    01
+                  </p>
+
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Start the camera
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-border bg-muted/20 p-3.5">
+                  <p className="text-xs font-semibold text-foreground">
+                    02
+                  </p>
+
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Center the QR code
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-border bg-muted/20 p-3.5">
+                  <p className="text-xs font-semibold text-foreground">
+                    03
+                  </p>
+
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Confirm attendance
+                  </p>
+                </div>
+              </div>
             </div>
           </VSCardContent>
         </VSCard>
 
-        
+        {/* ======================================================
+            SCANNER INFO
+        ====================================================== */}
+
+        <VSCard className="rounded-[2rem] border-border bg-card shadow-[var(--shadow-float)]">
+          <VSCardContent className="flex h-full flex-col p-5 sm:p-7">
+
+            <div>
+              <p className="eyebrow">
+                Workflow
+              </p>
+
+              <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground">
+                Attendance control
+              </h2>
+
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Verify a volunteer first, then record their
+                attendance for the assigned shift.
+              </p>
+            </div>
+
+            <div className="mt-6 space-y-3">
+
+              <div className="flex gap-4 rounded-2xl border border-border bg-background p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <QrCode className="h-5 w-5" />
+                </div>
+
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    1. Scan accreditation
+                  </p>
+
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Scan the QR code printed on the
+                    volunteer accreditation.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 rounded-2xl border border-border bg-background p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <UserRoundCheck className="h-5 w-5" />
+                </div>
+
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    2. Verify volunteer
+                  </p>
+
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Review their identity, committee, role
+                    and assigned shift.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 rounded-2xl border border-border bg-background p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
+
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    3. Record attendance
+                  </p>
+
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Check the volunteer in or out from
+                    their assigned shift.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            <div className="mt-auto pt-6">
+              <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
+                <div className="flex items-start gap-3">
+                  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      Verified attendance
+                    </p>
+
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      Each successful action is recorded
+                      against the volunteer's assigned shift.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </VSCardContent>
+        </VSCard>
       </div>
 
 
@@ -1016,26 +1236,37 @@ function LeaderScannerPage() {
       ======================================================== */}
 
       <div className="space-y-4">
+
         <VSSectionHeader
           title="Recent scans"
           description="Latest attendance updates from your committee team."
         />
 
         {recentScans.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {recentScans.map((item) => (
               <VSCard
                 key={item.id}
-                className="rounded-[1.75rem] border-border"
+                className="rounded-[1.5rem] border-border transition-shadow hover:shadow-[var(--shadow-float)]"
               >
                 <VSCardContent className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-base font-semibold text-foreground">
+
+                  <div className="flex items-center gap-3">
+
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      {item.status === "checked_in" ? (
+                        <UserCheck className="h-5 w-5" />
+                      ) : (
+                        <CheckCircle2 className="h-5 w-5" />
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-foreground">
                         {item.volunteerName}
                       </p>
 
-                      <p className="mt-1 text-sm text-muted-foreground">
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
                         {item.role}
                       </p>
                     </div>
@@ -1049,22 +1280,32 @@ function LeaderScannerPage() {
                     />
                   </div>
 
-                  <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock3
-                      className="h-4 w-4"
-                      aria-hidden="true"
-                    />
+                  <div className="mt-4 flex items-center gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
+                    <Clock3 className="h-3.5 w-3.5" />
 
                     <span>{item.timestamp}</span>
                   </div>
+
                 </VSCardContent>
               </VSCard>
             ))}
           </div>
         ) : (
           <VSCard className="rounded-[1.75rem] border-border">
-            <VSCardContent className="p-6 text-center text-sm text-muted-foreground">
-              No recent scans yet.
+            <VSCardContent className="flex flex-col items-center justify-center px-6 py-12 text-center">
+
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+                <QrCode className="h-7 w-7" />
+              </div>
+
+              <h3 className="mt-4 text-sm font-semibold text-foreground">
+                No scans yet
+              </h3>
+
+              <p className="mt-1 max-w-sm text-sm leading-6 text-muted-foreground">
+                Successful attendance scans will appear here.
+              </p>
+
             </VSCardContent>
           </VSCard>
         )}

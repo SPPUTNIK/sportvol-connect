@@ -42,13 +42,19 @@ export type LeaderMember = {
   lastName: string;
   avatar: string | null;
   role: string;
-  status: "Assigned" | "Checked in" | "Pending" | "On standby";
+  status:
+    | "Assigned"
+    | "Checked in"
+    | "Pending"
+    | "On standby";
   assignedShift: string;
   attendance: string;
   feedbackStatus:
     | "Submitted"
     | "Pending"
-    | "Needs follow-up";
+    | "Needs follow-up"
+    | "Not available";
+  feedbackSubmitted: boolean;
   committeeId: string;
   eventId: string;
 };
@@ -67,6 +73,23 @@ export type LeaderShift = {
   capacity: number;
   summary: string;
 };
+
+export type LeaderShiftMember = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  avatar: string | null;
+  role: string;
+  assignmentStatus: string;
+  attendanceStatus: "Assigned" | "Checked in" | "Checked out" | "Absent";
+  checkInTime: string | null;
+  checkOutTime: string | null;
+};
+
+export type LeaderShiftDetails = LeaderShift & {
+  members: LeaderShiftMember[];
+};
+
 
 export type LeaderScannerVolunteer = {
   id: string;
@@ -205,9 +228,46 @@ function toFeedbackStatus(
       return "Needs follow-up";
 
     case "pending":
+      return "Pending";
+
+    case "not_available":
+      return "Not available";
+
     default:
       return "Pending";
   }
+}
+
+/**
+ * Feedback becomes available during the last 24 hours
+ * before the event ends.
+ */
+function isFeedbackWindowOpen(
+  endDate: string,
+  endTime?: string | null,
+): boolean {
+  if (!endDate) {
+    return false;
+  }
+
+  const eventEnd = new Date(
+    `${endDate}T${endTime || "23:59:59"}`,
+  );
+
+  if (Number.isNaN(eventEnd.getTime())) {
+    return false;
+  }
+
+  const now = new Date();
+
+  const feedbackOpensAt =
+    eventEnd.getTime() -
+    24 * 60 * 60 * 1000;
+
+  return (
+    now.getTime() >=
+    feedbackOpensAt
+  );
 }
 
 export const leaderService = {
@@ -272,38 +332,29 @@ export const leaderService = {
   async getLeaderCommittees(): Promise<
     LeaderCommittee[]
   > {
-    const userId =
-      await getCurrentUserId();
+    const userId = await getCurrentUserId();
+
 
     if (!userId) {
       return [];
     }
 
-    const { data, error } =
-      await supabase
-        .from("committees")
-        .select(`
-          id,
-          event_id,
-          name,
-          description,
-          status,
-          created_at
-        `)
-        .eq(
-          "leader_profile_id",
-          userId,
-        )
-        .order("created_at", {
-          ascending: false,
-        });
+    const { data, error } = await supabase
+      .from("committees")
+      .select(`
+        id,
+        event_id,
+        name,
+        description,
+        leader_profile_id,
+        status,
+        created_at
+      `)
+      .eq("leader_profile_id", userId)
+      .order("created_at", { ascending: false });
+
 
     if (error) {
-      console.error(
-        "Failed to load leader committees:",
-        error,
-      );
-
       return [];
     }
 
@@ -629,66 +680,105 @@ export const leaderService = {
   // COMMITTEE → SHIFTS
   // ============================================================
 
-  async getLeaderCommitteeShifts(): Promise<
-    any[]
-  > {
-    const committees =
-      await this.getLeaderCommittees();
+  async getLeaderCommitteeShifts(): Promise<any[]> {
+    const committees = await this.getLeaderCommittees();
+
 
     if (!committees.length) {
       return [];
     }
 
-    const committeeIds =
-      committees.map(
-        (committee) =>
-          committee.id,
-      );
+    const committeeIds = committees.map((c) => c.id);
 
-    const { data, error } =
-      await supabase
-        .from("committee_shifts")
-        .select(`
-          id,
-          committee_id,
-          shift_id,
-          committee:committees(
-            id,
-            event_id,
-            name
-          ),
-          shift:event_shifts(
-            id,
-            event_id,
-            role_id,
-            title,
-            location,
-            date,
-            start_time,
-            end_time,
-            capacity,
-            instructions,
-            role:event_roles(
-              id,
-              name
-            )
-          )
-        `)
-        .in(
-          "committee_id",
-          committeeIds,
-        );
 
-    if (error) {
+    // 1. Get committee -> shift links
+    const { data: links, error: linksError } = await supabase
+      .from("committee_shifts")
+      .select(`
+        id,
+        committee_id,
+        shift_id
+      `)
+      .in("committee_id", committeeIds);
+
+    if (linksError) {
       console.error(
-        "Failed to load leader committee shifts:",
-        error,
+        "[Leader Shifts] committee_shifts error:",
+        linksError
       );
-
       return [];
     }
 
-    return (data ?? []) as any[];
+
+    if (!links?.length) {
+      return [];
+    }
+
+    const shiftIds = links.map((item) => item.shift_id);
+
+    // 2. Get actual event shifts
+    const { data: shifts, error: shiftsError } = await supabase
+      .from("event_shifts")
+      .select(`
+        id,
+        event_id,
+        role_id,
+        title,
+        location,
+        date,
+        start_time,
+        end_time,
+        capacity,
+        instructions
+      `)
+      .in("id", shiftIds);
+
+    if (shiftsError) {
+      console.error(
+        "[Leader Shifts] event_shifts error:",
+        shiftsError
+      );
+      return [];
+    }
+
+    // 3. Combine committee links + shifts
+    const result = links
+      .map((link) => {
+        const shift = shifts?.find(
+          (item) => item.id === link.shift_id
+        );
+
+        if (!shift) {
+          console.warn(
+            "[Leader Shifts] Shift not found:",
+            link.shift_id
+          );
+          return null;
+        }
+
+        const committee = committees.find(
+          (item) => item.id === link.committee_id
+        );
+
+        return {
+          id: link.id,
+          committee_id: link.committee_id,
+          shift_id: link.shift_id,
+
+          committee: committee
+            ? {
+                id: committee.id,
+                event_id: committee.eventId,
+                name: committee.name,
+              }
+            : null,
+
+          shift,
+        };
+      })
+      .filter(Boolean);
+
+    return result as any[];
   },
 
   // ============================================================
@@ -802,11 +892,99 @@ export const leaderService = {
     const committeeShifts =
       await this.getLeaderCommitteeShifts();
 
+    // ----------------------------------------------------------
+    // 4. Get event information for feedback window
+    // ----------------------------------------------------------
+
+    const eventIds = [
+      ...new Set(
+        committees
+          .map(
+            (committee) =>
+              committee.eventId,
+          )
+          .filter(Boolean),
+      ),
+    ];
+
+    const { data: events, error: eventsError } =
+      await supabase
+        .from("events")
+        .select(`
+          id,
+          end_date,
+          end_time
+        `)
+        .in("id", eventIds);
+
+    if (eventsError) {
+      console.error(
+        "Failed to load event feedback dates:",
+        eventsError,
+      );
+    }
+
+    const eventsById =
+      new Map(
+        (events ?? []).map(
+          (event) => [
+            event.id,
+            event,
+          ],
+        ),
+      );
+
+    // ----------------------------------------------------------
+    // 5. Get existing feedback
+    // ----------------------------------------------------------
+
+    const memberProfileIds = [
+      ...new Set(
+        memberRows.map(
+          (member) =>
+            member.profile_id,
+        ),
+      ),
+    ];
+
+    const {
+      data: feedbackRows,
+      error: feedbackError,
+    } = await supabase
+      .from("committee_feedback")
+      .select(`
+        committee_id,
+        member_profile_id
+      `)
+      .in(
+        "committee_id",
+        committeeIds,
+      )
+      .in(
+        "member_profile_id",
+        memberProfileIds,
+      );
+
+    if (feedbackError) {
+      console.error(
+        "Failed to load committee feedback:",
+        feedbackError,
+      );
+    }
+
+    const feedbackByMember =
+      new Set(
+        (feedbackRows ?? []).map(
+          (feedback) =>
+            `${feedback.committee_id}:${feedback.member_profile_id}`,
+        ),
+      );
+
     const members: LeaderMember[] =
       [];
 
     // ----------------------------------------------------------
-    // 4. Build every real volunteer
+    // 6. Build every real volunteer
     // ----------------------------------------------------------
 
     for (const row of memberRows) {
@@ -999,6 +1177,43 @@ export const leaderService = {
           "Checked in";
       }
 
+      // --------------------------------------------------------
+      // Feedback status
+      // --------------------------------------------------------
+
+      const event =
+        eventsById.get(
+          committee.eventId,
+        );
+
+      const feedbackKey =
+        `${committee.id}:${row.profile_id}`;
+
+      const feedbackSubmitted =
+        feedbackByMember.has(
+          feedbackKey,
+        );
+
+      const feedbackAvailable =
+        isFeedbackWindowOpen(
+          event?.end_date ?? "",
+          event?.end_time ?? null,
+        );
+
+      let feedbackStatus:
+        LeaderMember["feedbackStatus"];
+
+      if (feedbackSubmitted) {
+        feedbackStatus =
+          "Submitted";
+      } else if (feedbackAvailable) {
+        feedbackStatus =
+          "Pending";
+      } else {
+        feedbackStatus =
+          "Not available";
+      }
+
       members.push({
         id:
           profile.id,
@@ -1028,10 +1243,9 @@ export const leaderService = {
         attendance:
           attendanceLabel,
 
-        feedbackStatus:
-          toFeedbackStatus(
-            null,
-          ),
+        feedbackStatus,
+
+        feedbackSubmitted,
 
         committeeId:
           committee.id,
@@ -1048,26 +1262,29 @@ export const leaderService = {
   // SHIFTS
   // ============================================================
 
-  async getEventShifts(): Promise<
-    LeaderShift[]
-  > {
-    const committeeShifts =
-      await this.getLeaderCommitteeShifts();
+  async getEventShifts(): Promise<LeaderShift[]> {
+    const committeeShifts = await this.getLeaderCommitteeShifts();
 
     if (!committeeShifts.length) {
       return [];
     }
 
-    const result: LeaderShift[] =
-      [];
+    const result: LeaderShift[] = [];
 
     for (const item of committeeShifts) {
-      const shift =
-        item.shift;
+      const shift = item.shift;
 
       if (!shift) {
+        console.warn(
+          "[Leader Shifts] Missing shift:",
+          item
+        );
         continue;
       }
+
+      // --------------------------------------------------
+      // Assignments
+      // --------------------------------------------------
 
       const {
         data: assignments,
@@ -1078,37 +1295,24 @@ export const leaderService = {
           profile_id,
           status
         `)
-        .eq(
-          "shift_id",
-          shift.id,
-        )
-        .eq(
-          "status",
-          "assigned",
-        );
-
-      if (assignmentsError) {
-        console.error(
-          "Failed to load shift assignments:",
-          assignmentsError,
-        );
-      }
+        .eq("shift_id", shift.id);
 
       const assigned =
-        assignments ?? [];
-
-      const assignedProfileIds =
-        assigned.map(
-          (assignment) =>
-            assignment.profile_id,
+        (assignments ?? []).filter(
+          (assignment) => assignment.status === "assigned"
         );
 
-      let assignedVolunteers: string[] =
-        [];
+      const assignedProfileIds = assigned
+        .map((assignment) => assignment.profile_id)
+        .filter(Boolean);
 
-      if (
-        assignedProfileIds.length
-      ) {
+      let assignedVolunteers: string[] = [];
+
+      // --------------------------------------------------
+      // Profiles
+      // --------------------------------------------------
+
+      if (assignedProfileIds.length) {
         const {
           data: profiles,
           error: profilesError,
@@ -1119,109 +1323,72 @@ export const leaderService = {
             first_name,
             last_name
           `)
-          .in(
-            "id",
-            assignedProfileIds,
-          );
+          .in("id", assignedProfileIds);
 
         if (profilesError) {
-          console.error(
-            "Failed to load shift volunteer profiles:",
-            profilesError,
-          );
-        }
-
-        const profilesById =
-          new Map(
-            (profiles ?? []).map(
-              (profile) => [
-                profile.id,
-                profile,
-              ],
-            ),
+          continue;
+        } else {
+          const profileMap = new Map(
+            (profiles ?? []).map((profile) => [
+              profile.id,
+              profile,
+            ])
           );
 
-        assignedVolunteers =
-          assignedProfileIds.map(
+          assignedVolunteers = assignedProfileIds.map(
             (profileId) => {
-              const profile =
-                profilesById.get(
-                  profileId,
-                );
+              const profile = profileMap.get(profileId);
+
+              if (!profile) {
+                return "Volunteer";
+              }
 
               return getDisplayName(
-                profile?.first_name,
-                profile?.last_name,
+                profile.first_name,
+                profile.last_name
               );
-            },
+            }
           );
+        }
       }
 
-      const assignedCount =
-        assigned.length;
+      // --------------------------------------------------
+      // Status
+      // --------------------------------------------------
 
-      const now =
-        new Date();
+      const assignedCount = assigned.length;
 
-      const shiftEnd =
-        new Date(
-          `${shift.date}T${shift.end_time}`,
-        );
+      const capacity = Number(shift.capacity ?? 0);
 
-      let status:
-        LeaderShift["status"];
+      const shiftEnd = new Date(
+        `${shift.date}T${shift.end_time}`
+      );
 
-      if (shiftEnd < now) {
-        status =
-          "Completed";
-      } else if (
-        assignedCount >=
-        Number(
-          shift.capacity ?? 0,
-        )
-      ) {
-        status =
-          "Filled";
+      const now = new Date();
+
+      let status: LeaderShift["status"];
+
+      if (shiftEnd.getTime() < now.getTime()) {
+        status = "Completed";
+      } else if (capacity > 0 && assignedCount >= capacity) {
+        status = "Filled";
       } else {
-        status =
-          "Open";
+        status = "Open";
       }
+
 
       result.push({
-        id:
-          shift.id,
-
-        committeeId:
-          item.committee_id,
-
-        eventId:
-          shift.event_id,
-
-        title:
-          shift.title,
-
-        location:
-          shift.location ??
-          "TBD",
-
-        date:
-          shift.date,
-
-        startTime:
-          shift.start_time,
-
-        endTime:
-          shift.end_time,
-
+        id: shift.id,
+        committeeId: item.committee_id,
+        eventId: shift.event_id,
+        title: shift.title,
+        location: shift.location ?? "TBD",
+        date: shift.date,
+        startTime: shift.start_time,
+        endTime: shift.end_time,
         status,
-
         assignedVolunteers,
-
-        capacity:
-          Number(
-            shift.capacity ?? 0,
-          ),
-
+        capacity,
         summary:
           shift.instructions ??
           "Shift coverage for committee operations.",
@@ -1229,6 +1396,155 @@ export const leaderService = {
     }
 
     return result;
+  },
+
+  async getShiftDetails(
+    shiftId: string
+  ): Promise<LeaderShiftDetails | null> {
+    // getEventShifts already limits results to shifts
+    // belonging to the current leader's committees.
+    const shifts = await this.getEventShifts();
+
+    const shift = shifts.find((item) => item.id === shiftId);
+
+    if (!shift) {
+      return null;
+    }
+
+    const { data: assignments, error: assignmentsError } = await supabase
+      .from("shift_assignments")
+      .select(`
+        profile_id,
+        status,
+        assigned_at
+      `)
+      .eq("shift_id", shiftId)
+      .eq("status", "assigned")
+      .order("assigned_at", {
+        ascending: true,
+      });
+
+    if (assignmentsError) {
+      throw assignmentsError;
+    }
+
+    const profileIds = Array.from(
+      new Set(
+        (assignments ?? [])
+          .map((assignment) => assignment.profile_id)
+          .filter(Boolean)
+      )
+    );
+
+    if (profileIds.length === 0) {
+      return {
+        ...shift,
+        members: [],
+      };
+    }
+
+    const [{ data: profiles, error: profilesError }, { data: attendance, error: attendanceError }] =
+      await Promise.all([
+        supabase
+          .from("profiles")
+          .select(`
+            id,
+            first_name,
+            last_name,
+            avatar_url
+          `)
+          .in("id", profileIds),
+
+        supabase
+          .from("attendance_records")
+          .select(`
+            profile_id,
+            status,
+            check_in_time,
+            check_out_time,
+            updated_at
+          `)
+          .eq("shift_id", shiftId)
+          .in("profile_id", profileIds)
+          .order("updated_at", {
+            ascending: false,
+          }),
+      ]);
+
+    if (profilesError) {
+      throw profilesError;
+    }
+
+    if (attendanceError) {
+      throw attendanceError;
+    }
+
+    const profileMap = new Map(
+      (profiles ?? []).map((profile) => [
+        profile.id,
+        profile,
+      ])
+    );
+
+    const attendanceMap = new Map<string, any>();
+
+    for (const record of attendance ?? []) {
+      if (!attendanceMap.has(record.profile_id)) {
+        attendanceMap.set(record.profile_id, record);
+      }
+    }
+
+    const members: LeaderShiftMember[] = (assignments ?? [])
+      .map((assignment) => {
+        const profile = profileMap.get(assignment.profile_id);
+
+        if (!profile) {
+          return null;
+        }
+
+        const attendanceRecord = attendanceMap.get(
+          assignment.profile_id
+        );
+
+        let attendanceStatus: LeaderShiftMember["attendanceStatus"] =
+          "Assigned";
+
+        if (
+          attendanceRecord?.check_out_time ||
+          attendanceRecord?.status === "checked-out" ||
+          attendanceRecord?.status === "checked_out"
+        ) {
+          attendanceStatus = "Checked out";
+        } else if (
+          attendanceRecord?.check_in_time ||
+          attendanceRecord?.status === "checked-in" ||
+          attendanceRecord?.status === "checked_in"
+        ) {
+          attendanceStatus = "Checked in";
+        } else if (
+          attendanceRecord?.status === "absent"
+        ) {
+          attendanceStatus = "Absent";
+        }
+
+        return {
+          id: profile.id,
+          firstName: profile.first_name ?? "",
+          lastName: profile.last_name ?? "",
+          avatar: profile.avatar_url ?? null,
+          role: "Volunteer",
+          assignmentStatus: assignment.status ?? "assigned",
+          attendanceStatus,
+          checkInTime: attendanceRecord?.check_in_time ?? null,
+          checkOutTime: attendanceRecord?.check_out_time ?? null,
+        };
+      })
+      .filter(Boolean) as LeaderShiftMember[];
+
+    return {
+      ...shift,
+      members,
+    };
   },
 
   // ============================================================
@@ -2305,17 +2621,19 @@ export const leaderService = {
     // 1. Verify that the current user leads this committee
     // ----------------------------------------------------------
 
-    const { data: committee, error: committeeError } =
-      await supabase
-        .from("committees")
-        .select(`
-          id,
-          event_id,
-          leader_profile_id,
-          status
-        `)
-        .eq("id", committeeId)
-        .maybeSingle();
+    const {
+      data: committee,
+      error: committeeError,
+    } = await supabase
+      .from("committees")
+      .select(`
+        id,
+        event_id,
+        leader_profile_id,
+        status
+      `)
+      .eq("id", committeeId)
+      .maybeSingle();
 
     if (committeeError) {
       throw new Error(
@@ -2353,7 +2671,50 @@ export const leaderService = {
     }
 
     // ----------------------------------------------------------
-    // 2. Verify volunteer belongs to this committee
+    // 2. Verify feedback window
+    // ----------------------------------------------------------
+
+    const {
+      data: event,
+      error: eventError,
+    } = await supabase
+      .from("events")
+      .select(`
+        id,
+        end_date,
+        end_time
+      `)
+      .eq(
+        "id",
+        eventId,
+      )
+      .maybeSingle();
+
+    if (eventError) {
+      throw new Error(
+        eventError.message,
+      );
+    }
+
+    if (!event) {
+      throw new Error(
+        "Event not found.",
+      );
+    }
+
+    if (
+      !isFeedbackWindowOpen(
+        event.end_date ?? "",
+        event.end_time ?? null,
+      )
+    ) {
+      throw new Error(
+        "Feedback is not available yet. It becomes available during the last 24 hours of the event.",
+      );
+    }
+
+    // ----------------------------------------------------------
+    // 3. Verify volunteer belongs to this committee
     // ----------------------------------------------------------
 
     const {
@@ -2394,7 +2755,7 @@ export const leaderService = {
     }
 
     // ----------------------------------------------------------
-    // 3. Validate ratings
+    // 4. Validate ratings
     // ----------------------------------------------------------
 
     const ratings = {
@@ -2421,7 +2782,7 @@ export const leaderService = {
     }
 
     // ----------------------------------------------------------
-    // 4. Save feedback
+    // 5. Save feedback
     // ----------------------------------------------------------
 
     const {
@@ -2477,7 +2838,6 @@ export const leaderService = {
     }
   },
 
-
   // ============================================================
   // ATTENDANCE
   // ============================================================
@@ -2487,7 +2847,8 @@ export const leaderService = {
     action: LeaderScanAction,
   ): Promise<LeaderScannerVolunteer> {
     const now = new Date();
-    const timeNow = now.toTimeString().slice(0, 8);
+    const timeNow =
+      now.toTimeString().slice(0, 8);
 
     const nextStatus =
       action === "check-in"
@@ -2530,21 +2891,27 @@ export const leaderService = {
     // ----------------------------------------------------------
 
     if (existing) {
-      const payload: Record<string, unknown> = {
+      const payload: Record<
+        string,
+        unknown
+      > = {
         status: nextStatus,
         updated_at: timeNow,
       };
 
       if (action === "check-in") {
         payload.check_in_time =
-          existing.check_in_time ?? timeNow;
+          existing.check_in_time ??
+          timeNow;
 
         payload.check_out_time = null;
       } else {
-        payload.check_out_time = timeNow;
+        payload.check_out_time =
+          timeNow;
 
         payload.check_in_time =
-          existing.check_in_time ?? timeNow;
+          existing.check_in_time ??
+          timeNow;
       }
 
       const {
@@ -2552,7 +2919,10 @@ export const leaderService = {
       } = await supabase
         .from("attendance_records")
         .update(payload)
-        .eq("id", existing.id);
+        .eq(
+          "id",
+          existing.id,
+        );
 
       if (updateError) {
         throw new Error(
@@ -2577,7 +2947,10 @@ export const leaderService = {
           role_id,
           date
         `)
-        .eq("id", volunteer.shiftId)
+        .eq(
+          "id",
+          volunteer.shiftId,
+        )
         .maybeSingle();
 
       if (shiftError) {
@@ -2597,12 +2970,18 @@ export const leaderService = {
       } = await supabase
         .from("attendance_records")
         .insert({
-          profile_id: volunteer.id,
-          event_id: shift.event_id,
-          role_id: shift.role_id,
-          shift_id: shift.id,
-          date: shift.date,
-          status: nextStatus,
+          profile_id:
+            volunteer.id,
+          event_id:
+            shift.event_id,
+          role_id:
+            shift.role_id,
+          shift_id:
+            shift.id,
+          date:
+            shift.date,
+          status:
+            nextStatus,
           check_in_time:
             action === "check-in"
               ? timeNow

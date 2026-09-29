@@ -34,7 +34,6 @@ import { Route as AdminRolesRouteImport } from './routes/admin/roles'
 import { Route as AdminShiftsRouteImport } from './routes/admin/shifts'
 import { Route as AdminTrainingRouteImport } from './routes/admin/training'
 import { Route as LeaderIndexRouteImport } from './routes/leader/index'
-import { Route as LeaderCommitteeRouteImport } from './routes/leader/committee'
 import { Route as LeaderDashboardRouteImport } from './routes/leader/dashboard'
 import { Route as LeaderEventRouteImport } from './routes/leader/event'
 import { Route as LeaderNotificationsRouteImport } from './routes/leader/notifications'
@@ -185,11 +184,6 @@ const AdminTrainingRoute = AdminTrainingRouteImport.update({
 const LeaderIndexRoute = LeaderIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => LeaderRoute,
-} as any)
-const LeaderCommitteeRoute = LeaderCommitteeRouteImport.update({
-  id: '/committee',
-  path: '/committee',
   getParentRoute: () => LeaderRoute,
 } as any)
 const LeaderDashboardRoute = LeaderDashboardRouteImport.update({
@@ -350,7 +344,6 @@ export interface FileRoutesByFullPath {
   '/admin/roles': typeof AdminRolesRoute
   '/admin/shifts': typeof AdminShiftsRoute
   '/admin/training': typeof AdminTrainingRoute
-  '/leader/committee': typeof LeaderCommitteeRoute
   '/leader/dashboard': typeof LeaderDashboardRoute
   '/leader/event': typeof LeaderEventRoute
   '/leader/notifications': typeof LeaderNotificationsRoute
@@ -402,7 +395,6 @@ export interface FileRoutesByTo {
   '/admin/roles': typeof AdminRolesRoute
   '/admin/shifts': typeof AdminShiftsRoute
   '/admin/training': typeof AdminTrainingRoute
-  '/leader/committee': typeof LeaderCommitteeRoute
   '/leader/dashboard': typeof LeaderDashboardRoute
   '/leader/event': typeof LeaderEventRoute
   '/leader/notifications': typeof LeaderNotificationsRoute
@@ -457,7 +449,6 @@ export interface FileRoutesById {
   '/admin/roles': typeof AdminRolesRoute
   '/admin/shifts': typeof AdminShiftsRoute
   '/admin/training': typeof AdminTrainingRoute
-  '/leader/committee': typeof LeaderCommitteeRoute
   '/leader/dashboard': typeof LeaderDashboardRoute
   '/leader/event': typeof LeaderEventRoute
   '/leader/notifications': typeof LeaderNotificationsRoute
@@ -513,7 +504,6 @@ export interface FileRouteTypes {
     | '/admin/roles'
     | '/admin/shifts'
     | '/admin/training'
-    | '/leader/committee'
     | '/leader/dashboard'
     | '/leader/event'
     | '/leader/notifications'
@@ -565,7 +555,6 @@ export interface FileRouteTypes {
     | '/admin/roles'
     | '/admin/shifts'
     | '/admin/training'
-    | '/leader/committee'
     | '/leader/dashboard'
     | '/leader/event'
     | '/leader/notifications'
@@ -619,7 +608,6 @@ export interface FileRouteTypes {
     | '/admin/roles'
     | '/admin/shifts'
     | '/admin/training'
-    | '/leader/committee'
     | '/leader/dashboard'
     | '/leader/event'
     | '/leader/notifications'
@@ -849,13 +837,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/leader/'
       preLoaderRoute: typeof LeaderIndexRouteImport
-      parentRoute: typeof LeaderRoute
-    }
-    '/leader/committee': {
-      id: '/leader/committee'
-      path: '/committee'
-      fullPath: '/leader/committee'
-      preLoaderRoute: typeof LeaderCommitteeRouteImport
       parentRoute: typeof LeaderRoute
     }
     '/leader/dashboard': {
@@ -1092,7 +1073,6 @@ const AdminRouteChildren: AdminRouteChildren = {
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface LeaderRouteChildren {
-  LeaderCommitteeRoute: typeof LeaderCommitteeRoute
   LeaderDashboardRoute: typeof LeaderDashboardRoute
   LeaderEventRoute: typeof LeaderEventRoute
   LeaderNotificationsRoute: typeof LeaderNotificationsRoute
@@ -1104,7 +1084,6 @@ interface LeaderRouteChildren {
 }
 
 const LeaderRouteChildren: LeaderRouteChildren = {
-  LeaderCommitteeRoute: LeaderCommitteeRoute,
   LeaderDashboardRoute: LeaderDashboardRoute,
   LeaderEventRoute: LeaderEventRoute,
   LeaderNotificationsRoute: LeaderNotificationsRoute,

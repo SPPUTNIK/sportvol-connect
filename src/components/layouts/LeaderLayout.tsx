@@ -1,10 +1,11 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import {
   Bell,
   CalendarDays,
   ChevronRight,
   Clock3,
   LayoutDashboard,
+  LogOut,
   Menu,
   QrCode,
   UserRound,
@@ -38,7 +39,6 @@ const leaderNavigation: NavGroup[] = [
     items: [
       { label: "Dashboard", href: "/leader/dashboard", icon: LayoutDashboard },
       { label: "My Event", href: "/leader/event", icon: CalendarDays },
-      { label: "My Committee", href: "/leader/committee", icon: Users },
       { label: "Volunteers", href: "/leader/volunteers", icon: Users },
       { label: "Shifts", href: "/leader/shifts", icon: Clock3 },
       { label: "QR Scanner", href: "/leader/scanner", icon: QrCode },
@@ -47,7 +47,6 @@ const leaderNavigation: NavGroup[] = [
   {
     label: "Account",
     items: [
-      { label: "Notifications", href: "/leader/notifications", icon: Bell },
       { label: "Profile", href: "/leader/profile", icon: UserRound },
     ],
   },
@@ -55,18 +54,42 @@ const leaderNavigation: NavGroup[] = [
 
 function LeaderNavigation({ onNavigate }: { onNavigate: () => void }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
-  const { profile } = useAuth();
-  const leaderName = profile ? `${profile.first_name ?? "Leader"} ${profile.last_name ?? ""}`.trim() : "Leader";
+
+  const { profile, signOut } = useAuth();
+
+  const leaderName = profile
+    ? `${profile.first_name ?? "Leader"} ${profile.last_name ?? ""}`.trim()
+    : "Leader";
+
   const badge = (leaderName || "L").slice(0, 1).toUpperCase();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+
+      onNavigate();
+
+      await navigate({
+        to: "/login",
+      });
+    } catch (error) {
+      console.error("Failed to sign out:", error);
+    }
+  };
 
   return (
     <div className="relative flex h-full flex-col overflow-y-auto overflow-x-hidden scrollbar-hide px-4 py-6">
       <div className="pointer-events-none absolute inset-0 zellij-sidebar-bg opacity-[0.02]" />
 
-      <div className="relative flex min-h-max flex-col">
+      <div className="relative flex min-h-full flex-col">
         <div className="mb-8 flex items-center justify-between px-3">
-          <Link to="/" className="flex items-center gap-3" onClick={onNavigate}>
+          <Link
+            to="/"
+            className="flex items-center gap-3"
+            onClick={onNavigate}
+          >
             <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-primary/10">
               <img
                 src="/logo.png"
@@ -76,8 +99,13 @@ function LeaderNavigation({ onNavigate }: { onNavigate: () => void }) {
             </div>
 
             <div>
-              <p className="font-display text-lg font-semibold tracking-tight">SPORTVOL</p>
-              <p className="text-[0.58rem] uppercase tracking-[0.3em] text-primary">CONNECT</p>
+              <p className="font-display text-lg font-semibold tracking-tight">
+                SPORTVOL
+              </p>
+
+              <p className="text-[0.58rem] uppercase tracking-[0.3em] text-primary">
+                CONNECT
+              </p>
             </div>
           </Link>
 
@@ -115,8 +143,12 @@ function LeaderNavigation({ onNavigate }: { onNavigate: () => void }) {
                       )}
                     >
                       <Icon className="h-4 w-4 shrink-0" />
+
                       <span>{label}</span>
-                      {active ? <ChevronRight className="ml-auto h-4 w-4" /> : null}
+
+                      {active ? (
+                        <ChevronRight className="ml-auto h-4 w-4" />
+                      ) : null}
                     </Link>
                   );
                 })}
@@ -125,16 +157,35 @@ function LeaderNavigation({ onNavigate }: { onNavigate: () => void }) {
           ))}
         </nav>
 
-        <div className="mt-8 rounded-3xl border border-border bg-background p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white">
-              {badge}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-foreground">{leaderName}</p>
-              <p className="truncate text-xs text-muted-foreground">Committee Leader</p>
+        {/* Leader account */}
+        <div className="mt-auto pt-8">
+          <div className="mb-3 border-t border-border pt-5">
+            <div className="flex items-center gap-3 px-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                {badge}
+              </div>
+
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-foreground">
+                  {leaderName}
+                </p>
+
+                <p className="text-xs text-muted-foreground">
+                  Leader account
+                </p>
+              </div>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-foreground/70 transition hover:bg-destructive/10 hover:text-destructive"
+          >
+            <LogOut className="h-4 w-4 shrink-0" />
+
+            <span>Sign out</span>
+          </button>
         </div>
       </div>
     </div>
@@ -152,7 +203,10 @@ export function LeaderLayout({ children }: LeaderLayoutProps) {
     });
   }, []);
 
-  const leaderName = profile ? `${profile.first_name ?? "Leader"} ${profile.last_name ?? ""}`.trim() : "Leader";
+  const leaderName = profile
+    ? `${profile.first_name ?? "Leader"} ${profile.last_name ?? ""}`.trim()
+    : "Leader";
+
   const displayName = leaderName.split(" ")[0] ?? "Leader";
 
   return (
@@ -162,6 +216,7 @@ export function LeaderLayout({ children }: LeaderLayoutProps) {
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[url('./assets/zellij-pattern.jpg')] bg-[length:520px_auto] bg-repeat bg-top opacity-[0.06]"
         />
+
         <div className="relative z-10 h-full">
           <LeaderNavigation onNavigate={() => setOpen(false)} />
         </div>
@@ -199,6 +254,7 @@ export function LeaderLayout({ children }: LeaderLayoutProps) {
                 <p className="hidden text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground sm:block">
                   LEADER
                 </p>
+
                 <h1 className="text-lg font-semibold text-foreground sm:text-xl">
                   Your event operations
                 </h1>
@@ -212,6 +268,7 @@ export function LeaderLayout({ children }: LeaderLayoutProps) {
                 aria-label="Notifications"
               >
                 <Bell className="h-4 w-4" />
+
                 <span className="absolute -right-1.5 -top-1.5 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground">
                   {notificationCount || 0}
                 </span>
@@ -224,13 +281,18 @@ export function LeaderLayout({ children }: LeaderLayoutProps) {
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ink text-[0.65rem] font-semibold text-white">
                   {displayName.slice(0, 1).toUpperCase()}
                 </span>
-                <span className="hidden text-sm font-medium text-foreground sm:block">{displayName}</span>
+
+                <span className="hidden text-sm font-medium text-foreground sm:block">
+                  {displayName}
+                </span>
               </Link>
             </div>
           </div>
         </header>
 
-        <main className="px-5 py-8 sm:px-8 lg:px-10">{children}</main>
+        <main className="px-5 py-8 sm:px-8 lg:px-10">
+          {children}
+        </main>
       </div>
     </div>
   );
