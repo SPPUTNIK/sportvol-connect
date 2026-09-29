@@ -926,206 +926,235 @@ function LeaderScannerPage() {
               </div>
             </div>
 
-            <div className="p-5 sm:p-7">
+            <div className="p-3 sm:p-5 lg:p-7">
+  {/* Camera */}
+  <div className="relative overflow-hidden rounded-2xl border border-border bg-black shadow-[var(--shadow-float)] sm:rounded-[1.75rem]">
+    <div className="relative aspect-[4/5] w-full xs:aspect-[4/3] sm:aspect-video">
 
-              {/* Camera */}
-              <div className="relative overflow-hidden rounded-[1.75rem] border border-border bg-black shadow-[var(--shadow-float)]">
-                <div className="relative aspect-[4/3] w-full sm:aspect-video">
+      {/* Camera */}
+      <video
+        ref={videoRef}
+        className={`h-full w-full object-cover transition-all duration-500 ${
+          isScanning
+            ? "scale-100 opacity-100"
+            : "scale-[1.02] opacity-0"
+        }`}
+        muted
+        playsInline
+        autoPlay
+      />
 
-                  {/* Camera */}
-                  <video
-                    ref={videoRef}
-                    className={`h-full w-full object-cover transition-all duration-500 ${
-                      isScanning
-                        ? "scale-100 opacity-100"
-                        : "scale-[1.02] opacity-0"
-                    }`}
-                    muted
-                    playsInline
-                    autoPlay
-                  />
+      {/* Empty state */}
+      {!isScanning && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background px-4 py-6 sm:px-6 sm:py-8">
+          <div className="flex w-full max-w-sm flex-col items-center text-center">
 
-                  {/* Empty state */}
-                  {!isScanning && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-background">
-                      <div className="flex max-w-sm flex-col items-center px-6 text-center">
+            {/* Icon */}
+            <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-[1rem] border border-primary/20 bg-primary/10 text-primary shadow-sm sm:h-20 sm:w-20 sm:rounded-[1.5rem]">
+              <div className="absolute inset-1.5 rounded-[0.7rem] border border-primary/10 sm:inset-2 sm:rounded-xl" />
 
-                        {/* Icon */}
-                        <div className="relative flex h-20 w-20 items-center justify-center rounded-[1.5rem] border border-primary/20 bg-primary/10 text-primary shadow-sm">
-                          <div className="absolute inset-2 rounded-xl border border-primary/10" />
-                          <QrCode className="relative h-9 w-9" />
-                        </div>
-
-                        <div className="mt-6">
-                          <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                            Ready to scan
-                          </h3>
-
-                          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                            Start the camera and position the volunteer's
-                            accreditation QR code inside the frame.
-                          </p>
-                        </div>
-
-                        {/* Status */}
-                        <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-2 text-xs font-medium text-muted-foreground">
-                          <span className="h-2 w-2 rounded-full bg-muted-foreground/50" />
-                          Camera is off
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Active scanner */}
-                  {isScanning && (
-                    <>
-                      {/* Dark cinematic overlay */}
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/65" />
-
-                      {/* Top status */}
-                      <div className="absolute left-4 right-4 top-4 flex items-center justify-between gap-3">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/55 px-3.5 py-2 text-xs font-medium text-white shadow-lg backdrop-blur-xl">
-                          <span className="relative flex h-2 w-2">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
-                            <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-                          </span>
-
-                          Live camera
-                        </div>
-
-                        <div className="hidden rounded-full border border-white/10 bg-black/55 px-3.5 py-2 text-xs font-medium text-white backdrop-blur-xl sm:block">
-                          Scan accreditation
-                        </div>
-                      </div>
-
-                      {/* Scanner frame */}
-                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6">
-                        <div className="relative h-60 w-60 max-w-[68vw] max-h-[68vw] rounded-[2rem] border border-white/20">
-
-                          {/* Soft glow */}
-                          <div className="absolute -inset-3 rounded-[2.25rem] border border-primary/10" />
-
-                          {/* Corners */}
-                          <span className="absolute -left-px -top-px h-11 w-11 rounded-tl-[1.9rem] border-l-[4px] border-t-[4px] border-primary shadow-[-2px_-2px_14px_rgba(139,216,208,0.25)]" />
-
-                          <span className="absolute -right-px -top-px h-11 w-11 rounded-tr-[1.9rem] border-r-[4px] border-t-[4px] border-primary shadow-[2px_-2px_14px_rgba(139,216,208,0.25)]" />
-
-                          <span className="absolute -bottom-px -left-px h-11 w-11 rounded-bl-[1.9rem] border-b-[4px] border-l-[4px] border-primary shadow-[-2px_2px_14px_rgba(139,216,208,0.25)]" />
-
-                          <span className="absolute -bottom-px -right-px h-11 w-11 rounded-br-[1.9rem] border-b-[4px] border-r-[4px] border-primary shadow-[2px_2px_14px_rgba(139,216,208,0.25)]" />
-
-                          {/* Scan line */}
-                          <div className="absolute left-6 right-6 top-1/2 h-[2px] -translate-y-1/2 bg-primary shadow-[0_0_16px_currentColor] animate-pulse" />
-
-                          {/* Center indicator */}
-                          <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary shadow-[0_0_14px_currentColor]" />
-                        </div>
-                      </div>
-
-                      {/* Bottom message */}
-                      <div className="absolute bottom-4 left-4 right-4 flex justify-center">
-                        <div className="inline-flex max-w-full items-center gap-2.5 rounded-full border border-white/10 bg-black/60 px-4 py-2.5 text-xs font-medium text-white shadow-xl backdrop-blur-xl">
-                          <ScanLine className="h-3.5 w-3.5 shrink-0 text-primary" />
-                          <span className="truncate">
-                            {scanMessage}
-                          </span>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Message / error */}
-              {cameraError ? (
-                <div className="mt-4 rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
-                  <div className="flex items-start gap-3">
-                    <CameraOff className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
-
-                    <div>
-                      <p className="text-sm font-semibold text-destructive">
-                        Camera unavailable
-                      </p>
-
-                      <p className="mt-1 text-sm leading-6 text-destructive/80">
-                        {cameraError}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                  <QrCode className="h-4 w-4 shrink-0 text-primary" />
-
-                  <span>
-                    {isScanning
-                      ? scanMessage
-                      : "The scanner is ready when you are."}
-                  </span>
-                </div>
-              )}
-
-              {/* Controls */}
-              <div className="mt-5">
-                {!isScanning ? (
-                  <VSButton
-                    onClick={() => {
-                      void startScanner();
-                    }}
-                    className="h-12 w-full"
-                    disabled={loading}
-                  >
-                    <Camera className="mr-2 h-4 w-4" />
-
-                    {loading
-                      ? "Loading scanner..."
-                      : "Start QR Scanner"}
-                  </VSButton>
-                ) : (
-                  <VSButton
-                    onClick={stopScanner}
-                    variant="outline"
-                    className="h-12 w-full"
-                  >
-                    <CameraOff className="mr-2 h-4 w-4" />
-                    Stop Scanner
-                  </VSButton>
-                )}
-              </div>
-
-              {/* Tips */}
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-border bg-muted/20 p-3.5">
-                  <p className="text-xs font-semibold text-foreground">
-                    01
-                  </p>
-
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Start the camera
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-border bg-muted/20 p-3.5">
-                  <p className="text-xs font-semibold text-foreground">
-                    02
-                  </p>
-
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Center the QR code
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-border bg-muted/20 p-3.5">
-                  <p className="text-xs font-semibold text-foreground">
-                    03
-                  </p>
-
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Confirm attendance
-                  </p>
-                </div>
-              </div>
+              <QrCode className="relative h-6 w-6 sm:h-9 sm:w-9" />
             </div>
+
+            {/* Text */}
+            <div className="mt-4 w-full sm:mt-6">
+              <h3 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                Ready to scan
+              </h3>
+
+              <p className="mx-auto mt-2 max-w-[270px] text-xs leading-5 text-muted-foreground sm:max-w-sm sm:text-sm sm:leading-6">
+                Start the camera and position the volunteer's accreditation
+                QR code inside the frame.
+              </p>
+            </div>
+
+            {/* Status */}
+            <div className="mt-4 inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-[10px] font-medium text-muted-foreground shadow-sm sm:mt-5 sm:px-3.5 sm:py-2 sm:text-xs">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/50 sm:h-2 sm:w-2" />
+              <span className="truncate">
+                Camera is off
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Active scanner */}
+      {isScanning && (
+        <>
+          {/* Cinematic overlay */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70" />
+
+          {/* Top status */}
+          <div className="absolute left-3 right-3 top-3 flex items-center justify-between gap-2 sm:left-4 sm:right-4 sm:top-4">
+
+            {/* Live */}
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/55 px-2.5 py-1.5 text-[10px] font-medium text-white shadow-lg backdrop-blur-xl sm:gap-2 sm:px-3.5 sm:py-2 sm:text-xs">
+              <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+                <span className="relative inline-flex h-full w-full rounded-full bg-primary" />
+              </span>
+
+              Live camera
+            </div>
+
+            {/* Scan badge */}
+            <div className="hidden rounded-full border border-white/10 bg-black/55 px-3 py-1.5 text-[10px] font-medium text-white backdrop-blur-xl xs:block sm:px-3.5 sm:py-2 sm:text-xs">
+              Scan accreditation
+            </div>
+          </div>
+
+          {/* Scanner frame */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-5 sm:px-6">
+            <div
+              className="
+                relative
+                aspect-square
+                w-[min(72vw,17rem)]
+                max-w-[17rem]
+                rounded-[1.5rem]
+                border
+                border-white/20
+                sm:w-60
+                sm:rounded-[2rem]
+              "
+            >
+              {/* Soft glow */}
+              <div className="absolute -inset-2.5 rounded-[1.75rem] border border-primary/10 sm:-inset-3 sm:rounded-[2.25rem]" />
+
+              {/* Top left */}
+              <span className="absolute -left-px -top-px h-8 w-8 rounded-tl-[1.4rem] border-l-[3px] border-t-[3px] border-primary shadow-[-2px_-2px_12px_rgba(139,216,208,0.25)] sm:h-11 sm:w-11 sm:rounded-tl-[1.9rem] sm:border-l-[4px] sm:border-t-[4px]" />
+
+              {/* Top right */}
+              <span className="absolute -right-px -top-px h-8 w-8 rounded-tr-[1.4rem] border-r-[3px] border-t-[3px] border-primary shadow-[2px_-2px_12px_rgba(139,216,208,0.25)] sm:h-11 sm:w-11 sm:rounded-tr-[1.9rem] sm:border-r-[4px] sm:border-t-[4px]" />
+
+              {/* Bottom left */}
+              <span className="absolute -bottom-px -left-px h-8 w-8 rounded-bl-[1.4rem] border-b-[3px] border-l-[3px] border-primary shadow-[-2px_2px_12px_rgba(139,216,208,0.25)] sm:h-11 sm:w-11 sm:rounded-bl-[1.9rem] sm:border-b-[4px] sm:border-l-[4px]" />
+
+              {/* Bottom right */}
+              <span className="absolute -bottom-px -right-px h-8 w-8 rounded-br-[1.4rem] border-b-[3px] border-r-[3px] border-primary shadow-[2px_2px_12px_rgba(139,216,208,0.25)] sm:h-11 sm:w-11 sm:rounded-br-[1.9rem] sm:border-b-[4px] sm:border-r-[4px]" />
+
+              {/* Scan line */}
+              <div className="absolute left-5 right-5 top-1/2 h-px -translate-y-1/2 bg-primary shadow-[0_0_14px_currentColor] animate-pulse sm:left-6 sm:right-6 sm:h-[2px]" />
+
+              {/* Center indicator */}
+              <div className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary shadow-[0_0_12px_currentColor] sm:h-2 sm:w-2 sm:shadow-[0_0_14px_currentColor]" />
+            </div>
+          </div>
+
+          {/* Bottom message */}
+          <div className="absolute bottom-3 left-3 right-3 flex justify-center sm:bottom-4 sm:left-4 sm:right-4">
+            <div className="inline-flex max-w-[calc(100%-1rem)] items-center gap-2 rounded-full border border-white/10 bg-black/60 px-3 py-2 text-[10px] font-medium text-white shadow-xl backdrop-blur-xl sm:gap-2.5 sm:px-4 sm:py-2.5 sm:text-xs">
+              <ScanLine className="h-3 w-3 shrink-0 text-primary sm:h-3.5 sm:w-3.5" />
+
+              <span className="truncate">
+                {scanMessage}
+              </span>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  </div>
+
+  {/* Message / error */}
+  {cameraError ? (
+    <div className="mt-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-3.5 sm:mt-4 sm:p-4">
+      <div className="flex items-start gap-2.5 sm:gap-3">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive/10 sm:h-9 sm:w-9 sm:rounded-xl">
+          <CameraOff className="h-4 w-4 text-destructive sm:h-5 sm:w-5" />
+        </div>
+
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-destructive sm:text-sm">
+            Camera unavailable
+          </p>
+
+          <p className="mt-1 text-xs leading-5 text-destructive/80 sm:text-sm sm:leading-6">
+            {cameraError}
+          </p>
+        </div>
+      </div>
+    </div>
+  ) : (
+    <div className="mt-3 flex min-w-0 items-start gap-2 rounded-xl bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground sm:mt-4 sm:items-center sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0 sm:text-sm">
+      <QrCode className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary sm:mt-0 sm:h-4 sm:w-4" />
+
+      <span className="min-w-0 leading-5">
+        {isScanning
+          ? scanMessage
+          : "The scanner is ready when you are."}
+      </span>
+    </div>
+  )}
+
+  {/* Controls */}
+  <div className="mt-4 sm:mt-5">
+    {!isScanning ? (
+      <VSButton
+        onClick={() => {
+          void startScanner();
+        }}
+        className="h-11 w-full rounded-xl text-sm sm:h-12"
+        disabled={loading}
+      >
+        <Camera className="mr-2 h-4 w-4" />
+
+        {loading
+          ? "Loading scanner..."
+          : "Start QR Scanner"}
+      </VSButton>
+    ) : (
+      <VSButton
+        onClick={stopScanner}
+        variant="outline"
+        className="h-11 w-full rounded-xl text-sm sm:h-12"
+      >
+        <CameraOff className="mr-2 h-4 w-4" />
+        Stop Scanner
+      </VSButton>
+    )}
+  </div>
+
+  {/* Tips */}
+  <div className="mt-4 grid grid-cols-1 gap-2.5 sm:mt-5 sm:grid-cols-3 sm:gap-3">
+    <div className="group rounded-xl border border-border bg-muted/20 p-3 transition-colors hover:bg-muted/30 sm:rounded-2xl sm:p-3.5">
+      <div className="flex items-center gap-2 sm:block">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-[10px] font-bold text-primary sm:h-auto sm:w-auto sm:justify-start sm:rounded-none sm:bg-transparent sm:text-xs">
+          01
+        </span>
+
+        <p className="text-xs font-medium text-muted-foreground sm:mt-1 sm:leading-5">
+          Start the camera
+        </p>
+      </div>
+    </div>
+
+    <div className="group rounded-xl border border-border bg-muted/20 p-3 transition-colors hover:bg-muted/30 sm:rounded-2xl sm:p-3.5">
+      <div className="flex items-center gap-2 sm:block">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-[10px] font-bold text-primary sm:h-auto sm:w-auto sm:justify-start sm:rounded-none sm:bg-transparent sm:text-xs">
+          02
+        </span>
+
+        <p className="text-xs font-medium text-muted-foreground sm:mt-1 sm:leading-5">
+          Center the QR code
+        </p>
+      </div>
+    </div>
+
+    <div className="group rounded-xl border border-border bg-muted/20 p-3 transition-colors hover:bg-muted/30 sm:rounded-2xl sm:p-3.5">
+      <div className="flex items-center gap-2 sm:block">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-[10px] font-bold text-primary sm:h-auto sm:w-auto sm:justify-start sm:rounded-none sm:bg-transparent sm:text-xs">
+          03
+        </span>
+
+        <p className="text-xs font-medium text-muted-foreground sm:mt-1 sm:leading-5">
+          Confirm attendance
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
           </VSCardContent>
         </VSCard>
 
