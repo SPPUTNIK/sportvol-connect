@@ -81,7 +81,11 @@ export type LeaderShiftMember = {
   avatar: string | null;
   role: string;
   assignmentStatus: string;
-  attendanceStatus: "Assigned" | "Checked in" | "Checked out" | "Absent";
+  attendanceStatus:
+    | "Assigned"
+    | "Checked in"
+    | "Checked out"
+    | "Absent";
   checkInTime: string | null;
   checkOutTime: string | null;
 };
@@ -89,7 +93,6 @@ export type LeaderShiftMember = {
 export type LeaderShiftDetails = LeaderShift & {
   members: LeaderShiftMember[];
 };
-
 
 export type LeaderScannerVolunteer = {
   id: string;
@@ -167,6 +170,45 @@ function getDisplayName(
 }
 
 /**
+ * Returns the current date/time in Morocco.
+ *
+ * We explicitly use Africa/Casablanca instead of relying on
+ * the browser/server timezone.
+ */
+function getMoroccoDateTime() {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Casablanca",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date());
+
+  const getPart = (type: string): string =>
+    parts.find(
+      (part) => part.type === type,
+    )?.value ?? "00";
+
+  const year = getPart("year");
+  const month = getPart("month");
+  const day = getPart("day");
+  const hour = getPart("hour");
+  const minute = getPart("minute");
+  const second = getPart("second");
+
+  return {
+    date: `${year}-${month}-${day}`,
+    time: `${hour}:${minute}:${second}`,
+    hours: Number(hour),
+    minutes: Number(minute),
+    seconds: Number(second),
+  };
+}
+
+/**
  * Database attendance enum:
  *
  * scheduled
@@ -239,8 +281,9 @@ function toFeedbackStatus(
 }
 
 /**
- * Feedback becomes available during the last 24 hours
- * before the event ends.
+ * Feedback becomes available only after the event has fully ended.
+ *
+ * The event end date/time is interpreted using Morocco time.
  */
 function isFeedbackWindowOpen(
   endDate: string,
@@ -250,23 +293,46 @@ function isFeedbackWindowOpen(
     return false;
   }
 
-  const eventEnd = new Date(
-    `${endDate}T${endTime || "23:59:59"}`,
-  );
+  const normalizedEndTime =
+    endTime?.slice(0, 8) ||
+    "23:59:59";
 
-  if (Number.isNaN(eventEnd.getTime())) {
+  const [
+    endHour,
+    endMinute,
+    endSecond,
+  ] = normalizedEndTime
+    .split(":")
+    .map(Number);
+
+  if (
+    Number.isNaN(endHour) ||
+    Number.isNaN(endMinute) ||
+    Number.isNaN(endSecond)
+  ) {
     return false;
   }
 
-  const now = new Date();
+  const now =
+    getMoroccoDateTime();
 
-  const feedbackOpensAt =
-    eventEnd.getTime() -
-    24 * 60 * 60 * 1000;
+  if (now.date !== endDate) {
+    return now.date > endDate;
+  }
+
+  const currentSeconds =
+    now.hours * 3600 +
+    now.minutes * 60 +
+    now.seconds;
+
+  const eventEndSeconds =
+    endHour * 3600 +
+    endMinute * 60 +
+    endSecond;
 
   return (
-    now.getTime() >=
-    feedbackOpensAt
+    currentSeconds >=
+    eventEndSeconds
   );
 }
 
@@ -334,7 +400,6 @@ export const leaderService = {
   > {
     const userId = await getCurrentUserId();
 
-
     if (!userId) {
       return [];
     }
@@ -352,7 +417,6 @@ export const leaderService = {
       `)
       .eq("leader_profile_id", userId)
       .order("created_at", { ascending: false });
-
 
     if (error) {
       return [];
@@ -517,7 +581,8 @@ export const leaderService = {
           eventCommittees[0];
 
         return {
-          id: event.id,
+          id:
+            event.id,
 
           title:
             event.title,
@@ -681,43 +746,56 @@ export const leaderService = {
   // ============================================================
 
   async getLeaderCommitteeShifts(): Promise<any[]> {
-    const committees = await this.getLeaderCommittees();
-
+    const committees =
+      await this.getLeaderCommittees();
 
     if (!committees.length) {
       return [];
     }
 
-    const committeeIds = committees.map((c) => c.id);
+    const committeeIds =
+      committees.map(
+        (c) => c.id,
+      );
 
-
-    // 1. Get committee -> shift links
-    const { data: links, error: linksError } = await supabase
+    const {
+      data: links,
+      error: linksError,
+    } = await supabase
       .from("committee_shifts")
       .select(`
         id,
         committee_id,
         shift_id
       `)
-      .in("committee_id", committeeIds);
+      .in(
+        "committee_id",
+        committeeIds,
+      );
 
     if (linksError) {
       console.error(
         "[Leader Shifts] committee_shifts error:",
-        linksError
+        linksError,
       );
+
       return [];
     }
-
 
     if (!links?.length) {
       return [];
     }
 
-    const shiftIds = links.map((item) => item.shift_id);
+    const shiftIds =
+      links.map(
+        (item) =>
+          item.shift_id,
+      );
 
-    // 2. Get actual event shifts
-    const { data: shifts, error: shiftsError } = await supabase
+    const {
+      data: shifts,
+      error: shiftsError,
+    } = await supabase
       .from("event_shifts")
       .select(`
         id,
@@ -731,52 +809,67 @@ export const leaderService = {
         capacity,
         instructions
       `)
-      .in("id", shiftIds);
+      .in(
+        "id",
+        shiftIds,
+      );
 
     if (shiftsError) {
       console.error(
         "[Leader Shifts] event_shifts error:",
-        shiftsError
+        shiftsError,
       );
+
       return [];
     }
 
-    // 3. Combine committee links + shifts
-    const result = links
-      .map((link) => {
-        const shift = shifts?.find(
-          (item) => item.id === link.shift_id
-        );
+    const result =
+      links
+        .map((link) => {
+          const shift =
+            shifts?.find(
+              (item) =>
+                item.id ===
+                link.shift_id,
+            );
 
-        if (!shift) {
-          console.warn(
-            "[Leader Shifts] Shift not found:",
-            link.shift_id
-          );
-          return null;
-        }
+          if (!shift) {
+            console.warn(
+              "[Leader Shifts] Shift not found:",
+              link.shift_id,
+            );
 
-        const committee = committees.find(
-          (item) => item.id === link.committee_id
-        );
+            return null;
+          }
 
-        return {
-          id: link.id,
-          committee_id: link.committee_id,
-          shift_id: link.shift_id,
+          const committee =
+            committees.find(
+              (item) =>
+                item.id ===
+                link.committee_id,
+            );
 
-          committee: committee
-            ? {
-                id: committee.id,
-                event_id: committee.eventId,
-                name: committee.name,
-              }
-            : null,
+          return {
+            id: link.id,
+            committee_id:
+              link.committee_id,
+            shift_id:
+              link.shift_id,
 
-          shift,
-        };
-      })
-      .filter(Boolean);
+            committee: committee
+              ? {
+                  id: committee.id,
+                  event_id:
+                    committee.eventId,
+                  name:
+                    committee.name,
+                }
+              : null,
+
+            shift,
+          };
+        })
+        .filter(Boolean);
 
     return result as any[];
   },
@@ -800,10 +893,6 @@ export const leaderService = {
         (committee) =>
           committee.id,
       );
-
-    // ----------------------------------------------------------
-    // 1. Get real committee memberships
-    // ----------------------------------------------------------
 
     const {
       data: memberRows,
@@ -839,10 +928,6 @@ export const leaderService = {
     if (!memberRows?.length) {
       return [];
     }
-
-    // ----------------------------------------------------------
-    // 2. Get REAL volunteer profiles
-    // ----------------------------------------------------------
 
     const profileIds = [
       ...new Set(
@@ -885,16 +970,8 @@ export const leaderService = {
         ),
       );
 
-    // ----------------------------------------------------------
-    // 3. Get committee → shift mapping
-    // ----------------------------------------------------------
-
     const committeeShifts =
       await this.getLeaderCommitteeShifts();
-
-    // ----------------------------------------------------------
-    // 4. Get event information for feedback window
-    // ----------------------------------------------------------
 
     const eventIds = [
       ...new Set(
@@ -907,15 +984,20 @@ export const leaderService = {
       ),
     ];
 
-    const { data: events, error: eventsError } =
-      await supabase
-        .from("events")
-        .select(`
-          id,
-          end_date,
-          end_time
-        `)
-        .in("id", eventIds);
+    const {
+      data: events,
+      error: eventsError,
+    } = await supabase
+      .from("events")
+      .select(`
+        id,
+        end_date,
+        end_time
+      `)
+      .in(
+        "id",
+        eventIds,
+      );
 
     if (eventsError) {
       console.error(
@@ -933,10 +1015,6 @@ export const leaderService = {
           ],
         ),
       );
-
-    // ----------------------------------------------------------
-    // 5. Get existing feedback
-    // ----------------------------------------------------------
 
     const memberProfileIds = [
       ...new Set(
@@ -983,10 +1061,6 @@ export const leaderService = {
     const members: LeaderMember[] =
       [];
 
-    // ----------------------------------------------------------
-    // 6. Build every real volunteer
-    // ----------------------------------------------------------
-
     for (const row of memberRows) {
       const profile =
         profilesById.get(
@@ -1013,10 +1087,6 @@ export const leaderService = {
         continue;
       }
 
-      // --------------------------------------------------------
-      // Shifts linked to this committee
-      // --------------------------------------------------------
-
       const memberShiftRows =
         committeeShifts.filter(
           (item) =>
@@ -1032,10 +1102,6 @@ export const leaderService = {
               item.shift_id,
           )
           .filter(Boolean);
-
-      // --------------------------------------------------------
-      // Volunteer actual shift assignment
-      // --------------------------------------------------------
 
       let shiftAssignments: any[] =
         [];
@@ -1103,10 +1169,6 @@ export const leaderService = {
       const shiftRole =
         shift?.role?.name ??
         "Volunteer";
-
-      // --------------------------------------------------------
-      // Volunteer attendance
-      // --------------------------------------------------------
 
       let attendanceData: any =
         null;
@@ -1176,10 +1238,6 @@ export const leaderService = {
         attendanceLabel =
           "Checked in";
       }
-
-      // --------------------------------------------------------
-      // Feedback status
-      // --------------------------------------------------------
 
       const event =
         eventsById.get(
@@ -1263,56 +1321,63 @@ export const leaderService = {
   // ============================================================
 
   async getEventShifts(): Promise<LeaderShift[]> {
-    const committeeShifts = await this.getLeaderCommitteeShifts();
+    const committeeShifts =
+      await this.getLeaderCommitteeShifts();
 
     if (!committeeShifts.length) {
       return [];
     }
 
-    const result: LeaderShift[] = [];
+    const result: LeaderShift[] =
+      [];
 
     for (const item of committeeShifts) {
-      const shift = item.shift;
+      const shift =
+        item.shift;
 
       if (!shift) {
         console.warn(
           "[Leader Shifts] Missing shift:",
-          item
+          item,
         );
+
         continue;
       }
 
-      // --------------------------------------------------
-      // Assignments
-      // --------------------------------------------------
-
       const {
         data: assignments,
-        error: assignmentsError,
       } = await supabase
         .from("shift_assignments")
         .select(`
           profile_id,
           status
         `)
-        .eq("shift_id", shift.id);
+        .eq(
+          "shift_id",
+          shift.id,
+        );
 
       const assigned =
         (assignments ?? []).filter(
-          (assignment) => assignment.status === "assigned"
+          (assignment) =>
+            assignment.status ===
+            "assigned",
         );
 
-      const assignedProfileIds = assigned
-        .map((assignment) => assignment.profile_id)
-        .filter(Boolean);
+      const assignedProfileIds =
+        assigned
+          .map(
+            (assignment) =>
+              assignment.profile_id,
+          )
+          .filter(Boolean);
 
-      let assignedVolunteers: string[] = [];
+      let assignedVolunteers:
+        string[] = [];
 
-      // --------------------------------------------------
-      // Profiles
-      // --------------------------------------------------
-
-      if (assignedProfileIds.length) {
+      if (
+        assignedProfileIds.length
+      ) {
         const {
           data: profiles,
           error: profilesError,
@@ -1323,72 +1388,153 @@ export const leaderService = {
             first_name,
             last_name
           `)
-          .in("id", assignedProfileIds);
+          .in(
+            "id",
+            assignedProfileIds,
+          );
 
         if (profilesError) {
           continue;
         } else {
-          const profileMap = new Map(
-            (profiles ?? []).map((profile) => [
-              profile.id,
-              profile,
-            ])
-          );
+          const profileMap =
+            new Map(
+              (profiles ?? []).map(
+                (profile) => [
+                  profile.id,
+                  profile,
+                ],
+              ),
+            );
 
-          assignedVolunteers = assignedProfileIds.map(
-            (profileId) => {
-              const profile = profileMap.get(profileId);
+          assignedVolunteers =
+            assignedProfileIds.map(
+              (profileId) => {
+                const profile =
+                  profileMap.get(
+                    profileId,
+                  );
 
-              if (!profile) {
-                return "Volunteer";
-              }
+                if (!profile) {
+                  return "Volunteer";
+                }
 
-              return getDisplayName(
-                profile.first_name,
-                profile.last_name
-              );
-            }
-          );
+                return getDisplayName(
+                  profile.first_name,
+                  profile.last_name,
+                );
+              },
+            );
         }
       }
 
-      // --------------------------------------------------
-      // Status
-      // --------------------------------------------------
+      const assignedCount =
+        assigned.length;
 
-      const assignedCount = assigned.length;
+      const capacity =
+        Number(
+          shift.capacity ?? 0,
+        );
 
-      const capacity = Number(shift.capacity ?? 0);
+      const now =
+        getMoroccoDateTime();
 
-      const shiftEnd = new Date(
-        `${shift.date}T${shift.end_time}`
-      );
+      const today =
+        now.date;
 
-      const now = new Date();
+      const currentMinutes =
+        now.hours * 60 +
+        now.minutes;
 
-      let status: LeaderShift["status"];
+      const shiftStartTime =
+        shift.start_time?.slice(
+          0,
+          5,
+        );
 
-      if (shiftEnd.getTime() < now.getTime()) {
-        status = "Completed";
-      } else if (capacity > 0 && assignedCount >= capacity) {
-        status = "Filled";
-      } else {
-        status = "Open";
+      const shiftEndTime =
+        shift.end_time?.slice(
+          0,
+          5,
+        );
+
+      let shiftHasEnded =
+        false;
+
+      if (
+        shift.date < today
+      ) {
+        shiftHasEnded = true;
+      } else if (
+        shift.date === today &&
+        shiftEndTime
+      ) {
+        const [
+          endHour,
+          endMinute,
+        ] =
+          shiftEndTime
+            .split(":")
+            .map(Number);
+
+        const shiftEndMinutes =
+          endHour * 60 +
+          endMinute;
+
+        shiftHasEnded =
+          currentMinutes >
+          shiftEndMinutes;
       }
 
+      let status:
+        LeaderShift["status"];
+
+      if (shiftHasEnded) {
+        status =
+          "Completed";
+      } else if (
+        capacity > 0 &&
+        assignedCount >=
+          capacity
+      ) {
+        status =
+          "Filled";
+      } else {
+        status =
+          "Open";
+      }
 
       result.push({
-        id: shift.id,
-        committeeId: item.committee_id,
-        eventId: shift.event_id,
-        title: shift.title,
-        location: shift.location ?? "TBD",
-        date: shift.date,
-        startTime: shift.start_time,
-        endTime: shift.end_time,
+        id:
+          shift.id,
+
+        committeeId:
+          item.committee_id,
+
+        eventId:
+          shift.event_id,
+
+        title:
+          shift.title,
+
+        location:
+          shift.location ??
+          "TBD",
+
+        date:
+          shift.date,
+
+        startTime:
+          shift.start_time,
+
+        endTime:
+          shift.end_time,
+
         status,
+
         assignedVolunteers,
+
         capacity,
+
         summary:
           shift.instructions ??
           "Shift coverage for committee operations.",
@@ -1399,51 +1545,85 @@ export const leaderService = {
   },
 
   async getShiftDetails(
-    shiftId: string
-  ): Promise<LeaderShiftDetails | null> {
-    // getEventShifts already limits results to shifts
-    // belonging to the current leader's committees.
-    const shifts = await this.getEventShifts();
+    shiftId: string,
+  ): Promise<
+    LeaderShiftDetails | null
+  > {
+    const shifts =
+      await this.getEventShifts();
 
-    const shift = shifts.find((item) => item.id === shiftId);
+    const shift =
+      shifts.find(
+        (item) =>
+          item.id ===
+          shiftId,
+      );
 
     if (!shift) {
       return null;
     }
 
-    const { data: assignments, error: assignmentsError } = await supabase
+    const {
+      data: assignments,
+      error: assignmentsError,
+    } = await supabase
       .from("shift_assignments")
       .select(`
         profile_id,
         status,
         assigned_at
       `)
-      .eq("shift_id", shiftId)
-      .eq("status", "assigned")
-      .order("assigned_at", {
-        ascending: true,
-      });
+      .eq(
+        "shift_id",
+        shiftId,
+      )
+      .eq(
+        "status",
+        "assigned",
+      )
+      .order(
+        "assigned_at",
+        {
+          ascending: true,
+        },
+      );
 
     if (assignmentsError) {
       throw assignmentsError;
     }
 
-    const profileIds = Array.from(
-      new Set(
-        (assignments ?? [])
-          .map((assignment) => assignment.profile_id)
-          .filter(Boolean)
-      )
-    );
+    const profileIds =
+      Array.from(
+        new Set(
+          (assignments ?? [])
+            .map(
+              (assignment) =>
+                assignment.profile_id,
+            )
+            .filter(Boolean),
+        ),
+      );
 
-    if (profileIds.length === 0) {
+    if (
+      profileIds.length ===
+      0
+    ) {
       return {
         ...shift,
         members: [],
       };
     }
 
-    const [{ data: profiles, error: profilesError }, { data: attendance, error: attendanceError }] =
+    const [
+      {
+        data: profiles,
+        error: profilesError,
+      },
+      {
+        data: attendance,
+        error: attendanceError,
+      },
+    ] =
       await Promise.all([
         supabase
           .from("profiles")
@@ -1453,7 +1633,10 @@ export const leaderService = {
             last_name,
             avatar_url
           `)
-          .in("id", profileIds),
+          .in(
+            "id",
+            profileIds,
+          ),
 
         supabase
           .from("attendance_records")
@@ -1464,11 +1647,20 @@ export const leaderService = {
             check_out_time,
             updated_at
           `)
-          .eq("shift_id", shiftId)
-          .in("profile_id", profileIds)
-          .order("updated_at", {
-            ascending: false,
-          }),
+          .eq(
+            "shift_id",
+            shiftId,
+          )
+          .in(
+            "profile_id",
+            profileIds,
+          )
+          .order(
+            "updated_at",
+            {
+              ascending: false,
+            },
+          ),
       ]);
 
     if (profilesError) {
@@ -1479,67 +1671,122 @@ export const leaderService = {
       throw attendanceError;
     }
 
-    const profileMap = new Map(
-      (profiles ?? []).map((profile) => [
-        profile.id,
-        profile,
-      ])
-    );
+    const profileMap =
+      new Map(
+        (profiles ?? []).map(
+          (profile) => [
+            profile.id,
+            profile,
+          ],
+        ),
+      );
 
-    const attendanceMap = new Map<string, any>();
+    const attendanceMap =
+      new Map<
+        string,
+        any
+      >();
 
-    for (const record of attendance ?? []) {
-      if (!attendanceMap.has(record.profile_id)) {
-        attendanceMap.set(record.profile_id, record);
+    for (
+      const record of
+        attendance ?? []
+    ) {
+      if (
+        !attendanceMap.has(
+          record.profile_id,
+        )
+      ) {
+        attendanceMap.set(
+          record.profile_id,
+          record,
+        );
       }
     }
 
-    const members: LeaderShiftMember[] = (assignments ?? [])
-      .map((assignment) => {
-        const profile = profileMap.get(assignment.profile_id);
+    const members:
+      LeaderShiftMember[] =
+      (assignments ?? [])
+        .map((assignment) => {
+          const profile =
+            profileMap.get(
+              assignment.profile_id,
+            );
 
-        if (!profile) {
-          return null;
-        }
+          if (!profile) {
+            return null;
+          }
 
-        const attendanceRecord = attendanceMap.get(
-          assignment.profile_id
-        );
+          const attendanceRecord =
+            attendanceMap.get(
+              assignment.profile_id,
+            );
 
-        let attendanceStatus: LeaderShiftMember["attendanceStatus"] =
-          "Assigned";
+          let attendanceStatus:
+            LeaderShiftMember["attendanceStatus"] =
+            "Assigned";
 
-        if (
-          attendanceRecord?.check_out_time ||
-          attendanceRecord?.status === "checked-out" ||
-          attendanceRecord?.status === "checked_out"
-        ) {
-          attendanceStatus = "Checked out";
-        } else if (
-          attendanceRecord?.check_in_time ||
-          attendanceRecord?.status === "checked-in" ||
-          attendanceRecord?.status === "checked_in"
-        ) {
-          attendanceStatus = "Checked in";
-        } else if (
-          attendanceRecord?.status === "absent"
-        ) {
-          attendanceStatus = "Absent";
-        }
+          if (
+            attendanceRecord?.check_out_time ||
+            attendanceRecord?.status ===
+              "checked-out" ||
+            attendanceRecord?.status ===
+              "checked_out"
+          ) {
+            attendanceStatus =
+              "Checked out";
+          } else if (
+            attendanceRecord?.check_in_time ||
+            attendanceRecord?.status ===
+              "checked-in" ||
+            attendanceRecord?.status ===
+              "checked_in"
+          ) {
+            attendanceStatus =
+              "Checked in";
+          } else if (
+            attendanceRecord?.status ===
+            "absent"
+          ) {
+            attendanceStatus =
+              "Absent";
+          }
 
-        return {
-          id: profile.id,
-          firstName: profile.first_name ?? "",
-          lastName: profile.last_name ?? "",
-          avatar: profile.avatar_url ?? null,
-          role: "Volunteer",
-          assignmentStatus: assignment.status ?? "assigned",
-          attendanceStatus,
-          checkInTime: attendanceRecord?.check_in_time ?? null,
-          checkOutTime: attendanceRecord?.check_out_time ?? null,
-        };
-      })
-      .filter(Boolean) as LeaderShiftMember[];
+          return {
+            id:
+              profile.id,
+
+            firstName:
+              profile.first_name ??
+              "",
+
+            lastName:
+              profile.last_name ??
+              "",
+
+            avatar:
+              profile.avatar_url ??
+              null,
+
+            role:
+              "Volunteer",
+
+            assignmentStatus:
+              assignment.status ??
+              "assigned",
+
+            attendanceStatus,
+
+            checkInTime:
+              attendanceRecord?.check_in_time ??
+              null,
+
+            checkOutTime:
+              attendanceRecord?.check_out_time ??
+              null,
+          };
+        })
+        .filter(Boolean) as
+        LeaderShiftMember[];
 
     return {
       ...shift,
@@ -1645,7 +1892,10 @@ export const leaderService = {
           first_name,
           last_name
         `)
-        .in("id", profileIds),
+        .in(
+          "id",
+          profileIds,
+        ),
 
       roleIds.length
         ? supabase
@@ -1654,7 +1904,10 @@ export const leaderService = {
               id,
               name
             `)
-            .in("id", roleIds)
+            .in(
+              "id",
+              roleIds,
+            )
         : Promise.resolve({
             data: [],
           }),
@@ -1803,7 +2056,10 @@ export const leaderService = {
           last_name,
           avatar_url
         `)
-        .in("id", profileIds),
+        .in(
+          "id",
+          profileIds,
+        ),
 
       roleIds.length
         ? supabase
@@ -1812,7 +2068,10 @@ export const leaderService = {
               id,
               name
             `)
-            .in("id", roleIds)
+            .in(
+              "id",
+              roleIds,
+            )
         : Promise.resolve({
             data: [],
           }),
@@ -1838,7 +2097,8 @@ export const leaderService = {
         ),
       );
 
-    const volunteers: LeaderScannerVolunteer[] =
+    const volunteers:
+      LeaderScannerVolunteer[] =
       [];
 
     for (const row of memberRows) {
@@ -1854,13 +2114,12 @@ export const leaderService = {
             row.committee_id,
         );
 
-      if (!profile || !committee) {
+      if (
+        !profile ||
+        !committee
+      ) {
         continue;
       }
-
-      // --------------------------------------------------------
-      // Shifts linked to this committee
-      // --------------------------------------------------------
 
       const {
         data: committeeShiftRows,
@@ -1889,10 +2148,6 @@ export const leaderService = {
               item.shift_id,
           )
           .filter(Boolean);
-
-      // --------------------------------------------------------
-      // Attendance
-      // --------------------------------------------------------
 
       let attendance: any =
         null;
@@ -2032,7 +2287,10 @@ export const leaderService = {
     const eventIds = [
       ...new Set(
         committees
-          .map((committee) => committee.eventId)
+          .map(
+            (committee) =>
+              committee.eventId,
+          )
           .filter(Boolean),
       ),
     ];
@@ -2045,11 +2303,8 @@ export const leaderService = {
       normalizedQrCode,
     );
 
-    // ----------------------------------------------------------
-    // 1. Find accreditation
-    // ----------------------------------------------------------
-
-    let accreditation: any = null;
+    let accreditation: any =
+      null;
 
     const {
       data: qrData,
@@ -2070,7 +2325,10 @@ export const leaderService = {
           avatar_url
         )
       `)
-      .in("event_id", eventIds)
+      .in(
+        "event_id",
+        eventIds,
+      )
       .eq(
         "qr_code_data",
         normalizedQrCode,
@@ -2084,9 +2342,9 @@ export const leaderService = {
       );
     }
 
-    accreditation = qrData;
+    accreditation =
+      qrData;
 
-    // Fallback: volunteer_identifier
     if (!accreditation) {
       const {
         data: identifierData,
@@ -2107,7 +2365,10 @@ export const leaderService = {
             avatar_url
           )
         `)
-        .in("event_id", eventIds)
+        .in(
+          "event_id",
+          eventIds,
+        )
         .eq(
           "volunteer_identifier",
           normalizedQrCode,
@@ -2133,27 +2394,33 @@ export const leaderService = {
 
       return {
         ok: false,
-        reason: "NO_ACCREDITATION",
+        reason:
+          "NO_ACCREDITATION",
       };
     }
 
     console.log(
       "Accreditation found:",
       {
-        id: accreditation.id,
-        profileId: accreditation.profile_id,
-        eventId: accreditation.event_id,
-        roleId: accreditation.role_id,
+        id:
+          accreditation.id,
+
+        profileId:
+          accreditation.profile_id,
+
+        eventId:
+          accreditation.event_id,
+
+        roleId:
+          accreditation.role_id,
+
         volunteerIdentifier:
           accreditation.volunteer_identifier,
+
         qrCodeData:
           accreditation.qr_code_data,
       },
     );
-
-    // ----------------------------------------------------------
-    // 2. Find leader committee for this event
-    // ----------------------------------------------------------
 
     const leaderCommitteesForEvent =
       committees.filter(
@@ -2162,7 +2429,9 @@ export const leaderService = {
           accreditation.event_id,
       );
 
-    if (!leaderCommitteesForEvent.length) {
+    if (
+      !leaderCommitteesForEvent.length
+    ) {
       console.warn(
         "QR volunteer belongs to an event outside leader committees.",
       );
@@ -2175,7 +2444,8 @@ export const leaderService = {
     }
 
     const profile =
-      accreditation.profile ?? null;
+      accreditation.profile ??
+      null;
 
     if (!profile) {
       console.warn(
@@ -2184,19 +2454,20 @@ export const leaderService = {
 
       return {
         ok: false,
-        reason: "PROFILE_NOT_FOUND",
+        reason:
+          "PROFILE_NOT_FOUND",
       };
     }
 
-    // ----------------------------------------------------------
-    // 3. Check committee membership
-    // ----------------------------------------------------------
+    let matchedCommittee:
+      any = null;
 
-    let matchedCommittee: any = null;
-    let matchedMembership: any = null;
+    let matchedMembership:
+      any = null;
 
     for (
-      const committee of leaderCommitteesForEvent
+      const committee of
+        leaderCommitteesForEvent
     ) {
       const {
         data: membership,
@@ -2259,10 +2530,6 @@ export const leaderService = {
       };
     }
 
-    // ----------------------------------------------------------
-    // 4. Role must match accreditation role
-    // ----------------------------------------------------------
-
     if (
       matchedMembership.event_role_id !==
       accreditation.role_id
@@ -2272,6 +2539,7 @@ export const leaderService = {
         {
           committeeRole:
             matchedMembership.event_role_id,
+
           accreditationRole:
             accreditation.role_id,
         },
@@ -2279,17 +2547,15 @@ export const leaderService = {
 
       return {
         ok: false,
-        reason: "ROLE_MISMATCH",
+        reason:
+          "ROLE_MISMATCH",
       };
     }
 
-    // ----------------------------------------------------------
-    // 5. Get shifts attached to leader committee
-    // ----------------------------------------------------------
-
     const {
       data: committeeShifts,
-      error: committeeShiftsError,
+      error:
+        committeeShiftsError,
     } = await supabase
       .from("committee_shifts")
       .select(`
@@ -2346,10 +2612,6 @@ export const leaderService = {
           "LEADER_COMMITTEE_HAS_NO_SHIFTS",
       };
     }
-
-    // ----------------------------------------------------------
-    // 6. Find volunteer's exact assigned shift
-    // ----------------------------------------------------------
 
     const {
       data: assignments,
@@ -2419,7 +2681,6 @@ export const leaderService = {
             accreditation.role_id,
       );
 
-    // We need exactly one exact shift.
     if (
       matchingAssignments.length !==
       1
@@ -2429,8 +2690,10 @@ export const leaderService = {
         {
           profileId:
             accreditation.profile_id,
+
           roleId:
             accreditation.role_id,
+
           matches:
             matchingAssignments.length,
         },
@@ -2439,7 +2702,8 @@ export const leaderService = {
       return {
         ok: false,
         reason:
-          matchingAssignments.length === 0
+          matchingAssignments.length ===
+          0
             ? "NO_EXACT_SHIFT_ASSIGNMENT"
             : "MULTIPLE_EXACT_SHIFT_ASSIGNMENTS",
       };
@@ -2454,13 +2718,10 @@ export const leaderService = {
     if (!shift) {
       return {
         ok: false,
-        reason: "SHIFT_NOT_FOUND",
+        reason:
+          "SHIFT_NOT_FOUND",
       };
     }
-
-    // ----------------------------------------------------------
-    // 7. Event
-    // ----------------------------------------------------------
 
     const {
       data: event,
@@ -2475,10 +2736,6 @@ export const leaderService = {
         accreditation.event_id,
       )
       .maybeSingle();
-
-    // ----------------------------------------------------------
-    // 8. Attendance
-    // ----------------------------------------------------------
 
     const {
       data: attendance,
@@ -2513,10 +2770,6 @@ export const leaderService = {
           "ATTENDANCE_QUERY_ERROR",
       };
     }
-
-    // ----------------------------------------------------------
-    // 9. Return verified volunteer
-    // ----------------------------------------------------------
 
     return {
       ok: true,
@@ -2617,10 +2870,6 @@ export const leaderService = {
       );
     }
 
-    // ----------------------------------------------------------
-    // 1. Verify that the current user leads this committee
-    // ----------------------------------------------------------
-
     const {
       data: committee,
       error: committeeError,
@@ -2632,7 +2881,10 @@ export const leaderService = {
         leader_profile_id,
         status
       `)
-      .eq("id", committeeId)
+      .eq(
+        "id",
+        committeeId,
+      )
       .maybeSingle();
 
     if (committeeError) {
@@ -2656,23 +2908,23 @@ export const leaderService = {
       );
     }
 
-    if (committee.status !== "active") {
+    if (
+      committee.status !==
+      "active"
+    ) {
       throw new Error(
         "This committee is not active.",
       );
     }
 
     if (
-      committee.event_id !== eventId
+      committee.event_id !==
+      eventId
     ) {
       throw new Error(
         "The feedback event does not match the committee event.",
       );
     }
-
-    // ----------------------------------------------------------
-    // 2. Verify feedback window
-    // ----------------------------------------------------------
 
     const {
       data: event,
@@ -2709,13 +2961,9 @@ export const leaderService = {
       )
     ) {
       throw new Error(
-        "Feedback is not available yet. It becomes available during the last 24 hours of the event.",
+        "Feedback is not available yet. It becomes available after the event has ended.",
       );
     }
-
-    // ----------------------------------------------------------
-    // 3. Verify volunteer belongs to this committee
-    // ----------------------------------------------------------
 
     const {
       data: membership,
@@ -2754,10 +3002,6 @@ export const leaderService = {
       );
     }
 
-    // ----------------------------------------------------------
-    // 4. Validate ratings
-    // ----------------------------------------------------------
-
     const ratings = {
       punctuality,
       teamwork,
@@ -2766,12 +3010,18 @@ export const leaderService = {
       overallRating,
     };
 
-    for (const [
-      field,
-      value,
-    ] of Object.entries(ratings)) {
+    for (
+      const [
+        field,
+        value,
+      ] of Object.entries(
+        ratings,
+      )
+    ) {
       if (
-        !Number.isInteger(value) ||
+        !Number.isInteger(
+          value,
+        ) ||
         value < 1 ||
         value > 5
       ) {
@@ -2781,14 +3031,12 @@ export const leaderService = {
       }
     }
 
-    // ----------------------------------------------------------
-    // 5. Save feedback
-    // ----------------------------------------------------------
-
     const {
       error: feedbackError,
     } = await supabase
-      .from("committee_feedback")
+      .from(
+        "committee_feedback",
+      )
       .upsert(
         {
           committee_id:
@@ -2815,7 +3063,8 @@ export const leaderService = {
             overallRating,
 
           comment:
-            comment?.trim() || null,
+            comment?.trim() ||
+            null,
 
           updated_at:
             new Date().toISOString(),
@@ -2846,9 +3095,15 @@ export const leaderService = {
     volunteer: LeaderScannerVolunteer,
     action: LeaderScanAction,
   ): Promise<LeaderScannerVolunteer> {
-    const now = new Date();
+    // ----------------------------------------------------------
+    // Morocco local time
+    // ----------------------------------------------------------
+
+    const moroccoNow =
+      getMoroccoDateTime();
+
     const timeNow =
-      now.toTimeString().slice(0, 8);
+      moroccoNow.time;
 
     const nextStatus =
       action === "check-in"
@@ -2862,7 +3117,241 @@ export const leaderService = {
     }
 
     // ----------------------------------------------------------
-    // 1. Get existing attendance for this EXACT volunteer + shift
+    // Validate the volunteer's exact assigned shift
+    // ----------------------------------------------------------
+
+    const {
+      data: assignedShift,
+      error: assignedShiftError,
+    } = await supabase
+      .from("event_shifts")
+      .select(`
+        id,
+        event_id,
+        role_id,
+        date,
+        start_time,
+        end_time
+      `)
+      .eq(
+        "id",
+        volunteer.shiftId,
+      )
+      .maybeSingle();
+
+    if (assignedShiftError) {
+      throw new Error(
+        `Assigned shift lookup failed: ${assignedShiftError.message}`,
+      );
+    }
+
+    if (!assignedShift) {
+      throw new Error(
+        "The assigned shift could not be found.",
+      );
+    }
+
+    // ----------------------------------------------------------
+    // Verify the volunteer is still assigned to this exact shift
+    // ----------------------------------------------------------
+
+    const {
+      data: exactAssignment,
+      error: exactAssignmentError,
+    } = await supabase
+      .from("shift_assignments")
+      .select(`
+        id,
+        profile_id,
+        shift_id,
+        status
+      `)
+      .eq(
+        "profile_id",
+        volunteer.id,
+      )
+      .eq(
+        "shift_id",
+        volunteer.shiftId,
+      )
+      .eq(
+        "status",
+        "assigned",
+      )
+      .maybeSingle();
+
+    if (exactAssignmentError) {
+      throw new Error(
+        `Shift assignment verification failed: ${exactAssignmentError.message}`,
+      );
+    }
+
+    if (!exactAssignment) {
+      throw new Error(
+        "This volunteer is not currently assigned to this shift.",
+      );
+    }
+
+    // ----------------------------------------------------------
+    // Verify event + role still match the volunteer
+    // ----------------------------------------------------------
+
+    if (
+      volunteer.eventId !==
+      assignedShift.event_id
+    ) {
+      throw new Error(
+        "This shift does not belong to the volunteer's event.",
+      );
+    }
+
+    if (
+      volunteer.roleId &&
+      volunteer.roleId !==
+        assignedShift.role_id
+    ) {
+      throw new Error(
+        "This shift does not match the volunteer's assigned role.",
+      );
+    }
+
+    // ----------------------------------------------------------
+    // Validate exact shift date
+    // ----------------------------------------------------------
+
+    const today =
+      moroccoNow.date;
+
+    if (
+      today !==
+      assignedShift.date
+    ) {
+      throw new Error(
+        `This volunteer is assigned to a shift on ${assignedShift.date}, not today.`,
+      );
+    }
+
+    // ----------------------------------------------------------
+    // Validate exact shift time
+    // ----------------------------------------------------------
+
+    if (
+      !assignedShift.start_time ||
+      !assignedShift.end_time
+    ) {
+      throw new Error(
+        "This shift does not have a valid start and end time.",
+      );
+    }
+
+    const currentMinutes =
+      moroccoNow.hours *
+        60 +
+      moroccoNow.minutes;
+
+    const startTime =
+      assignedShift.start_time.slice(
+        0,
+        5,
+      );
+
+    const endTime =
+      assignedShift.end_time.slice(
+        0,
+        5,
+      );
+
+    const [
+      startHour,
+      startMinute,
+    ] =
+      startTime
+        .split(":")
+        .map(Number);
+
+    const [
+      endHour,
+      endMinute,
+    ] =
+      endTime
+        .split(":")
+        .map(Number);
+
+    if (
+      Number.isNaN(startHour) ||
+      Number.isNaN(startMinute) ||
+      Number.isNaN(endHour) ||
+      Number.isNaN(endMinute)
+    ) {
+      throw new Error(
+        "This shift has an invalid start or end time.",
+      );
+    }
+
+    const shiftStartMinutes =
+      startHour * 60 +
+      startMinute;
+
+    const shiftEndMinutes =
+      endHour * 60 +
+      endMinute;
+
+    // ----------------------------------------------------------
+    // Exact same-day shift only
+    //
+    // Example:
+    // 09:00 -> 17:00
+    //
+    // Allowed:
+    // 09:00 <= current <= 17:00
+    //
+    // Not allowed:
+    // before 09:00
+    // after 17:00
+    // any other date
+    // ----------------------------------------------------------
+
+    if (
+      shiftEndMinutes <
+      shiftStartMinutes
+    ) {
+      throw new Error(
+        "This shift crosses midnight. Attendance is only allowed for same-day shifts.",
+      );
+    }
+
+    const checkInStartMinutes =
+      shiftStartMinutes - 60;
+
+    const checkOutEndMinutes =
+      shiftEndMinutes + 60;
+
+    if (action === "check-in") {
+      const canCheckIn =
+        currentMinutes >= checkInStartMinutes &&
+        currentMinutes <= shiftEndMinutes;
+
+      if (!canCheckIn) {
+        throw new Error(
+          `Check-in is allowed from ${formatTime(checkInStartMinutes)} to ${endTime}.`,
+        );
+      }
+    }
+
+    if (action === "check-out") {
+      const canCheckOut =
+        currentMinutes >= shiftStartMinutes &&
+        currentMinutes <= checkOutEndMinutes;
+
+      if (!canCheckOut) {
+        throw new Error(
+          `Check-out is allowed from ${startTime} to ${formatTime(checkOutEndMinutes)}.`,
+        );
+      }
+    }
+
+    // ----------------------------------------------------------
+    // Get existing attendance for this EXACT volunteer + shift
     // ----------------------------------------------------------
 
     const {
@@ -2876,8 +3365,14 @@ export const leaderService = {
         check_out_time,
         status
       `)
-      .eq("profile_id", volunteer.id)
-      .eq("shift_id", volunteer.shiftId)
+      .eq(
+        "profile_id",
+        volunteer.id,
+      )
+      .eq(
+        "shift_id",
+        volunteer.shiftId,
+      )
       .maybeSingle();
 
     if (existingError) {
@@ -2887,7 +3382,29 @@ export const leaderService = {
     }
 
     // ----------------------------------------------------------
-    // 2. Update existing record
+    // Prevent invalid attendance transitions
+    // ----------------------------------------------------------
+
+    if (
+      action === "check-in" &&
+      existing?.status === "checked-out"
+    ) {
+      throw new Error(
+        "This volunteer has already checked out from this shift.",
+      );
+    }
+
+    if (
+      action === "check-out" &&
+      !existing?.check_in_time
+    ) {
+      throw new Error(
+        "The volunteer must check in before checking out.",
+      );
+    }
+
+    // ----------------------------------------------------------
+    // Update existing record
     // ----------------------------------------------------------
 
     if (existing) {
@@ -2895,16 +3412,23 @@ export const leaderService = {
         string,
         unknown
       > = {
-        status: nextStatus,
-        updated_at: timeNow,
+        status:
+          nextStatus,
+
+        updated_at:
+          new Date().toISOString(),
       };
 
-      if (action === "check-in") {
+      if (
+        action ===
+        "check-in"
+      ) {
         payload.check_in_time =
           existing.check_in_time ??
           timeNow;
 
-        payload.check_out_time = null;
+        payload.check_out_time =
+          null;
       } else {
         payload.check_out_time =
           timeNow;
@@ -2917,8 +3441,12 @@ export const leaderService = {
       const {
         error: updateError,
       } = await supabase
-        .from("attendance_records")
-        .update(payload)
+        .from(
+          "attendance_records",
+        )
+        .update(
+          payload,
+        )
         .eq(
           "id",
           existing.id,
@@ -2932,62 +3460,44 @@ export const leaderService = {
     }
 
     // ----------------------------------------------------------
-    // 3. Create attendance record if none exists
+    // Create attendance record if none exists
     // ----------------------------------------------------------
 
     else {
       const {
-        data: shift,
-        error: shiftError,
-      } = await supabase
-        .from("event_shifts")
-        .select(`
-          id,
-          event_id,
-          role_id,
-          date
-        `)
-        .eq(
-          "id",
-          volunteer.shiftId,
-        )
-        .maybeSingle();
-
-      if (shiftError) {
-        throw new Error(
-          `Shift lookup failed: ${shiftError.message}`,
-        );
-      }
-
-      if (!shift) {
-        throw new Error(
-          "Assigned shift could not be found.",
-        );
-      }
-
-      const {
         error: insertError,
       } = await supabase
-        .from("attendance_records")
+        .from(
+          "attendance_records",
+        )
         .insert({
           profile_id:
             volunteer.id,
+
           event_id:
-            shift.event_id,
+            assignedShift.event_id,
+
           role_id:
-            shift.role_id,
+            assignedShift.role_id,
+
           shift_id:
-            shift.id,
+            assignedShift.id,
+
           date:
-            shift.date,
+            assignedShift.date,
+
           status:
             nextStatus,
+
           check_in_time:
-            action === "check-in"
+            action ===
+            "check-in"
               ? timeNow
               : null,
+
           check_out_time:
-            action === "check-out"
+            action ===
+            "check-out"
               ? timeNow
               : null,
         });
@@ -3000,24 +3510,28 @@ export const leaderService = {
     }
 
     // ----------------------------------------------------------
-    // 4. Return updated volunteer
+    // Return updated volunteer
     // ----------------------------------------------------------
 
     return {
       ...volunteer,
 
       attendanceStatus:
-        action === "check-in"
+        action ===
+        "check-in"
           ? "checked_in"
           : "checked_out",
 
       checkInTime:
-        action === "check-in"
-          ? timeNow
+        action ===
+        "check-in"
+          ? existing?.check_in_time ??
+            timeNow
           : volunteer.checkInTime,
 
       checkOutTime:
-        action === "check-out"
+        action ===
+        "check-out"
           ? timeNow
           : volunteer.checkOutTime,
     };
@@ -3046,7 +3560,8 @@ export const leaderService = {
         volunteer.role,
 
       status:
-        action === "check-in"
+        action ===
+        "check-in"
           ? "checked_in"
           : "checked_out",
 
@@ -3057,3 +3572,4 @@ export const leaderService = {
 };
 
 export default leaderService;
+

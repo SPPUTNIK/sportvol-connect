@@ -84,7 +84,6 @@ function VolunteerAttendanceModal({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-md">
       <div className="relative max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-[2rem] border border-border bg-card shadow-2xl">
-
         {/* Header */}
         <div className="border-b border-border px-5 py-5 sm:px-7">
           <button
@@ -115,7 +114,6 @@ function VolunteerAttendanceModal({
         </div>
 
         <div className="space-y-5 p-5 sm:p-7">
-
           {/* Volunteer identity */}
           <div className="rounded-2xl border border-border bg-background p-4 sm:p-5">
             <div className="flex items-center gap-4">
@@ -135,9 +133,7 @@ function VolunteerAttendanceModal({
                 </p>
               </div>
 
-              <VSStatusBadge
-                status={statusLabel}
-              />
+              <VSStatusBadge status={statusLabel} />
             </div>
           </div>
 
@@ -219,38 +215,56 @@ function VolunteerAttendanceModal({
                 </div>
               </div>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                <VSButton
-                  className="h-12 w-full"
-                  onClick={onCheckIn}
-                  disabled={
-                    processingAction !== null ||
-                    !canCheckIn
-                  }
-                >
-                  <UserCheck className="mr-2 h-4 w-4" />
+              <>
+                <div className="mb-3 flex items-start gap-3 rounded-2xl border border-primary/15 bg-primary/5 p-4">
+                  <Clock3 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
 
-                  {processingAction === "check-in"
-                    ? "Checking in..."
-                    : "Check in"}
-                </VSButton>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      Assigned shift validation
+                    </p>
 
-                <VSButton
-                  variant="outline"
-                  className="h-12 w-full"
-                  onClick={onCheckOut}
-                  disabled={
-                    processingAction !== null ||
-                    !canCheckOut
-                  }
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      Attendance is checked against this
+                      volunteer&apos;s exact assigned shift,
+                      including its date and time window.
+                    </p>
+                  </div>
+                </div>
 
-                  {processingAction === "check-out"
-                    ? "Checking out..."
-                    : "Check out"}
-                </VSButton>
-              </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <VSButton
+                    className="h-12 w-full"
+                    onClick={onCheckIn}
+                    disabled={
+                      processingAction !== null ||
+                      !canCheckIn
+                    }
+                  >
+                    <UserCheck className="mr-2 h-4 w-4" />
+
+                    {processingAction === "check-in"
+                      ? "Checking in..."
+                      : "Check in"}
+                  </VSButton>
+
+                  <VSButton
+                    variant="outline"
+                    className="h-12 w-full"
+                    onClick={onCheckOut}
+                    disabled={
+                      processingAction !== null ||
+                      !canCheckOut
+                    }
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+
+                    {processingAction === "check-out"
+                      ? "Checking out..."
+                      : "Check out"}
+                  </VSButton>
+                </div>
+              </>
             )}
           </div>
 
@@ -301,7 +315,6 @@ function LeaderScannerPage() {
 
   const [scanMessage, setScanMessage] =
     useState("Point the camera at the QR code");
-  
 
   // ============================================================
   // LOAD RECENT SCANS
@@ -351,9 +364,7 @@ function LeaderScannerPage() {
   // ============================================================
 
   const stopScanner = () => {
-    console.log(
-      "[QR] Stopping scanner...",
-    );
+    console.log("[QR] Stopping scanner...");
 
     try {
       controlsRef.current?.stop();
@@ -367,8 +378,7 @@ function LeaderScannerPage() {
     controlsRef.current = null;
     qrReaderRef.current = null;
 
-    const video =
-      videoRef.current;
+    const video = videoRef.current;
 
     if (
       video?.srcObject instanceof
@@ -448,9 +458,7 @@ function LeaderScannerPage() {
           audio: false,
         });
 
-      console.log(
-        "[QR] Camera stream opened.",
-      );
+      console.log("[QR] Camera stream opened.");
 
       setScanMessage(
         "Point the camera at the QR code",
@@ -479,9 +487,7 @@ function LeaderScannerPage() {
 
       await video.play();
 
-      console.log(
-        "[QR] Video started.",
-      );
+      console.log("[QR] Video started.");
 
       console.log(
         "[QR] Video dimensions:",
@@ -558,39 +564,37 @@ function LeaderScannerPage() {
                 qrData,
               );
 
-              const result =
+              const lookupResult =
                 await leaderService.getVolunteerByQrCode(
                   qrData,
                 );
 
               toast.dismiss("qr-lookup");
 
-              if (!result.ok) {
+              if (!lookupResult.ok) {
                 console.warn(
                   "[QR] Rejected:",
-                  result.reason,
+                  lookupResult.reason,
                 );
 
                 setScanMessage(
-                  `QR rejected: ${result.reason}`,
+                  `QR rejected: ${lookupResult.reason}`,
                 );
 
                 toast.error(
-                  `QR rejected: ${result.reason}`,
+                  `QR rejected: ${lookupResult.reason}`,
                   {
                     duration: 8000,
                   },
                 );
 
-                // IMPORTANT:
-                // Do not reset scanHandledRef here.
-                // This prevents the same QR from being
-                // processed repeatedly by the camera.
+                // Keep the QR handled so the same code
+                // is not repeatedly processed.
                 return;
               }
 
               const volunteer =
-                result.volunteer;
+                lookupResult.volunteer;
 
               console.log(
                 "[QR] VOLUNTEER VERIFIED:",
@@ -599,11 +603,6 @@ function LeaderScannerPage() {
 
               setScanMessage(
                 "Volunteer verified.",
-              );
-
-              console.log(
-                "[QR] VOLUNTEER VERIFIED:",
-                volunteer,
               );
 
               // Stop ZXing
@@ -616,8 +615,7 @@ function LeaderScannerPage() {
                 );
               }
 
-              controlsRef.current =
-                null;
+              controlsRef.current = null;
 
               // Stop camera
               const currentStream =
@@ -651,12 +649,9 @@ function LeaderScannerPage() {
                 lookupError,
               );
 
-              toast.dismiss(
-                "qr-lookup",
-              );
+              toast.dismiss("qr-lookup");
 
-              scanHandledRef.current =
-                false;
+              scanHandledRef.current = false;
 
               toast.error(
                 lookupError instanceof Error
@@ -728,18 +723,18 @@ function LeaderScannerPage() {
         ) {
           message =
             "Camera access requires HTTPS or localhost.";
+        }
+      } else if (
+        error instanceof Error
+      ) {
+        message = error.message;
       }
-    } else if (
-      error instanceof Error
-    ) {
-      message = error.message;
+
+      setCameraError(message);
+
+      toast.error(message);
     }
-
-    setCameraError(message);
-
-    toast.error(message);
-  }
-};
+  };
 
   // ============================================================
   // CLEANUP CAMERA ON UNMOUNT
@@ -755,10 +750,15 @@ function LeaderScannerPage() {
 
       const video = videoRef.current;
 
-      if (video?.srcObject instanceof MediaStream) {
-        video.srcObject.getTracks().forEach((track) => {
-          track.stop();
-        });
+      if (
+        video?.srcObject instanceof
+        MediaStream
+      ) {
+        video.srcObject
+          .getTracks()
+          .forEach((track) => {
+            track.stop();
+          });
       }
     };
   }, []);
@@ -770,18 +770,49 @@ function LeaderScannerPage() {
   const handleAttendanceAction = async (
   action: "check-in" | "check-out",
 ) => {
+  console.log("[ATTENDANCE] BUTTON CLICKED:", action);
+  console.log("[ATTENDANCE] selectedVolunteer:", selectedVolunteer);
+  console.log("[ATTENDANCE] processingAction:", processingAction);
+  console.log("[ATTENDANCE] currentStatus:", currentStatus);
+  console.log("[ATTENDANCE] canCheckIn:", canCheckIn);
+  console.log("[ATTENDANCE] canCheckOut:", canCheckOut);
+
   if (!selectedVolunteer) {
+    console.error("[ATTENDANCE] No volunteer selected");
+
     setScanMessage("ERROR: No volunteer selected.");
+
+    toast.error("No volunteer selected.", {
+      duration: 6000,
+    });
+
     return;
   }
 
   if (processingAction !== null) {
+    console.warn(
+      "[ATTENDANCE] Action already processing:",
+      processingAction,
+    );
+
     return;
   }
 
   setProcessingAction(action);
 
+  const actionLabel =
+    action === "check-in"
+      ? "Check-in"
+      : "Check-out";
+
+  const volunteerName =
+    `${selectedVolunteer.firstName} ${selectedVolunteer.lastName}`;
+
   try {
+    console.log(
+      "[ATTENDANCE] Calling updateAttendanceStatus...",
+    );
+
     setScanMessage(
       "1/4 — Starting attendance...",
     );
@@ -792,8 +823,9 @@ function LeaderScannerPage() {
       );
     }
 
-    setScanMessage(
-      `2/4 — Shift found: ${selectedVolunteer.shiftId}`,
+    console.log(
+      "[ATTENDANCE] shiftId:",
+      selectedVolunteer.shiftId,
     );
 
     const nextVolunteer =
@@ -802,8 +834,9 @@ function LeaderScannerPage() {
         action,
       );
 
-    setScanMessage(
-      "3/4 — Supabase attendance updated.",
+    console.log(
+      "[ATTENDANCE] SUCCESS:",
+      nextVolunteer,
     );
 
     setSelectedVolunteer(nextVolunteer);
@@ -823,14 +856,23 @@ function LeaderScannerPage() {
     );
 
     toast.success(
-      action === "check-in"
-        ? "Check in successful."
-        : "Check out successful.",
+      `${actionLabel} successful`,
       {
+        description:
+          `${volunteerName} has been successfully ${
+            action === "check-in"
+              ? "checked in"
+              : "checked out"
+          } for the assigned shift.`,
         duration: 6000,
       },
     );
   } catch (error) {
+    console.error(
+      "[ATTENDANCE] FAILED:",
+      error,
+    );
+
     const message =
       error instanceof Error
         ? error.message
@@ -840,13 +882,23 @@ function LeaderScannerPage() {
       `ERROR: ${message}`,
     );
 
-    toast.error(message, {
-      duration: 12000,
-    });
+    toast.error(
+      `${actionLabel} failed`,
+      {
+        description: message,
+        duration: 10000,
+      },
+    );
   } finally {
+    console.log(
+      "[ATTENDANCE] FINISHED:",
+      action,
+    );
+
     setProcessingAction(null);
   }
 };
+
 
   // ============================================================
   // DERIVED STATE
@@ -873,7 +925,6 @@ function LeaderScannerPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-
       <VSPageHeader
         eyebrow="Operations"
         title="QR Scanner"
@@ -881,14 +932,12 @@ function LeaderScannerPage() {
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-
         {/* ======================================================
             SCANNER
         ====================================================== */}
 
         <VSCard className="overflow-hidden rounded-[2rem] border-border bg-card shadow-[var(--shadow-float)]">
           <VSCardContent className="p-0">
-
             {/* Scanner header */}
             <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-5 sm:px-7">
               <div>
@@ -927,234 +976,233 @@ function LeaderScannerPage() {
             </div>
 
             <div className="p-3 sm:p-5 lg:p-7">
-  {/* Camera */}
-  <div className="relative overflow-hidden rounded-2xl border border-border bg-black shadow-[var(--shadow-float)] sm:rounded-[1.75rem]">
-    <div className="relative aspect-[4/5] w-full xs:aspect-[4/3] sm:aspect-video">
+              {/* Camera */}
+              <div className="relative overflow-hidden rounded-2xl border border-border bg-black shadow-[var(--shadow-float)] sm:rounded-[1.75rem]">
+                <div className="relative aspect-[4/5] w-full xs:aspect-[4/3] sm:aspect-video">
+                  {/* Camera */}
+                  <video
+                    ref={videoRef}
+                    className={`h-full w-full object-cover transition-all duration-500 ${
+                      isScanning
+                        ? "scale-100 opacity-100"
+                        : "scale-[1.02] opacity-0"
+                    }`}
+                    muted
+                    playsInline
+                    autoPlay
+                  />
 
-      {/* Camera */}
-      <video
-        ref={videoRef}
-        className={`h-full w-full object-cover transition-all duration-500 ${
-          isScanning
-            ? "scale-100 opacity-100"
-            : "scale-[1.02] opacity-0"
-        }`}
-        muted
-        playsInline
-        autoPlay
-      />
+                  {/* Empty state */}
+                  {!isScanning && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-background px-4 py-6 sm:px-6 sm:py-8">
+                      <div className="flex w-full max-w-sm flex-col items-center text-center">
+                        {/* Icon */}
+                        <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-[1rem] border border-primary/20 bg-primary/10 text-primary shadow-sm sm:h-20 sm:w-20 sm:rounded-[1.5rem]">
+                          <div className="absolute inset-1.5 rounded-[0.7rem] border border-primary/10 sm:inset-2 sm:rounded-xl" />
 
-      {/* Empty state */}
-      {!isScanning && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background px-4 py-6 sm:px-6 sm:py-8">
-          <div className="flex w-full max-w-sm flex-col items-center text-center">
+                          <QrCode className="relative h-6 w-6 sm:h-9 sm:w-9" />
+                        </div>
 
-            {/* Icon */}
-            <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-[1rem] border border-primary/20 bg-primary/10 text-primary shadow-sm sm:h-20 sm:w-20 sm:rounded-[1.5rem]">
-              <div className="absolute inset-1.5 rounded-[0.7rem] border border-primary/10 sm:inset-2 sm:rounded-xl" />
+                        {/* Text */}
+                        <div className="mt-4 w-full sm:mt-6">
+                          <h3 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
+                            Ready to scan
+                          </h3>
 
-              <QrCode className="relative h-6 w-6 sm:h-9 sm:w-9" />
+                          <p className="mx-auto mt-2 max-w-[270px] text-xs leading-5 text-muted-foreground sm:max-w-sm sm:text-sm sm:leading-6">
+                            Start the camera and position the volunteer&apos;s accreditation
+                            QR code inside the frame.
+                          </p>
+                        </div>
+
+                        {/* Status */}
+                        <div className="mt-4 inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-[10px] font-medium text-muted-foreground shadow-sm sm:mt-5 sm:px-3.5 sm:py-2 sm:text-xs">
+                          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/50 sm:h-2 sm:w-2" />
+
+                          <span className="truncate">
+                            Camera is off
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Active scanner */}
+                  {isScanning && (
+                    <>
+                      {/* Cinematic overlay */}
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70" />
+
+                      {/* Top status */}
+                      <div className="absolute left-3 right-3 top-3 flex items-center justify-between gap-2 sm:left-4 sm:right-4 sm:top-4">
+                        {/* Live */}
+                        <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/55 px-2.5 py-1.5 text-[10px] font-medium text-white shadow-lg backdrop-blur-xl sm:gap-2 sm:px-3.5 sm:py-2 sm:text-xs">
+                          <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+
+                            <span className="relative inline-flex h-full w-full rounded-full bg-primary" />
+                          </span>
+
+                          Live camera
+                        </div>
+
+                        {/* Scan badge */}
+                        <div className="hidden rounded-full border border-white/10 bg-black/55 px-3 py-1.5 text-[10px] font-medium text-white backdrop-blur-xl xs:block sm:px-3.5 sm:py-2 sm:text-xs">
+                          Scan accreditation
+                        </div>
+                      </div>
+
+                      {/* Scanner frame */}
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-5 sm:px-6">
+                        <div
+                          className="
+                            relative
+                            aspect-square
+                            w-[min(72vw,17rem)]
+                            max-w-[17rem]
+                            rounded-[1.5rem]
+                            border
+                            border-white/20
+                            sm:w-60
+                            sm:rounded-[2rem]
+                          "
+                        >
+                          {/* Soft glow */}
+                          <div className="absolute -inset-2.5 rounded-[1.75rem] border border-primary/10 sm:-inset-3 sm:rounded-[2.25rem]" />
+
+                          {/* Top left */}
+                          <span className="absolute -left-px -top-px h-8 w-8 rounded-tl-[1.4rem] border-l-[3px] border-t-[3px] border-primary shadow-[-2px_-2px_12px_rgba(139,216,208,0.25)] sm:h-11 sm:w-11 sm:rounded-tl-[1.9rem] sm:border-l-[4px] sm:border-t-[4px]" />
+
+                          {/* Top right */}
+                          <span className="absolute -right-px -top-px h-8 w-8 rounded-tr-[1.4rem] border-r-[3px] border-t-[3px] border-primary shadow-[2px_-2px_12px_rgba(139,216,208,0.25)] sm:h-11 sm:w-11 sm:rounded-tr-[1.9rem] sm:border-r-[4px] sm:border-t-[4px]" />
+
+                          {/* Bottom left */}
+                          <span className="absolute -bottom-px -left-px h-8 w-8 rounded-bl-[1.4rem] border-b-[3px] border-l-[3px] border-primary shadow-[-2px_2px_12px_rgba(139,216,208,0.25)] sm:h-11 sm:w-11 sm:rounded-bl-[1.9rem] sm:border-b-[4px] sm:border-l-[4px]" />
+
+                          {/* Bottom right */}
+                          <span className="absolute -bottom-px -right-px h-8 w-8 rounded-br-[1.4rem] border-b-[3px] border-r-[3px] border-primary shadow-[2px_2px_12px_rgba(139,216,208,0.25)] sm:h-11 sm:w-11 sm:rounded-br-[1.9rem] sm:border-b-[4px] sm:border-r-[4px]" />
+
+                          {/* Scan line */}
+                          <div className="absolute left-5 right-5 top-1/2 h-px -translate-y-1/2 bg-primary shadow-[0_0_14px_currentColor] animate-pulse sm:left-6 sm:right-6 sm:h-[2px]" />
+
+                          {/* Center indicator */}
+                          <div className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary shadow-[0_0_12px_currentColor] sm:h-2 sm:w-2 sm:shadow-[0_0_14px_currentColor]" />
+                        </div>
+                      </div>
+
+                      {/* Bottom message */}
+                      <div className="absolute bottom-3 left-3 right-3 flex justify-center sm:bottom-4 sm:left-4 sm:right-4">
+                        <div className="inline-flex max-w-[calc(100%-1rem)] items-center gap-2 rounded-full border border-white/10 bg-black/60 px-3 py-2 text-[10px] font-medium text-white shadow-xl backdrop-blur-xl sm:gap-2.5 sm:px-4 sm:py-2.5 sm:text-xs">
+                          <ScanLine className="h-3 w-3 shrink-0 text-primary sm:h-3.5 sm:w-3.5" />
+
+                          <span className="truncate">
+                            {scanMessage}
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Message / error */}
+              {cameraError ? (
+                <div className="mt-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-3.5 sm:mt-4 sm:p-4">
+                  <div className="flex items-start gap-2.5 sm:gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive/10 sm:h-9 sm:w-9 sm:rounded-xl">
+                      <CameraOff className="h-4 w-4 text-destructive sm:h-5 sm:w-5" />
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-destructive sm:text-sm">
+                        Camera unavailable
+                      </p>
+
+                      <p className="mt-1 text-xs leading-5 text-destructive/80 sm:text-sm sm:leading-6">
+                        {cameraError}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-3 flex min-w-0 items-start gap-2 rounded-xl bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground sm:mt-4 sm:items-center sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0 sm:text-sm">
+                  <QrCode className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary sm:mt-0 sm:h-4 sm:w-4" />
+
+                  <span className="min-w-0 leading-5">
+                    {isScanning
+                      ? scanMessage
+                      : "The scanner is ready when you are."}
+                  </span>
+                </div>
+              )}
+
+              {/* Controls */}
+              <div className="mt-4 sm:mt-5">
+                {!isScanning ? (
+                  <VSButton
+                    onClick={() => {
+                      void startScanner();
+                    }}
+                    className="h-11 w-full rounded-xl text-sm sm:h-12"
+                    disabled={loading}
+                  >
+                    <Camera className="mr-2 h-4 w-4" />
+
+                    {loading
+                      ? "Loading scanner..."
+                      : "Start QR Scanner"}
+                  </VSButton>
+                ) : (
+                  <VSButton
+                    onClick={stopScanner}
+                    variant="outline"
+                    className="h-11 w-full rounded-xl text-sm sm:h-12"
+                  >
+                    <CameraOff className="mr-2 h-4 w-4" />
+                    Stop Scanner
+                  </VSButton>
+                )}
+              </div>
+
+              {/* Tips */}
+              <div className="mt-4 grid grid-cols-1 gap-2.5 sm:mt-5 sm:grid-cols-3 sm:gap-3">
+                <div className="group rounded-xl border border-border bg-muted/20 p-3 transition-colors hover:bg-muted/30 sm:rounded-2xl sm:p-3.5">
+                  <div className="flex items-center gap-2 sm:block">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-[10px] font-bold text-primary sm:h-auto sm:w-auto sm:justify-start sm:rounded-none sm:bg-transparent sm:text-xs">
+                      01
+                    </span>
+
+                    <p className="text-xs font-medium text-muted-foreground sm:mt-1 sm:leading-5">
+                      Start the camera
+                    </p>
+                  </div>
+                </div>
+
+                <div className="group rounded-xl border border-border bg-muted/20 p-3 transition-colors hover:bg-muted/30 sm:rounded-2xl sm:p-3.5">
+                  <div className="flex items-center gap-2 sm:block">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-[10px] font-bold text-primary sm:h-auto sm:w-auto sm:justify-start sm:rounded-none sm:bg-transparent sm:text-xs">
+                      02
+                    </span>
+
+                    <p className="text-xs font-medium text-muted-foreground sm:mt-1 sm:leading-5">
+                      Center the QR code
+                    </p>
+                  </div>
+                </div>
+
+                <div className="group rounded-xl border border-border bg-muted/20 p-3 transition-colors hover:bg-muted/30 sm:rounded-2xl sm:p-3.5">
+                  <div className="flex items-center gap-2 sm:block">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-[10px] font-bold text-primary sm:h-auto sm:w-auto sm:justify-start sm:rounded-none sm:bg-transparent sm:text-xs">
+                      03
+                    </span>
+
+                    <p className="text-xs font-medium text-muted-foreground sm:mt-1 sm:leading-5">
+                      Confirm attendance
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-
-            {/* Text */}
-            <div className="mt-4 w-full sm:mt-6">
-              <h3 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
-                Ready to scan
-              </h3>
-
-              <p className="mx-auto mt-2 max-w-[270px] text-xs leading-5 text-muted-foreground sm:max-w-sm sm:text-sm sm:leading-6">
-                Start the camera and position the volunteer's accreditation
-                QR code inside the frame.
-              </p>
-            </div>
-
-            {/* Status */}
-            <div className="mt-4 inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-[10px] font-medium text-muted-foreground shadow-sm sm:mt-5 sm:px-3.5 sm:py-2 sm:text-xs">
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/50 sm:h-2 sm:w-2" />
-              <span className="truncate">
-                Camera is off
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Active scanner */}
-      {isScanning && (
-        <>
-          {/* Cinematic overlay */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70" />
-
-          {/* Top status */}
-          <div className="absolute left-3 right-3 top-3 flex items-center justify-between gap-2 sm:left-4 sm:right-4 sm:top-4">
-
-            {/* Live */}
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/55 px-2.5 py-1.5 text-[10px] font-medium text-white shadow-lg backdrop-blur-xl sm:gap-2 sm:px-3.5 sm:py-2 sm:text-xs">
-              <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
-                <span className="relative inline-flex h-full w-full rounded-full bg-primary" />
-              </span>
-
-              Live camera
-            </div>
-
-            {/* Scan badge */}
-            <div className="hidden rounded-full border border-white/10 bg-black/55 px-3 py-1.5 text-[10px] font-medium text-white backdrop-blur-xl xs:block sm:px-3.5 sm:py-2 sm:text-xs">
-              Scan accreditation
-            </div>
-          </div>
-
-          {/* Scanner frame */}
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-5 sm:px-6">
-            <div
-              className="
-                relative
-                aspect-square
-                w-[min(72vw,17rem)]
-                max-w-[17rem]
-                rounded-[1.5rem]
-                border
-                border-white/20
-                sm:w-60
-                sm:rounded-[2rem]
-              "
-            >
-              {/* Soft glow */}
-              <div className="absolute -inset-2.5 rounded-[1.75rem] border border-primary/10 sm:-inset-3 sm:rounded-[2.25rem]" />
-
-              {/* Top left */}
-              <span className="absolute -left-px -top-px h-8 w-8 rounded-tl-[1.4rem] border-l-[3px] border-t-[3px] border-primary shadow-[-2px_-2px_12px_rgba(139,216,208,0.25)] sm:h-11 sm:w-11 sm:rounded-tl-[1.9rem] sm:border-l-[4px] sm:border-t-[4px]" />
-
-              {/* Top right */}
-              <span className="absolute -right-px -top-px h-8 w-8 rounded-tr-[1.4rem] border-r-[3px] border-t-[3px] border-primary shadow-[2px_-2px_12px_rgba(139,216,208,0.25)] sm:h-11 sm:w-11 sm:rounded-tr-[1.9rem] sm:border-r-[4px] sm:border-t-[4px]" />
-
-              {/* Bottom left */}
-              <span className="absolute -bottom-px -left-px h-8 w-8 rounded-bl-[1.4rem] border-b-[3px] border-l-[3px] border-primary shadow-[-2px_2px_12px_rgba(139,216,208,0.25)] sm:h-11 sm:w-11 sm:rounded-bl-[1.9rem] sm:border-b-[4px] sm:border-l-[4px]" />
-
-              {/* Bottom right */}
-              <span className="absolute -bottom-px -right-px h-8 w-8 rounded-br-[1.4rem] border-b-[3px] border-r-[3px] border-primary shadow-[2px_2px_12px_rgba(139,216,208,0.25)] sm:h-11 sm:w-11 sm:rounded-br-[1.9rem] sm:border-b-[4px] sm:border-r-[4px]" />
-
-              {/* Scan line */}
-              <div className="absolute left-5 right-5 top-1/2 h-px -translate-y-1/2 bg-primary shadow-[0_0_14px_currentColor] animate-pulse sm:left-6 sm:right-6 sm:h-[2px]" />
-
-              {/* Center indicator */}
-              <div className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary shadow-[0_0_12px_currentColor] sm:h-2 sm:w-2 sm:shadow-[0_0_14px_currentColor]" />
-            </div>
-          </div>
-
-          {/* Bottom message */}
-          <div className="absolute bottom-3 left-3 right-3 flex justify-center sm:bottom-4 sm:left-4 sm:right-4">
-            <div className="inline-flex max-w-[calc(100%-1rem)] items-center gap-2 rounded-full border border-white/10 bg-black/60 px-3 py-2 text-[10px] font-medium text-white shadow-xl backdrop-blur-xl sm:gap-2.5 sm:px-4 sm:py-2.5 sm:text-xs">
-              <ScanLine className="h-3 w-3 shrink-0 text-primary sm:h-3.5 sm:w-3.5" />
-
-              <span className="truncate">
-                {scanMessage}
-              </span>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  </div>
-
-  {/* Message / error */}
-  {cameraError ? (
-    <div className="mt-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-3.5 sm:mt-4 sm:p-4">
-      <div className="flex items-start gap-2.5 sm:gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive/10 sm:h-9 sm:w-9 sm:rounded-xl">
-          <CameraOff className="h-4 w-4 text-destructive sm:h-5 sm:w-5" />
-        </div>
-
-        <div className="min-w-0">
-          <p className="text-xs font-semibold text-destructive sm:text-sm">
-            Camera unavailable
-          </p>
-
-          <p className="mt-1 text-xs leading-5 text-destructive/80 sm:text-sm sm:leading-6">
-            {cameraError}
-          </p>
-        </div>
-      </div>
-    </div>
-  ) : (
-    <div className="mt-3 flex min-w-0 items-start gap-2 rounded-xl bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground sm:mt-4 sm:items-center sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0 sm:text-sm">
-      <QrCode className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary sm:mt-0 sm:h-4 sm:w-4" />
-
-      <span className="min-w-0 leading-5">
-        {isScanning
-          ? scanMessage
-          : "The scanner is ready when you are."}
-      </span>
-    </div>
-  )}
-
-  {/* Controls */}
-  <div className="mt-4 sm:mt-5">
-    {!isScanning ? (
-      <VSButton
-        onClick={() => {
-          void startScanner();
-        }}
-        className="h-11 w-full rounded-xl text-sm sm:h-12"
-        disabled={loading}
-      >
-        <Camera className="mr-2 h-4 w-4" />
-
-        {loading
-          ? "Loading scanner..."
-          : "Start QR Scanner"}
-      </VSButton>
-    ) : (
-      <VSButton
-        onClick={stopScanner}
-        variant="outline"
-        className="h-11 w-full rounded-xl text-sm sm:h-12"
-      >
-        <CameraOff className="mr-2 h-4 w-4" />
-        Stop Scanner
-      </VSButton>
-    )}
-  </div>
-
-  {/* Tips */}
-  <div className="mt-4 grid grid-cols-1 gap-2.5 sm:mt-5 sm:grid-cols-3 sm:gap-3">
-    <div className="group rounded-xl border border-border bg-muted/20 p-3 transition-colors hover:bg-muted/30 sm:rounded-2xl sm:p-3.5">
-      <div className="flex items-center gap-2 sm:block">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-[10px] font-bold text-primary sm:h-auto sm:w-auto sm:justify-start sm:rounded-none sm:bg-transparent sm:text-xs">
-          01
-        </span>
-
-        <p className="text-xs font-medium text-muted-foreground sm:mt-1 sm:leading-5">
-          Start the camera
-        </p>
-      </div>
-    </div>
-
-    <div className="group rounded-xl border border-border bg-muted/20 p-3 transition-colors hover:bg-muted/30 sm:rounded-2xl sm:p-3.5">
-      <div className="flex items-center gap-2 sm:block">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-[10px] font-bold text-primary sm:h-auto sm:w-auto sm:justify-start sm:rounded-none sm:bg-transparent sm:text-xs">
-          02
-        </span>
-
-        <p className="text-xs font-medium text-muted-foreground sm:mt-1 sm:leading-5">
-          Center the QR code
-        </p>
-      </div>
-    </div>
-
-    <div className="group rounded-xl border border-border bg-muted/20 p-3 transition-colors hover:bg-muted/30 sm:rounded-2xl sm:p-3.5">
-      <div className="flex items-center gap-2 sm:block">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-[10px] font-bold text-primary sm:h-auto sm:w-auto sm:justify-start sm:rounded-none sm:bg-transparent sm:text-xs">
-          03
-        </span>
-
-        <p className="text-xs font-medium text-muted-foreground sm:mt-1 sm:leading-5">
-          Confirm attendance
-        </p>
-      </div>
-    </div>
-  </div>
-</div>
           </VSCardContent>
         </VSCard>
 
@@ -1164,7 +1212,6 @@ function LeaderScannerPage() {
 
         <VSCard className="rounded-[2rem] border-border bg-card shadow-[var(--shadow-float)]">
           <VSCardContent className="flex h-full flex-col p-5 sm:p-7">
-
             <div>
               <p className="eyebrow">
                 Workflow
@@ -1181,7 +1228,6 @@ function LeaderScannerPage() {
             </div>
 
             <div className="mt-6 space-y-3">
-
               <div className="flex gap-4 rounded-2xl border border-border bg-background p-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <QrCode className="h-5 w-5" />
@@ -1232,7 +1278,6 @@ function LeaderScannerPage() {
                   </p>
                 </div>
               </div>
-
             </div>
 
             <div className="mt-auto pt-6">
@@ -1247,25 +1292,21 @@ function LeaderScannerPage() {
 
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">
                       Each successful action is recorded
-                      against the volunteer's assigned shift.
+                      against the volunteer&apos;s assigned shift.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-
           </VSCardContent>
         </VSCard>
       </div>
-
-
 
       {/* ========================================================
           RECENT SCANS
       ======================================================== */}
 
       <div className="space-y-4">
-
         <VSSectionHeader
           title="Recent scans"
           description="Latest attendance updates from your committee team."
@@ -1279,9 +1320,7 @@ function LeaderScannerPage() {
                 className="rounded-[1.5rem] border-border transition-shadow hover:shadow-[var(--shadow-float)]"
               >
                 <VSCardContent className="p-4">
-
                   <div className="flex items-center gap-3">
-
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                       {item.status === "checked_in" ? (
                         <UserCheck className="h-5 w-5" />
@@ -1314,7 +1353,6 @@ function LeaderScannerPage() {
 
                     <span>{item.timestamp}</span>
                   </div>
-
                 </VSCardContent>
               </VSCard>
             ))}
@@ -1322,7 +1360,6 @@ function LeaderScannerPage() {
         ) : (
           <VSCard className="rounded-[1.75rem] border-border">
             <VSCardContent className="flex flex-col items-center justify-center px-6 py-12 text-center">
-
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                 <QrCode className="h-7 w-7" />
               </div>
@@ -1334,7 +1371,6 @@ function LeaderScannerPage() {
               <p className="mt-1 max-w-sm text-sm leading-6 text-muted-foreground">
                 Successful attendance scans will appear here.
               </p>
-
             </VSCardContent>
           </VSCard>
         )}
@@ -1360,6 +1396,7 @@ function LeaderScannerPage() {
             }
 
             setSelectedVolunteer(null);
+
             setScanMessage(
               "Point the camera at the QR code",
             );
