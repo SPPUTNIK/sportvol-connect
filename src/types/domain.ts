@@ -511,22 +511,25 @@ export interface AdminVolunteerSummary {
 // Admin Training
 // ============================================================
 
+export type TrainingStatus = "draft" | "published";
+
 export interface AdminTrainingSummary {
   id: string;
-
   title: string;
-
-  type: string;
-
   description: string;
-
+  type: string;
   duration: number;
-
+  eventId: string | null;
+  event: string | null;
+  roleId: string | null;
+  role: string | null;
+  trainingMode: "online" | "in_person" | "hybrid";
+  zoomUrl: string | null;
+  required: boolean;
+  questionsCount: number;
   assigned: number;
   completed: number;
-
   status: TrainingStatus;
-
   createdAt: string;
   publishedAt: string | null;
 }

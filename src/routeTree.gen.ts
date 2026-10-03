@@ -31,7 +31,6 @@ import { Route as AdminProfileRouteImport } from './routes/admin/profile'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
 import { Route as AdminRolesRouteImport } from './routes/admin/roles'
 import { Route as AdminShiftsRouteImport } from './routes/admin/shifts'
-import { Route as AdminTrainingRouteImport } from './routes/admin/training'
 import { Route as LeaderIndexRouteImport } from './routes/leader/index'
 import { Route as LeaderDashboardRouteImport } from './routes/leader/dashboard'
 import { Route as LeaderEventRouteImport } from './routes/leader/event'
@@ -55,12 +54,14 @@ import { Route as AdminCommitteesCommitteeIdRouteImport } from './routes/admin/c
 import { Route as AdminEventsIndexRouteImport } from './routes/admin/events/index'
 import { Route as AdminEventsEventIdRouteImport } from './routes/admin/events/$eventId'
 import { Route as AdminEventsCreateRouteImport } from './routes/admin/events/create'
+import { Route as AdminTrainingIndexRouteImport } from './routes/admin/training/index'
 import { Route as AdminVolunteersIndexRouteImport } from './routes/admin/volunteers/index'
 import { Route as AdminVolunteersVolunteerIdRouteImport } from './routes/admin/volunteers/$volunteerId'
 import { Route as VolunteerCertificatesCertificateIdRouteImport } from './routes/volunteer/certificates/$certificateId'
 import { Route as VolunteerEventsIndexRouteImport } from './routes/volunteer/events/index'
 import { Route as VolunteerEventsEventIdRouteImport } from './routes/volunteer/events/$eventId'
 import { Route as VolunteerTrainingTrainingIdRouteImport } from './routes/volunteer/training/$trainingId'
+import { Route as AdminTrainingTrainingIdQuestionsRouteImport } from './routes/admin/training/$trainingId/questions'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -170,11 +171,6 @@ const AdminRolesRoute = AdminRolesRouteImport.update({
 const AdminShiftsRoute = AdminShiftsRouteImport.update({
   id: '/shifts',
   path: '/shifts',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminTrainingRoute = AdminTrainingRouteImport.update({
-  id: '/training',
-  path: '/training',
   getParentRoute: () => AdminRoute,
 } as any)
 const LeaderIndexRoute = LeaderIndexRouteImport.update({
@@ -293,6 +289,11 @@ const AdminEventsCreateRoute = AdminEventsCreateRouteImport.update({
   path: '/events/create',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminTrainingIndexRoute = AdminTrainingIndexRouteImport.update({
+  id: '/training/',
+  path: '/training/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminVolunteersIndexRoute = AdminVolunteersIndexRouteImport.update({
   id: '/volunteers/',
   path: '/volunteers/',
@@ -326,6 +327,12 @@ const VolunteerTrainingTrainingIdRoute =
     path: '/$trainingId',
     getParentRoute: () => VolunteerTrainingRoute,
   } as any)
+const AdminTrainingTrainingIdQuestionsRoute =
+  AdminTrainingTrainingIdQuestionsRouteImport.update({
+    id: '/training/$trainingId/questions',
+    path: '/training/$trainingId/questions',
+    getParentRoute: () => AdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -349,7 +356,6 @@ export interface FileRoutesByFullPath {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/roles': typeof AdminRolesRoute
   '/admin/shifts': typeof AdminShiftsRoute
-  '/admin/training': typeof AdminTrainingRoute
   '/leader/dashboard': typeof LeaderDashboardRoute
   '/leader/event': typeof LeaderEventRoute
   '/leader/notifications': typeof LeaderNotificationsRoute
@@ -378,8 +384,10 @@ export interface FileRoutesByFullPath {
   '/volunteer/training/$trainingId': typeof VolunteerTrainingTrainingIdRoute
   '/admin/committees/': typeof AdminCommitteesIndexRoute
   '/admin/events/': typeof AdminEventsIndexRoute
+  '/admin/training/': typeof AdminTrainingIndexRoute
   '/admin/volunteers/': typeof AdminVolunteersIndexRoute
   '/volunteer/events/': typeof VolunteerEventsIndexRoute
+  '/admin/training/$trainingId/questions': typeof AdminTrainingTrainingIdQuestionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -401,7 +409,6 @@ export interface FileRoutesByTo {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/roles': typeof AdminRolesRoute
   '/admin/shifts': typeof AdminShiftsRoute
-  '/admin/training': typeof AdminTrainingRoute
   '/leader/dashboard': typeof LeaderDashboardRoute
   '/leader/event': typeof LeaderEventRoute
   '/leader/notifications': typeof LeaderNotificationsRoute
@@ -430,8 +437,10 @@ export interface FileRoutesByTo {
   '/volunteer/training/$trainingId': typeof VolunteerTrainingTrainingIdRoute
   '/admin/committees': typeof AdminCommitteesIndexRoute
   '/admin/events': typeof AdminEventsIndexRoute
+  '/admin/training': typeof AdminTrainingIndexRoute
   '/admin/volunteers': typeof AdminVolunteersIndexRoute
   '/volunteer/events': typeof VolunteerEventsIndexRoute
+  '/admin/training/$trainingId/questions': typeof AdminTrainingTrainingIdQuestionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -456,7 +465,6 @@ export interface FileRoutesById {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/roles': typeof AdminRolesRoute
   '/admin/shifts': typeof AdminShiftsRoute
-  '/admin/training': typeof AdminTrainingRoute
   '/leader/dashboard': typeof LeaderDashboardRoute
   '/leader/event': typeof LeaderEventRoute
   '/leader/notifications': typeof LeaderNotificationsRoute
@@ -485,8 +493,10 @@ export interface FileRoutesById {
   '/volunteer/training/$trainingId': typeof VolunteerTrainingTrainingIdRoute
   '/admin/committees/': typeof AdminCommitteesIndexRoute
   '/admin/events/': typeof AdminEventsIndexRoute
+  '/admin/training/': typeof AdminTrainingIndexRoute
   '/admin/volunteers/': typeof AdminVolunteersIndexRoute
   '/volunteer/events/': typeof VolunteerEventsIndexRoute
+  '/admin/training/$trainingId/questions': typeof AdminTrainingTrainingIdQuestionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -512,7 +522,6 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/roles'
     | '/admin/shifts'
-    | '/admin/training'
     | '/leader/dashboard'
     | '/leader/event'
     | '/leader/notifications'
@@ -541,8 +550,10 @@ export interface FileRouteTypes {
     | '/volunteer/training/$trainingId'
     | '/admin/committees/'
     | '/admin/events/'
+    | '/admin/training/'
     | '/admin/volunteers/'
     | '/volunteer/events/'
+    | '/admin/training/$trainingId/questions'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -564,7 +575,6 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/roles'
     | '/admin/shifts'
-    | '/admin/training'
     | '/leader/dashboard'
     | '/leader/event'
     | '/leader/notifications'
@@ -593,8 +603,10 @@ export interface FileRouteTypes {
     | '/volunteer/training/$trainingId'
     | '/admin/committees'
     | '/admin/events'
+    | '/admin/training'
     | '/admin/volunteers'
     | '/volunteer/events'
+    | '/admin/training/$trainingId/questions'
   id:
     | '__root__'
     | '/'
@@ -618,7 +630,6 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/roles'
     | '/admin/shifts'
-    | '/admin/training'
     | '/leader/dashboard'
     | '/leader/event'
     | '/leader/notifications'
@@ -647,8 +658,10 @@ export interface FileRouteTypes {
     | '/volunteer/training/$trainingId'
     | '/admin/committees/'
     | '/admin/events/'
+    | '/admin/training/'
     | '/admin/volunteers/'
     | '/volunteer/events/'
+    | '/admin/training/$trainingId/questions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -831,13 +844,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminShiftsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/training': {
-      id: '/admin/training'
-      path: '/training'
-      fullPath: '/admin/training'
-      preLoaderRoute: typeof AdminTrainingRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/leader/': {
       id: '/leader/'
       path: '/'
@@ -999,6 +1005,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEventsCreateRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/training/': {
+      id: '/admin/training/'
+      path: '/training'
+      fullPath: '/admin/training/'
+      preLoaderRoute: typeof AdminTrainingIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/volunteers/': {
       id: '/admin/volunteers/'
       path: '/volunteers'
@@ -1041,6 +1054,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VolunteerTrainingTrainingIdRouteImport
       parentRoute: typeof VolunteerTrainingRoute
     }
+    '/admin/training/$trainingId/questions': {
+      id: '/admin/training/$trainingId/questions'
+      path: '/training/$trainingId/questions'
+      fullPath: '/admin/training/$trainingId/questions'
+      preLoaderRoute: typeof AdminTrainingTrainingIdQuestionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
@@ -1057,7 +1077,6 @@ interface AdminRouteChildren {
   AdminReportsRoute: typeof AdminReportsRoute
   AdminRolesRoute: typeof AdminRolesRoute
   AdminShiftsRoute: typeof AdminShiftsRoute
-  AdminTrainingRoute: typeof AdminTrainingRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminCommitteesCommitteeIdRoute: typeof AdminCommitteesCommitteeIdRoute
   AdminEventsEventIdRoute: typeof AdminEventsEventIdRoute
@@ -1065,7 +1084,9 @@ interface AdminRouteChildren {
   AdminVolunteersVolunteerIdRoute: typeof AdminVolunteersVolunteerIdRoute
   AdminCommitteesIndexRoute: typeof AdminCommitteesIndexRoute
   AdminEventsIndexRoute: typeof AdminEventsIndexRoute
+  AdminTrainingIndexRoute: typeof AdminTrainingIndexRoute
   AdminVolunteersIndexRoute: typeof AdminVolunteersIndexRoute
+  AdminTrainingTrainingIdQuestionsRoute: typeof AdminTrainingTrainingIdQuestionsRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -1081,7 +1102,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminReportsRoute: AdminReportsRoute,
   AdminRolesRoute: AdminRolesRoute,
   AdminShiftsRoute: AdminShiftsRoute,
-  AdminTrainingRoute: AdminTrainingRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminCommitteesCommitteeIdRoute: AdminCommitteesCommitteeIdRoute,
   AdminEventsEventIdRoute: AdminEventsEventIdRoute,
@@ -1089,7 +1109,9 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminVolunteersVolunteerIdRoute: AdminVolunteersVolunteerIdRoute,
   AdminCommitteesIndexRoute: AdminCommitteesIndexRoute,
   AdminEventsIndexRoute: AdminEventsIndexRoute,
+  AdminTrainingIndexRoute: AdminTrainingIndexRoute,
   AdminVolunteersIndexRoute: AdminVolunteersIndexRoute,
+  AdminTrainingTrainingIdQuestionsRoute: AdminTrainingTrainingIdQuestionsRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

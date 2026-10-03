@@ -800,19 +800,10 @@ export const adminService = {
     };
   },
 
-  /**
+
+    /**
    * ---------------------------------------------------------
    * TRAINING
-   * ---------------------------------------------------------
-   *
-   * The current DB schema does not contain:
-   * - type
-   * - duration
-   * - status
-   * - published_at
-   *
-   * Therefore these are mapped to safe UI values.
-   * Training progress is the source for assigned/completed.
    * ---------------------------------------------------------
    */
 
@@ -823,8 +814,24 @@ export const adminService = {
         id,
         title,
         description,
+        event_id,
+        role_id,
         required,
-        created_at
+        training_mode,
+        zoom_url,
+        status,
+        published_at,
+        created_at,
+
+        events (
+          id,
+          title
+        ),
+
+        event_roles (
+          id,
+          name
+        )
       `)
       .order("created_at", { ascending: false });
 
@@ -838,26 +845,58 @@ export const adminService = {
 
     const trainingIds = modules.map((module) => module.id);
 
-    const { data: progress, error: progressError } = await supabase
-      .from("training_progress")
-      .select(`
-        training_id,
-        profile_id,
-        completed
-      `)
-      .in("training_id", trainingIds);
+    const [progressResult, questionsResult] =
+      await Promise.all([
+        supabase
+          .from("training_progress")
+          .select(`
+            training_id,
+            profile_id,
+            completed
+          `)
+          .in("training_id", trainingIds),
 
-    if (progressError) {
-      throw progressError;
+        supabase
+          .from("training_questions")
+          .select(`
+            id,
+            training_id
+          `)
+          .in("training_id", trainingIds),
+      ]);
+
+    if (progressResult.error) {
+      throw progressResult.error;
     }
 
+    if (questionsResult.error) {
+      throw questionsResult.error;
+    }
+
+    const progress = progressResult.data ?? [];
+    const questions = questionsResult.data ?? [];
+
     return modules.map((module) => {
-      const moduleProgress = (progress ?? []).filter(
+      const event = Array.isArray(module.events)
+        ? module.events[0]
+        : module.events;
+
+      const role = Array.isArray(module.event_roles)
+        ? module.event_roles[0]
+        : module.event_roles;
+
+      const moduleProgress = progress.filter(
         (item) => item.training_id === module.id,
       );
 
+      const moduleQuestions = questions.filter(
+        (item) => item.training_id === module.id,
+      );
+
+      const assigned = moduleProgress.length;
+
       const completed = moduleProgress.filter(
-        (item) => item.completed,
+        (item) => item.completed === true,
       ).length;
 
       return {
@@ -865,23 +904,488 @@ export const adminService = {
 
         title: module.title,
 
-        type: module.required ? "Required" : "Optional",
-
         description: module.description ?? "",
+
+        type: module.required
+          ? "Required"
+          : "Optional",
 
         duration: 0,
 
-        assigned: moduleProgress.length,
+        eventId: module.event_id ?? null,
+        event: event?.title ?? null,
 
+        roleId: module.role_id ?? null,
+        role: role?.name ?? null,
+
+        trainingMode:
+          module.training_mode === "online" ||
+          module.training_mode === "hybrid"
+            ? module.training_mode
+            : "in_person",
+
+        zoomUrl: module.zoom_url ?? null,
+
+        required: module.required,
+
+        questionsCount: moduleQuestions.length,
+
+        assigned,
         completed,
 
-        status: "published",
+        status:
+          module.status === "published"
+            ? "published"
+            : "draft",
+
+        publishedAt:
+          module.published_at ?? null,
 
         createdAt: module.created_at,
-
-        publishedAt: null,
       };
     });
+  },
+
+  /**
+   * ---------------------------------------------------------
+   * CREATE TRAINING
+   * ---------------------------------------------------------
+   */
+
+  async createTraining({
+    title,
+    description,
+    eventId,
+    roleId,
+    trainingMode,
+    zoomUrl,
+    required,
+  }: {
+    title: string;
+    description: string;
+    eventId: string | null;
+    roleId: string | null;
+    trainingMode: "online" | "in_person" | "hybrid";
+    zoomUrl: string | null;
+    required: boolean;
+  }) {
+    const { data, error } = await supabase
+      .from("training_modules")
+      .insert({
+        title: title.trim(),
+
+        description:
+          description.trim() || null,
+
+        event_id: eventId,
+
+        role_id: roleId,
+
+        training_mode: trainingMode,
+
+        zoom_url:
+          trainingMode === "online" ||
+          trainingMode === "hybrid"
+            ? zoomUrl?.trim() || null
+            : null,
+
+        required,
+
+        // New trainings start as draft.
+        status: "draft",
+
+        published_at: null,
+      })
+      .select(`
+        id,
+        title,
+        description,
+        event_id,
+        role_id,
+        required,
+        training_mode,
+        zoom_url,
+        status,
+        published_at,
+        created_at,
+        updated_at
+      `)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  },
+
+  /**
+   * ---------------------------------------------------------
+   * UPDATE TRAINING
+   * ---------------------------------------------------------
+   */
+
+  async updateTraining({
+    id,
+    title,
+    description,
+    eventId,
+    roleId,
+    trainingMode,
+    zoomUrl,
+    required,
+    status,
+  }: {
+    id: string;
+    title: string;
+    description: string;
+    eventId: string | null;
+    roleId: string | null;
+    trainingMode: "online" | "in_person" | "hybrid";
+    zoomUrl: string | null;
+    required: boolean;
+    status: "draft" | "published";
+  }) {
+    const publishedAt =
+      status === "published"
+        ? new Date().toISOString()
+        : null;
+
+    const { data, error } = await supabase
+      .from("training_modules")
+      .update({
+        title: title.trim(),
+
+        description:
+          description.trim() || null,
+
+        event_id: eventId,
+
+        role_id: roleId,
+
+        training_mode: trainingMode,
+
+        zoom_url:
+          trainingMode === "online" ||
+          trainingMode === "hybrid"
+            ? zoomUrl?.trim() || null
+            : null,
+
+        required,
+
+        status,
+
+        published_at: publishedAt,
+      })
+      .eq("id", id)
+      .select(`
+        id,
+        title,
+        description,
+        event_id,
+        role_id,
+        required,
+        training_mode,
+        zoom_url,
+        status,
+        published_at,
+        created_at,
+        updated_at
+      `)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  },
+
+  /**
+   * ---------------------------------------------------------
+   * UPDATE TRAINING STATUS
+   * ---------------------------------------------------------
+   */
+
+  async updateTrainingStatus(
+    id: string,
+    status: "draft" | "published",
+  ) {
+    const publishedAt =
+      status === "published"
+        ? new Date().toISOString()
+        : null;
+
+    const { data, error } = await supabase
+      .from("training_modules")
+      .update({
+        status,
+        published_at: publishedAt,
+      })
+      .eq("id", id)
+      .select(`
+        id,
+        status,
+        published_at
+      `)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  },
+
+  /**
+   * ---------------------------------------------------------
+   * TRAINING QUESTIONS
+   * ---------------------------------------------------------
+   */
+
+  async getTrainingQuestions(
+    trainingId: string,
+  ) {
+    const { data, error } = await supabase
+      .from("training_questions")
+      .select(`
+        id,
+        training_id,
+        question_number,
+        question,
+        options,
+        correct_options,
+        points,
+        created_at,
+        updated_at
+      `)
+      .eq("training_id", trainingId)
+      .order("question_number", {
+        ascending: true,
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []).map((item) => ({
+      id: item.id,
+      trainingId: item.training_id,
+      questionNumber: item.question_number,
+      question: item.question,
+
+      options: Array.isArray(item.options)
+        ? item.options
+        : [],
+
+      correctOptions: Array.isArray(
+        item.correct_options,
+      )
+        ? item.correct_options
+        : [],
+
+      points: item.points,
+
+      createdAt: item.created_at,
+      updatedAt: item.updated_at,
+    }));
+  },
+
+  async createTrainingQuestion({
+    trainingId,
+    questionNumber,
+    question,
+    options,
+    correctOptions,
+    points = 1,
+  }: {
+    trainingId: string;
+    questionNumber: number;
+    question: string;
+    options: string[];
+    correctOptions: string[];
+    points?: number;
+  }) {
+    if (
+      questionNumber < 1 ||
+      questionNumber > 20
+    ) {
+      throw new Error(
+        "Question number must be between 1 and 20.",
+      );
+    }
+
+    if (!question.trim()) {
+      throw new Error(
+        "Question text is required.",
+      );
+    }
+
+    if (options.length < 2) {
+      throw new Error(
+        "A question must have at least 2 options.",
+      );
+    }
+
+    if (correctOptions.length === 0) {
+      throw new Error(
+        "Please select at least one correct answer.",
+      );
+    }
+
+    const { data, error } = await supabase
+      .from("training_questions")
+      .insert({
+        training_id: trainingId,
+        question_number: questionNumber,
+        question: question.trim(),
+        options,
+        correct_options: correctOptions,
+        points,
+      })
+      .select(`
+        id,
+        training_id,
+        question_number,
+        question,
+        options,
+        correct_options,
+        points,
+        created_at,
+        updated_at
+      `)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return {
+      id: data.id,
+      trainingId: data.training_id,
+      questionNumber: data.question_number,
+      question: data.question,
+
+      options: Array.isArray(data.options)
+        ? data.options
+        : [],
+
+      correctOptions: Array.isArray(
+        data.correct_options,
+      )
+        ? data.correct_options
+        : [],
+
+      points: data.points,
+
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  },
+
+  async updateTrainingQuestion({
+    id,
+    questionNumber,
+    question,
+    options,
+    correctOptions,
+    points = 1,
+  }: {
+    id: string;
+    questionNumber: number;
+    question: string;
+    options: string[];
+    correctOptions: string[];
+    points?: number;
+  }) {
+    if (
+      questionNumber < 1 ||
+      questionNumber > 20
+    ) {
+      throw new Error(
+        "Question number must be between 1 and 20.",
+      );
+    }
+
+    if (!question.trim()) {
+      throw new Error(
+        "Question text is required.",
+      );
+    }
+
+    if (options.length < 2) {
+      throw new Error(
+        "A question must have at least 2 options.",
+      );
+    }
+
+    if (correctOptions.length === 0) {
+      throw new Error(
+        "Please select at least one correct answer.",
+      );
+    }
+
+    const { data, error } = await supabase
+      .from("training_questions")
+      .update({
+        question_number: questionNumber,
+        question: question.trim(),
+        options,
+        correct_options: correctOptions,
+        points,
+      })
+      .eq("id", id)
+      .select(`
+        id,
+        training_id,
+        question_number,
+        question,
+        options,
+        correct_options,
+        points,
+        created_at,
+        updated_at
+      `)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return {
+      id: data.id,
+      trainingId: data.training_id,
+      questionNumber: data.question_number,
+      question: data.question,
+
+      options: Array.isArray(data.options)
+        ? data.options
+        : [],
+
+      correctOptions: Array.isArray(
+        data.correct_options,
+      )
+        ? data.correct_options
+        : [],
+
+      points: data.points,
+
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  },
+
+  async deleteTrainingQuestion(
+    id: string,
+  ) {
+    const { error } = await supabase
+      .from("training_questions")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      throw error;
+    }
   },
 
   /**
