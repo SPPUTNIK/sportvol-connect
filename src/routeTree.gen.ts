@@ -24,7 +24,6 @@ import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as AdminApplicationsRouteImport } from './routes/admin/applications'
 import { Route as AdminAttendanceRouteImport } from './routes/admin/attendance'
 import { Route as AdminCertificatesRouteImport } from './routes/admin/certificates'
-import { Route as AdminCommitteesRouteImport } from './routes/admin/committees'
 import { Route as AdminHoursRouteImport } from './routes/admin/hours'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminNotificationsRouteImport } from './routes/admin/notifications'
@@ -51,6 +50,8 @@ import { Route as VolunteerNotificationsRouteImport } from './routes/volunteer/n
 import { Route as VolunteerProfileRouteImport } from './routes/volunteer/profile'
 import { Route as VolunteerTrainingRouteImport } from './routes/volunteer/training'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as AdminCommitteesIndexRouteImport } from './routes/admin/committees/index'
+import { Route as AdminCommitteesCommitteeIdRouteImport } from './routes/admin/committees/$committeeId'
 import { Route as AdminEventsIndexRouteImport } from './routes/admin/events/index'
 import { Route as AdminEventsEventIdRouteImport } from './routes/admin/events/$eventId'
 import { Route as AdminEventsCreateRouteImport } from './routes/admin/events/create'
@@ -134,11 +135,6 @@ const AdminAttendanceRoute = AdminAttendanceRouteImport.update({
 const AdminCertificatesRoute = AdminCertificatesRouteImport.update({
   id: '/certificates',
   path: '/certificates',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminCommitteesRoute = AdminCommitteesRouteImport.update({
-  id: '/committees',
-  path: '/committees',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminHoursRoute = AdminHoursRouteImport.update({
@@ -271,6 +267,17 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminCommitteesIndexRoute = AdminCommitteesIndexRouteImport.update({
+  id: '/committees/',
+  path: '/committees/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCommitteesCommitteeIdRoute =
+  AdminCommitteesCommitteeIdRouteImport.update({
+    id: '/committees/$committeeId',
+    path: '/committees/$committeeId',
+    getParentRoute: () => AdminRoute,
+  } as any)
 const AdminEventsIndexRoute = AdminEventsIndexRouteImport.update({
   id: '/events/',
   path: '/events/',
@@ -335,7 +342,6 @@ export interface FileRoutesByFullPath {
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
   '/admin/certificates': typeof AdminCertificatesRoute
-  '/admin/committees': typeof AdminCommitteesRoute
   '/admin/hours': typeof AdminHoursRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/notifications': typeof AdminNotificationsRoute
@@ -363,12 +369,14 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/leader/': typeof LeaderIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/admin/committees/$committeeId': typeof AdminCommitteesCommitteeIdRoute
   '/admin/events/$eventId': typeof AdminEventsEventIdRoute
   '/admin/events/create': typeof AdminEventsCreateRoute
   '/admin/volunteers/$volunteerId': typeof AdminVolunteersVolunteerIdRoute
   '/volunteer/certificates/$certificateId': typeof VolunteerCertificatesCertificateIdRoute
   '/volunteer/events/$eventId': typeof VolunteerEventsEventIdRoute
   '/volunteer/training/$trainingId': typeof VolunteerTrainingTrainingIdRoute
+  '/admin/committees/': typeof AdminCommitteesIndexRoute
   '/admin/events/': typeof AdminEventsIndexRoute
   '/admin/volunteers/': typeof AdminVolunteersIndexRoute
   '/volunteer/events/': typeof VolunteerEventsIndexRoute
@@ -386,7 +394,6 @@ export interface FileRoutesByTo {
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
   '/admin/certificates': typeof AdminCertificatesRoute
-  '/admin/committees': typeof AdminCommitteesRoute
   '/admin/hours': typeof AdminHoursRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/notifications': typeof AdminNotificationsRoute
@@ -414,12 +421,14 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/leader': typeof LeaderIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/admin/committees/$committeeId': typeof AdminCommitteesCommitteeIdRoute
   '/admin/events/$eventId': typeof AdminEventsEventIdRoute
   '/admin/events/create': typeof AdminEventsCreateRoute
   '/admin/volunteers/$volunteerId': typeof AdminVolunteersVolunteerIdRoute
   '/volunteer/certificates/$certificateId': typeof VolunteerCertificatesCertificateIdRoute
   '/volunteer/events/$eventId': typeof VolunteerEventsEventIdRoute
   '/volunteer/training/$trainingId': typeof VolunteerTrainingTrainingIdRoute
+  '/admin/committees': typeof AdminCommitteesIndexRoute
   '/admin/events': typeof AdminEventsIndexRoute
   '/admin/volunteers': typeof AdminVolunteersIndexRoute
   '/volunteer/events': typeof VolunteerEventsIndexRoute
@@ -440,7 +449,6 @@ export interface FileRoutesById {
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
   '/admin/certificates': typeof AdminCertificatesRoute
-  '/admin/committees': typeof AdminCommitteesRoute
   '/admin/hours': typeof AdminHoursRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/notifications': typeof AdminNotificationsRoute
@@ -468,12 +476,14 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/leader/': typeof LeaderIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/admin/committees/$committeeId': typeof AdminCommitteesCommitteeIdRoute
   '/admin/events/$eventId': typeof AdminEventsEventIdRoute
   '/admin/events/create': typeof AdminEventsCreateRoute
   '/admin/volunteers/$volunteerId': typeof AdminVolunteersVolunteerIdRoute
   '/volunteer/certificates/$certificateId': typeof VolunteerCertificatesCertificateIdRoute
   '/volunteer/events/$eventId': typeof VolunteerEventsEventIdRoute
   '/volunteer/training/$trainingId': typeof VolunteerTrainingTrainingIdRoute
+  '/admin/committees/': typeof AdminCommitteesIndexRoute
   '/admin/events/': typeof AdminEventsIndexRoute
   '/admin/volunteers/': typeof AdminVolunteersIndexRoute
   '/volunteer/events/': typeof VolunteerEventsIndexRoute
@@ -495,7 +505,6 @@ export interface FileRouteTypes {
     | '/admin/applications'
     | '/admin/attendance'
     | '/admin/certificates'
-    | '/admin/committees'
     | '/admin/hours'
     | '/admin/login'
     | '/admin/notifications'
@@ -523,12 +532,14 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/leader/'
     | '/.lovable/oauth/consent'
+    | '/admin/committees/$committeeId'
     | '/admin/events/$eventId'
     | '/admin/events/create'
     | '/admin/volunteers/$volunteerId'
     | '/volunteer/certificates/$certificateId'
     | '/volunteer/events/$eventId'
     | '/volunteer/training/$trainingId'
+    | '/admin/committees/'
     | '/admin/events/'
     | '/admin/volunteers/'
     | '/volunteer/events/'
@@ -546,7 +557,6 @@ export interface FileRouteTypes {
     | '/admin/applications'
     | '/admin/attendance'
     | '/admin/certificates'
-    | '/admin/committees'
     | '/admin/hours'
     | '/admin/login'
     | '/admin/notifications'
@@ -574,12 +584,14 @@ export interface FileRouteTypes {
     | '/admin'
     | '/leader'
     | '/.lovable/oauth/consent'
+    | '/admin/committees/$committeeId'
     | '/admin/events/$eventId'
     | '/admin/events/create'
     | '/admin/volunteers/$volunteerId'
     | '/volunteer/certificates/$certificateId'
     | '/volunteer/events/$eventId'
     | '/volunteer/training/$trainingId'
+    | '/admin/committees'
     | '/admin/events'
     | '/admin/volunteers'
     | '/volunteer/events'
@@ -599,7 +611,6 @@ export interface FileRouteTypes {
     | '/admin/applications'
     | '/admin/attendance'
     | '/admin/certificates'
-    | '/admin/committees'
     | '/admin/hours'
     | '/admin/login'
     | '/admin/notifications'
@@ -627,12 +638,14 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/leader/'
     | '/.lovable/oauth/consent'
+    | '/admin/committees/$committeeId'
     | '/admin/events/$eventId'
     | '/admin/events/create'
     | '/admin/volunteers/$volunteerId'
     | '/volunteer/certificates/$certificateId'
     | '/volunteer/events/$eventId'
     | '/volunteer/training/$trainingId'
+    | '/admin/committees/'
     | '/admin/events/'
     | '/admin/volunteers/'
     | '/volunteer/events/'
@@ -767,13 +780,6 @@ declare module '@tanstack/react-router' {
       path: '/certificates'
       fullPath: '/admin/certificates'
       preLoaderRoute: typeof AdminCertificatesRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/committees': {
-      id: '/admin/committees'
-      path: '/committees'
-      fullPath: '/admin/committees'
-      preLoaderRoute: typeof AdminCommitteesRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/hours': {
@@ -958,6 +964,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/committees/': {
+      id: '/admin/committees/'
+      path: '/committees'
+      fullPath: '/admin/committees/'
+      preLoaderRoute: typeof AdminCommitteesIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/committees/$committeeId': {
+      id: '/admin/committees/$committeeId'
+      path: '/committees/$committeeId'
+      fullPath: '/admin/committees/$committeeId'
+      preLoaderRoute: typeof AdminCommitteesCommitteeIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/events/': {
       id: '/admin/events/'
       path: '/events'
@@ -1030,7 +1050,6 @@ interface AdminRouteChildren {
   AdminApplicationsRoute: typeof AdminApplicationsRoute
   AdminAttendanceRoute: typeof AdminAttendanceRoute
   AdminCertificatesRoute: typeof AdminCertificatesRoute
-  AdminCommitteesRoute: typeof AdminCommitteesRoute
   AdminHoursRoute: typeof AdminHoursRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
@@ -1040,9 +1059,11 @@ interface AdminRouteChildren {
   AdminShiftsRoute: typeof AdminShiftsRoute
   AdminTrainingRoute: typeof AdminTrainingRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminCommitteesCommitteeIdRoute: typeof AdminCommitteesCommitteeIdRoute
   AdminEventsEventIdRoute: typeof AdminEventsEventIdRoute
   AdminEventsCreateRoute: typeof AdminEventsCreateRoute
   AdminVolunteersVolunteerIdRoute: typeof AdminVolunteersVolunteerIdRoute
+  AdminCommitteesIndexRoute: typeof AdminCommitteesIndexRoute
   AdminEventsIndexRoute: typeof AdminEventsIndexRoute
   AdminVolunteersIndexRoute: typeof AdminVolunteersIndexRoute
 }
@@ -1053,7 +1074,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminApplicationsRoute: AdminApplicationsRoute,
   AdminAttendanceRoute: AdminAttendanceRoute,
   AdminCertificatesRoute: AdminCertificatesRoute,
-  AdminCommitteesRoute: AdminCommitteesRoute,
   AdminHoursRoute: AdminHoursRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
@@ -1063,9 +1083,11 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminShiftsRoute: AdminShiftsRoute,
   AdminTrainingRoute: AdminTrainingRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminCommitteesCommitteeIdRoute: AdminCommitteesCommitteeIdRoute,
   AdminEventsEventIdRoute: AdminEventsEventIdRoute,
   AdminEventsCreateRoute: AdminEventsCreateRoute,
   AdminVolunteersVolunteerIdRoute: AdminVolunteersVolunteerIdRoute,
+  AdminCommitteesIndexRoute: AdminCommitteesIndexRoute,
   AdminEventsIndexRoute: AdminEventsIndexRoute,
   AdminVolunteersIndexRoute: AdminVolunteersIndexRoute,
 }

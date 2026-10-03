@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   BarChart3,
@@ -22,9 +23,45 @@ import {
 } from "@/components/design-system";
 
 import { adminService } from "@/services/admin/adminService";
+import type { AdminStats } from "@/types/domain";
 
 export function AdminDashboardPage() {
-  const stats = adminService.getStats();
+  const [stats, setStats] = useState<AdminStats>({
+    volunteers: 0,
+    upcomingEvents: 0,
+    applications: 0,
+    acceptedVolunteers: 0,
+    hours: 0,
+    attendance: "0%",
+  });
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadStats() {
+      try {
+        const data = await adminService.getStats();
+
+        if (mounted) {
+          setStats(data);
+        }
+      } catch (error) {
+        console.error("Failed to load admin stats:", error);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadStats();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const actions = [
     ["Events", "/admin/events", CalendarDays],
@@ -45,39 +82,39 @@ export function AdminDashboardPage() {
         <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
           <VSStatCard
             label="Total volunteers"
-            value={(stats.volunteers ?? 0).toLocaleString()}
+            value={loading ? "—" : (stats.volunteers ?? 0).toLocaleString()}
             icon={<Users className="h-5 w-5" />}
           />
 
           <VSStatCard
             label="Upcoming events"
-            value={stats.upcomingEvents}
+            value={loading ? "—" : stats.upcomingEvents}
             icon={<CalendarDays className="h-5 w-5" />}
             accent
           />
 
           <VSStatCard
             label="Applications"
-            value={stats.applications}
+            value={loading ? "—" : stats.applications}
             icon={<ClipboardList className="h-5 w-5" />}
           />
 
           <VSStatCard
             label="Accepted"
-            value={stats.acceptedVolunteers}
+            value={loading ? "—" : stats.acceptedVolunteers}
             icon={<CheckCircle2 className="h-5 w-5" />}
             accent
           />
 
           <VSStatCard
             label="Official hours"
-            value={(stats.hours ?? 0).toLocaleString()}
+            value={loading ? "—" : (stats.hours ?? 0).toLocaleString()}
             icon={<BarChart3 className="h-5 w-5" />}
           />
 
           <VSStatCard
             label="Attendance"
-            value={stats.attendance}
+            value={loading ? "—" : stats.attendance}
             icon={<ShieldCheck className="h-5 w-5" />}
             accent
           />
@@ -86,7 +123,10 @@ export function AdminDashboardPage() {
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <VSCard className="rounded-[2rem] border-border">
             <VSCardContent className="p-6 sm:p-8">
-              <VSSectionHeader eyebrow="Action centre" title="Keep records current" />
+              <VSSectionHeader
+                eyebrow="Action centre"
+                title="Keep records current"
+              />
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 {actions.map(([label, href, Icon]) => (
@@ -120,11 +160,13 @@ export function AdminDashboardPage() {
             <VSCardContent className="p-6 sm:p-8">
               <p className="eyebrow text-white/60">Admin principle</p>
 
-              <h2 className="mt-3 text-3xl font-semibold">Build trust at every handoff.</h2>
+              <h2 className="mt-3 text-3xl font-semibold">
+                Build trust at every handoff.
+              </h2>
 
               <p className="mt-4 text-sm leading-7 text-white/70">
-                Accurate event records, considered applications, reliable attendance, and
-                certificates volunteers can share with pride.
+                Accurate event records, considered applications, reliable
+                attendance, and certificates volunteers can share with pride.
               </p>
 
               <Link

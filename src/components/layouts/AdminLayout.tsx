@@ -167,11 +167,6 @@ const adminNavigation: AdminNavGroup[] = [
         href: "/admin/profile",
         icon: UserRound,
       },
-      {
-        label: "Settings",
-        href: "/admin/settings",
-        icon: Settings,
-      },
     ],
   },
 ];
@@ -266,25 +261,7 @@ function AdminNavigation({
 
         {/* Admin profile + Logout */}
         <div className="shrink-0 border-t border-border p-4">
-          <Link
-            to="/admin/profile"
-            onClick={onNavigate}
-            className="block rounded-3xl border border-border bg-background p-4 transition hover:border-primary/40"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white">
-                {name.slice(0, 1).toUpperCase()}
-              </div>
 
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-foreground">{name}</p>
-
-                <p className="truncate text-xs text-muted-foreground">Administrator</p>
-              </div>
-            </div>
-
-            <p className="mt-3 text-xs font-semibold text-primary">View profile</p>
-          </Link>
 
           {/* Sidebar logout */}
           <button

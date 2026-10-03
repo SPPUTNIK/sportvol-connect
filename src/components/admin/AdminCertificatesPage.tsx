@@ -1,4 +1,5 @@
 import { Download, Plus, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { AdminGate } from "./components/AdminGate";
 import { formatStatus } from "./components/adminHelpers";
@@ -14,7 +15,41 @@ import {
 import { adminService } from "@/services/admin/adminService";
 
 export function AdminCertificatesPage() {
-  const certificates = adminService.getCertificates();
+  const [certificates, setCertificates] = useState<
+    Awaited<ReturnType<typeof adminService.getCertificates>>
+  >([]);
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadCertificates() {
+      try {
+        const data = await adminService.getCertificates();
+
+        if (mounted) {
+          setCertificates(data);
+        }
+      } catch (error) {
+        console.error("Failed to load certificates:", error);
+
+        if (mounted) {
+          setCertificates([]);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadCertificates();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <AdminGate title="Certificates">
@@ -32,39 +67,67 @@ export function AdminCertificatesPage() {
         />
 
         <div className="mt-8 grid gap-4 lg:grid-cols-3">
-          {certificates.map((item) => (
-            <VSCard key={item.id} className="rounded-[1.75rem] border-border">
+          {loading ? (
+            <VSCard className="rounded-[1.75rem] border-border">
               <VSCardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <ShieldCheck className="h-6 w-6 text-primary" />
-
-                  <VSStatusBadge status={formatStatus(item.status)} />
-                </div>
-
-                <p className="mt-5 font-mono text-xs text-muted-foreground">{item.id}</p>
-
-                <h2 className="mt-2 text-lg font-semibold text-foreground">{item.volunteer}</h2>
-
-                <p className="mt-1 text-sm text-muted-foreground">{item.event}</p>
-
-                <div className="mt-5 flex justify-between text-sm">
-                  <span>{item.hours} hours</span>
-                  <span>{item.date || "Not issued"}</span>
-                </div>
-
-                <div className="mt-6 flex gap-2">
-                  <VSButton variant="outline" size="sm">
-                    Preview
-                  </VSButton>
-
-                  <VSButton variant="ghost" size="sm">
-                    <Download className="h-4 w-4" />
-                    Download
-                  </VSButton>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  Loading certificates...
+                </p>
               </VSCardContent>
             </VSCard>
-          ))}
+          ) : certificates.length === 0 ? (
+            <VSCard className="rounded-[1.75rem] border-border">
+              <VSCardContent className="p-6">
+                <p className="text-sm text-muted-foreground">
+                  No certificates found.
+                </p>
+              </VSCardContent>
+            </VSCard>
+          ) : (
+            certificates.map((item) => (
+              <VSCard
+                key={item.id}
+                className="rounded-[1.75rem] border-border"
+              >
+                <VSCardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <ShieldCheck className="h-6 w-6 text-primary" />
+
+                    <VSStatusBadge status={formatStatus(item.status)} />
+                  </div>
+
+                  <p className="mt-5 font-mono text-xs text-muted-foreground">
+                    {item.id}
+                  </p>
+
+                  <h2 className="mt-2 text-lg font-semibold text-foreground">
+                    {item.volunteer}
+                  </h2>
+
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {item.event}
+                  </p>
+
+                  <div className="mt-5 flex justify-between text-sm">
+                    <span>{item.hours} hours</span>
+
+                    <span>{item.date || "Not issued"}</span>
+                  </div>
+
+                  <div className="mt-6 flex gap-2">
+                    <VSButton variant="outline" size="sm">
+                      Preview
+                    </VSButton>
+
+                    <VSButton variant="ghost" size="sm">
+                      <Download className="h-4 w-4" />
+                      Download
+                    </VSButton>
+                  </div>
+                </VSCardContent>
+              </VSCard>
+            ))
+          )}
         </div>
       </div>
     </AdminGate>

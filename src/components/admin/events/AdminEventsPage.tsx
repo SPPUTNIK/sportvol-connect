@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, CalendarDays, Plus } from "lucide-react";
 
@@ -20,15 +20,27 @@ function normalizeStatus(status: string) {
 }
 
 function formatStatus(status: string) {
-  return status.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  return status
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function Stat({ label, value }: { label: string; value: string | number }) {
+function Stat({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        {label}
+      </p>
 
-      <p className="mt-1 text-sm font-semibold text-foreground">{value}</p>
+      <p className="mt-1 text-sm font-semibold text-foreground">
+        {value}
+      </p>
     </div>
   );
 }
@@ -37,7 +49,46 @@ export function AdminEventsPage() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
 
-  const events = adminService.getEvents();
+  const [events, setEvents] = useState<
+    Awaited<ReturnType<typeof adminService.getEvents>>
+  >([]);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadEvents() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const data = await adminService.getEvents();
+
+        if (!cancelled) {
+          setEvents(data);
+        }
+      } catch (err) {
+        console.error("Failed to load admin events:", err);
+
+        if (!cancelled) {
+          setError("Failed to load events. Please try again.");
+          setEvents([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadEvents();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const rows = useMemo(() => {
     const normalizedQuery = query.toLowerCase().trim();
@@ -45,10 +96,13 @@ export function AdminEventsPage() {
     return events.filter((event) => {
       const matchesQuery =
         !normalizedQuery ||
-        `${event.title} ${event.city} ${event.sport}`.toLowerCase().includes(normalizedQuery);
+        `${event.title} ${event.city} ${event.sport}`
+          .toLowerCase()
+          .includes(normalizedQuery);
 
       const matchesStatus =
-        status === "all" || normalizeStatus(event.status) === normalizeStatus(status);
+        status === "all" ||
+        normalizeStatus(event.status) === normalizeStatus(status);
 
       return matchesQuery && matchesStatus;
     });
@@ -94,58 +148,107 @@ export function AdminEventsPage() {
           </select>
         </div>
 
-        <div className="mt-6 grid gap-4">
-          {rows.length === 0 ? (
+        <div className="mt-6">
+          {loading ? (
+            <div className="grid gap-4">
+              {[1, 2, 3].map((item) => (
+                <VSCard
+                  key={item}
+                  className="rounded-[1.75rem] border-border"
+                >
+                  <VSCardContent className="p-6">
+                    <div className="animate-pulse">
+                      <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+                        <div className="flex items-start gap-4">
+                          <div className="h-11 w-11 rounded-2xl bg-muted" />
+
+                          <div className="space-y-3">
+                            <div className="h-5 w-48 rounded bg-muted" />
+                            <div className="h-4 w-64 rounded bg-muted" />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-5 lg:min-w-[360px]">
+                          <div className="h-10 rounded bg-muted" />
+                          <div className="h-10 rounded bg-muted" />
+                          <div className="h-10 rounded bg-muted" />
+                        </div>
+
+                        <div className="h-9 w-24 rounded bg-muted" />
+                      </div>
+                    </div>
+                  </VSCardContent>
+                </VSCard>
+              ))}
+            </div>
+          ) : error ? (
+            <VSEmptyState
+              title="Unable to load events"
+              description={error}
+            />
+          ) : rows.length === 0 ? (
             <VSEmptyState
               title="No events found"
               description="Try another search or status filter."
             />
           ) : (
-            rows.map((event) => (
-              <VSCard key={event.id} className="rounded-[1.75rem] border-border">
-                <VSCardContent className="p-6">
-                  <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                        <CalendarDays className="h-5 w-5" />
-                      </div>
-
-                      <div>
-                        <div className="flex flex-wrap items-center gap-3">
-                          <h2 className="text-lg font-semibold text-foreground">{event.title}</h2>
-
-                          <VSStatusBadge status={formatStatus(event.status)} />
+            <div className="grid gap-4">
+              {rows.map((event) => (
+                <VSCard
+                  key={event.id}
+                  className="rounded-[1.75rem] border-border"
+                >
+                  <VSCardContent className="p-6">
+                    <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+                      <div className="flex items-start gap-4">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                          <CalendarDays className="h-5 w-5" />
                         </div>
 
-                        <p className="mt-2 text-sm text-muted-foreground">
-                          {event.sport} · {event.city} · {event.date}
-                        </p>
+                        <div>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <h2 className="text-lg font-semibold text-foreground">
+                              {event.title}
+                            </h2>
+
+                            <VSStatusBadge
+                              status={formatStatus(event.status)}
+                            />
+                          </div>
+
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            {event.sport} · {event.city} · {event.date}
+                          </p>
+                        </div>
                       </div>
+
+                      <div className="grid grid-cols-3 gap-5 text-sm lg:min-w-[360px]">
+                        <Stat label="Roles" value={event.roles} />
+
+                        <Stat
+                          label="Volunteers"
+                          value={event.volunteers}
+                        />
+
+                        <Stat label="Shifts" value={event.shifts} />
+                      </div>
+
+                      <VSButton asChild variant="outline" size="sm">
+                        <Link
+                          to="/admin/events/$eventId"
+                          params={{
+                            eventId: event.id,
+                          }}
+                        >
+                          Manage
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </VSButton>
                     </div>
-
-                    <div className="grid grid-cols-3 gap-5 text-sm lg:min-w-[360px]">
-                      <Stat label="Roles" value={event.roles} />
-
-                      <Stat label="Volunteers" value={event.volunteers} />
-
-                      <Stat label="Shifts" value={event.shifts} />
-                    </div>
-
-                    <VSButton asChild variant="outline" size="sm">
-                      <Link
-                        to="/admin/events/$eventId"
-                        params={{
-                          eventId: event.id,
-                        }}
-                      >
-                        Manage
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </VSButton>
-                  </div>
-                </VSCardContent>
-              </VSCard>
-            ))
+                  </VSCardContent>
+                </VSCard>
+              ))}
+            </div>
           )}
         </div>
       </div>

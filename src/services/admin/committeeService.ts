@@ -164,6 +164,17 @@ export const committeeService = {
     return (data ?? []).map((r: CommitteesRow) => this.mapCommittee(r));
   },
 
+  async listAvailableLeaders() {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, first_name, last_name, email, avatar_url, role, status")
+      .order("first_name", { ascending: true });
+
+    if (error) throw new Error(error.message);
+
+    return data ?? [];
+  },
+
   async createCommittee(payload: Partial<DomainCommittee>): Promise<DomainCommittee> {
     const insert: CommitteesInsert = {
       event_id: payload.eventId as string,
@@ -395,16 +406,28 @@ export const committeeService = {
     return this.mapFeedback(data as CommitteeFeedbackRow);
   },
 
-  async listFeedback(committeeId: string): Promise<DomainCommitteeFeedback[]> {
+  async listFeedback(
+    committeeId: string,
+  ): Promise<DomainCommitteeFeedback[]> {
     const { data, error } = await supabase
       .from("committee_feedback")
-      .select(`*, leader:profiles(id, first_name, last_name, avatar_url)`)
+      .select(`
+        *,
+        leader:profiles!committee_feedback_leader_profile_id_fkey(
+          id,
+          first_name,
+          last_name,
+          avatar_url
+        )
+      `)
       .eq("committee_id", committeeId)
       .order("created_at", { ascending: false });
 
     if (error) throw new Error(error.message);
 
-    return (data ?? []).map((r: CommitteeFeedbackRow) => this.mapFeedback(r));
+    return (data ?? []).map((r) =>
+      this.mapFeedback(r as CommitteeFeedbackRow),
+    );
   },
 };
 

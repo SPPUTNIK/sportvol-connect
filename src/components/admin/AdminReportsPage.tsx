@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Download } from "lucide-react";
 
 import { AdminGate } from "./components/AdminGate";
@@ -11,9 +12,41 @@ import {
 } from "@/components/design-system";
 
 import { adminService } from "@/services/admin/adminService";
+import type { AdminReportSummary } from "@/types/domain";
 
 export function AdminReportsPage() {
-  const reports = adminService.getReports();
+  const [reports, setReports] = useState<AdminReportSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadReports() {
+      try {
+        const data = await adminService.getReports();
+
+        if (mounted) {
+          setReports(data);
+        }
+      } catch (error) {
+        console.error("Failed to load admin reports:", error);
+
+        if (mounted) {
+          setReports([]);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadReports();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <AdminGate title="Reports">
@@ -24,25 +57,65 @@ export function AdminReportsPage() {
           description="A clear operational snapshot for planning and review."
         />
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {reports.map((item) => (
-            <VSCard key={item.label} className="rounded-[1.75rem] border-border">
-              <VSCardContent className="p-6">
-                <p className="text-sm text-muted-foreground">{item.label}</p>
+        {loading ? (
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <VSCard
+                key={index}
+                className="rounded-[1.75rem] border-border"
+              >
+                <VSCardContent className="p-6">
+                  <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+                  <div className="mt-4 h-9 w-28 animate-pulse rounded bg-muted" />
+                  <div className="mt-3 h-4 w-20 animate-pulse rounded bg-muted" />
+                  <div className="mt-4 h-10 w-full animate-pulse rounded bg-muted" />
+                </VSCardContent>
+              </VSCard>
+            ))}
+          </div>
+        ) : reports.length === 0 ? (
+          <VSCard className="mt-8 rounded-[1.75rem] border-border">
+            <VSCardContent className="p-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                No reports available.
+              </p>
+            </VSCardContent>
+          </VSCard>
+        ) : (
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {reports.map((item) => (
+              <VSCard
+                key={item.label}
+                className="rounded-[1.75rem] border-border"
+              >
+                <VSCardContent className="p-6">
+                  <p className="text-sm text-muted-foreground">
+                    {item.label}
+                  </p>
 
-                <p className="mt-3 text-3xl font-semibold text-foreground">{item.value}</p>
+                  <p className="mt-3 text-3xl font-semibold text-foreground">
+                    {item.value}
+                  </p>
 
-                <p className="mt-2 text-sm font-semibold text-primary">{item.change}</p>
+                  <p className="mt-2 text-sm font-semibold text-primary">
+                    {item.change}
+                  </p>
 
-                <p className="mt-3 text-xs leading-5 text-muted-foreground">{item.description}</p>
-              </VSCardContent>
-            </VSCard>
-          ))}
-        </div>
+                  <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                    {item.description}
+                  </p>
+                </VSCardContent>
+              </VSCard>
+            ))}
+          </div>
+        )}
 
         <VSCard className="mt-6 rounded-[2rem] border-border">
           <VSCardContent className="p-6 sm:p-8">
-            <VSSectionHeader eyebrow="Exports" title="Download operational reports" />
+            <VSSectionHeader
+              eyebrow="Exports"
+              title="Download operational reports"
+            />
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {reports.map((item) => (

@@ -1,5 +1,11 @@
-import { useMemo, useState } from "react";
-import { Bell, CheckCheck, Clock3, Send, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Bell,
+  CheckCheck,
+  Clock3,
+  Send,
+  Trash2,
+} from "lucide-react";
 
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 
@@ -35,21 +41,53 @@ export function AdminNotificationsPage() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
 
-  /*
-   * Data comes from adminService.
-   *
-   * The page does not know whether the service currently uses
-   * adminDemo data or Supabase.
-   */
-  const notifications = adminService.getNotifications();
+  const [notifications, setNotifications] = useState<
+    Awaited<ReturnType<typeof adminService.getNotifications>>
+  >([]);
+
+  const [loading, setLoading] = useState(true);
 
   const [readNotifications, setReadNotifications] = useState<string[]>([]);
+  const [deletedNotifications, setDeletedNotifications] = useState<string[]>(
+    [],
+  );
 
-  const [deletedNotifications, setDeletedNotifications] = useState<string[]>([]);
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadNotifications() {
+      try {
+        const data = await adminService.getNotifications();
+
+        if (mounted) {
+          setNotifications(data);
+        }
+      } catch (error) {
+        console.error("Failed to load notifications:", error);
+
+        if (mounted) {
+          setNotifications([]);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadNotifications();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const visibleNotifications = useMemo(() => {
     return notifications
-      .filter((notification) => !deletedNotifications.includes(notification.id))
+      .filter(
+        (notification) =>
+          !deletedNotifications.includes(notification.id),
+      )
       .map((notification) => ({
         ...notification,
         read: readNotifications.includes(notification.id),
@@ -67,28 +105,37 @@ export function AdminNotificationsPage() {
           .includes(normalizedQuery);
 
       const matchesCategory =
-        category === "all" || normalize(notification.category) === normalize(category);
+        category === "all" ||
+        normalize(notification.category) === normalize(category);
 
       return matchesQuery && matchesCategory;
     });
   }, [visibleNotifications, query, category]);
 
-  const unreadCount = visibleNotifications.filter((notification) => !notification.read).length;
+  const unreadCount = visibleNotifications.filter(
+    (notification) => !notification.read,
+  ).length;
 
   const sentCount = visibleNotifications.filter(
     (notification) => notification.status === "sent",
   ).length;
 
   function markAsRead(id: string) {
-    setReadNotifications((current) => (current.includes(id) ? current : [...current, id]));
+    setReadNotifications((current) =>
+      current.includes(id) ? current : [...current, id],
+    );
   }
 
   function markAllAsRead() {
-    setReadNotifications(visibleNotifications.map((notification) => notification.id));
+    setReadNotifications(
+      visibleNotifications.map((notification) => notification.id),
+    );
   }
 
   function deleteNotification(id: string) {
-    setDeletedNotifications((current) => (current.includes(id) ? current : [...current, id]));
+    setDeletedNotifications((current) =>
+      current.includes(id) ? current : [...current, id],
+    );
   }
 
   return (
@@ -118,9 +165,13 @@ export function AdminNotificationsPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">Total</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Total
+                  </p>
 
-                  <p className="mt-1 text-2xl font-semibold">{visibleNotifications.length}</p>
+                  <p className="mt-1 text-2xl font-semibold">
+                    {loading ? "—" : visibleNotifications.length}
+                  </p>
                 </div>
               </div>
             </VSCardContent>
@@ -134,9 +185,13 @@ export function AdminNotificationsPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">Unread</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Unread
+                  </p>
 
-                  <p className="mt-1 text-2xl font-semibold">{unreadCount}</p>
+                  <p className="mt-1 text-2xl font-semibold">
+                    {loading ? "—" : unreadCount}
+                  </p>
                 </div>
               </div>
             </VSCardContent>
@@ -150,9 +205,13 @@ export function AdminNotificationsPage() {
                 </div>
 
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">Sent</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Sent
+                  </p>
 
-                  <p className="mt-1 text-2xl font-semibold">{sentCount}</p>
+                  <p className="mt-1 text-2xl font-semibold">
+                    {loading ? "—" : sentCount}
+                  </p>
                 </div>
               </div>
             </VSCardContent>
@@ -183,7 +242,15 @@ export function AdminNotificationsPage() {
 
         {/* Notifications */}
         <div className="mt-6 grid gap-4">
-          {filteredNotifications.length === 0 ? (
+          {loading ? (
+            <VSCard className="rounded-[1.75rem] border-border">
+              <VSCardContent className="p-8">
+                <p className="text-sm text-muted-foreground">
+                  Loading notifications...
+                </p>
+              </VSCardContent>
+            </VSCard>
+          ) : filteredNotifications.length === 0 ? (
             <VSEmptyState
               title="No notifications found"
               description="Try another search or category filter."
@@ -193,7 +260,9 @@ export function AdminNotificationsPage() {
               <VSCard
                 key={notification.id}
                 className={`rounded-[1.75rem] border-border transition ${
-                  !notification.read ? "border-primary/30 bg-primary/[0.025]" : ""
+                  !notification.read
+                    ? "border-primary/30 bg-primary/[0.025]"
+                    : ""
                 }`}
               >
                 <VSCardContent className="p-6">
@@ -222,7 +291,9 @@ export function AdminNotificationsPage() {
                             </span>
                           )}
 
-                          <VSStatusBadge status={notification.status} />
+                          <VSStatusBadge
+                            status={notification.status}
+                          />
                         </div>
 
                         <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -232,22 +303,30 @@ export function AdminNotificationsPage() {
                         {/* Metadata */}
                         <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
                           <span>
-                            <strong className="font-medium text-foreground">Audience:</strong>{" "}
+                            <strong className="font-medium text-foreground">
+                              Audience:
+                            </strong>{" "}
                             {notification.audience}
                           </span>
 
                           <span>
-                            <strong className="font-medium text-foreground">Category:</strong>{" "}
+                            <strong className="font-medium text-foreground">
+                              Category:
+                            </strong>{" "}
                             {notification.category}
                           </span>
 
                           <span>
-                            <strong className="font-medium text-foreground">Event:</strong>{" "}
+                            <strong className="font-medium text-foreground">
+                              Event:
+                            </strong>{" "}
                             {notification.event}
                           </span>
 
                           <span>
-                            <strong className="font-medium text-foreground">Sent:</strong>{" "}
+                            <strong className="font-medium text-foreground">
+                              Sent:
+                            </strong>{" "}
                             {formatDate(notification.sentAt)}
                           </span>
                         </div>
@@ -270,7 +349,9 @@ export function AdminNotificationsPage() {
                       <VSButton
                         variant="outline"
                         size="sm"
-                        onClick={() => deleteNotification(notification.id)}
+                        onClick={() =>
+                          deleteNotification(notification.id)
+                        }
                         aria-label={`Delete ${notification.title}`}
                       >
                         <Trash2 className="h-4 w-4" />

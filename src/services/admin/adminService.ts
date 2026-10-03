@@ -1,21 +1,7 @@
-import {
-  adminAnalytics,
-  adminApplications,
-  adminAttendance,
-  adminCertificates,
-  adminEvents,
-  adminNotifications,
-  adminReports,
-  adminStats,
-  adminTraining,
-  adminVolunteers,
-  adminAccreditations,
-  adminProfile,
-  adminRoles,
-  adminShifts,
-} from "@/mocks/adminDemo";
+import { supabase } from "@/lib/supabase";
 
 import type {
+  Admin,
   AdminAnalyticsSummary,
   AdminApplicationSummary,
   AdminAttendanceSummary,
@@ -30,21 +16,32 @@ import type {
 
 /**
  * =========================================================
- * ADMIN MOCK SERVICE
+ * ADMIN SERVICE
  * =========================================================
  *
- * FRONTEND ONLY
+ * Supabase-backed admin service.
  *
- * This service currently uses local mock data.
+ * All methods are async.
  *
- * Later, when Supabase is ready, replace the implementations
- * here without changing the Admin UI components.
- *
- * IMPORTANT:
- * These methods are intentionally NOT async for now.
- * AdminPages.tsx consumes them synchronously.
+ * The service keeps the existing Admin UI shapes so pages do
+ * not need to know about the database column names.
  * =========================================================
  */
+
+function fullName(
+  firstName: string | null | undefined,
+  lastName: string | null | undefined,
+) {
+  return `${firstName ?? ""} ${lastName ?? ""}`.trim() || "Unnamed volunteer";
+}
+
+function normalizeStatus(value: unknown) {
+  return String(value ?? "").toLowerCase();
+}
+
+function getToday() {
+  return new Date().toISOString().slice(0, 10);
+}
 
 export const adminService = {
   /**
@@ -53,14 +50,48 @@ export const adminService = {
    * ---------------------------------------------------------
    */
 
-  getAdmin() {
+  async getAdmin(): Promise<Admin | null> {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError) {
+      throw authError;
+    }
+
+    if (!user) {
+      return null;
+    }
+
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select(`
+        id,
+        email,
+        first_name,
+        last_name,
+        avatar_url,
+        role
+      `)
+      .eq("id", user.id)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    if (String(profile.role).toUpperCase() !== "ADMIN") {
+      return null;
+    }
+
     return {
-      id: "admin-demo",
-      email: "admin@volunsport.ma",
-      firstName: "VolunSport",
-      lastName: "Admin",
-      avatarUrl: null,
-      role: "ADMIN" as const,
+      id: profile.id,
+      email: profile.email ?? user.email ?? null,
+      firstName: profile.first_name ?? "",
+      lastName: profile.last_name ?? "",
+      avatarUrl: profile.avatar_url ?? null,
+      role: "ADMIN",
     };
   },
 
@@ -70,9 +101,85 @@ export const adminService = {
    * ---------------------------------------------------------
    */
 
-  getStats(): AdminStats {
+  async getStats(): Promise<AdminStats> {
+    const today = getToday();
+
+    const [
+      volunteersResult,
+      upcomingEventsResult,
+      applicationsResult,
+      acceptedApplicationsResult,
+      profilesHoursResult,
+      attendanceResult,
+    ] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("role", "volunteer"),
+
+      supabase
+        .from("events")
+        .select("id", { count: "exact", head: true })
+        .gte("start_date", today)
+        .not("status", "eq", "cancelled"),
+
+      supabase
+        .from("applications")
+        .select("id", { count: "exact", head: true }),
+
+      supabase
+        .from("applications")
+        .select("profile_id")
+        .eq("status", "accepted"),
+
+      supabase
+        .from("profiles")
+        .select("volunteer_hours")
+        .eq("role", "volunteer"),
+
+      supabase
+        .from("profiles")
+        .select("attendance_rate")
+        .eq("role", "volunteer"),
+    ]);
+
+    if (volunteersResult.error) throw volunteersResult.error;
+    if (upcomingEventsResult.error) throw upcomingEventsResult.error;
+    if (applicationsResult.error) throw applicationsResult.error;
+    if (acceptedApplicationsResult.error) {
+      throw acceptedApplicationsResult.error;
+    }
+    if (profilesHoursResult.error) throw profilesHoursResult.error;
+    if (attendanceResult.error) throw attendanceResult.error;
+
+    const acceptedVolunteers = new Set(
+      (acceptedApplicationsResult.data ?? []).map(
+        (item) => item.profile_id,
+      ),
+    ).size;
+
+    const hours = (profilesHoursResult.data ?? []).reduce(
+      (total, profile) => total + Number(profile.volunteer_hours ?? 0),
+      0,
+    );
+
+    const attendanceValues = (attendanceResult.data ?? [])
+      .map((profile) => Number(profile.attendance_rate ?? 0))
+      .filter((value) => Number.isFinite(value));
+
+    const attendanceAverage =
+      attendanceValues.length > 0
+        ? attendanceValues.reduce((sum, value) => sum + value, 0) /
+          attendanceValues.length
+        : 0;
+
     return {
-      ...adminStats,
+      volunteers: volunteersResult.count ?? 0,
+      upcomingEvents: upcomingEventsResult.count ?? 0,
+      applications: applicationsResult.count ?? 0,
+      acceptedVolunteers,
+      hours,
+      attendance: `${Math.round(attendanceAverage)}%`,
     };
   },
 
@@ -82,8 +189,44 @@ export const adminService = {
    * ---------------------------------------------------------
    */
 
-  getEvents(): AdminEventSummary[] {
-    return adminEvents.map((event) => ({
+  async getEvents(): Promise<AdminEventSummary[]> {
+    const { data, error } = await supabase
+      .from("events")
+      .select(`
+        id,
+        title,
+        slug,
+        sport,
+        city,
+        country,
+        venue,
+        start_date,
+        end_date,
+        start_time,
+        end_time,
+        application_deadline,
+        total_volunteers_needed,
+        description,
+        status,
+        created_at,
+        updated_at,
+        event_roles (
+          id
+        ),
+        applications (
+          id
+        ),
+        event_shifts (
+          id
+        )
+      `)
+      .order("start_date", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []).map((event) => ({
       id: event.id,
 
       title: event.title,
@@ -107,11 +250,11 @@ export const adminService = {
 
       description: event.description,
 
-      status: event.status.toLowerCase() as AdminEventSummary["status"],
+      status: normalizeStatus(event.status) as AdminEventSummary["status"],
 
-      roles: event.roles,
-      volunteers: event.volunteers,
-      shifts: event.shifts,
+      roles: event.event_roles?.length ?? 0,
+      volunteers: event.applications?.length ?? 0,
+      shifts: event.event_shifts?.length ?? 0,
 
       createdAt: event.created_at,
       updatedAt: event.updated_at,
@@ -124,82 +267,621 @@ export const adminService = {
    * ---------------------------------------------------------
    */
 
-  getApplications(): AdminApplicationSummary[] {
-    return adminApplications.map((item) => ({
-      id: item.id,
+  async getApplications(): Promise<AdminApplicationSummary[]> {
+    const { data, error } = await supabase
+      .from("applications")
+      .select(`
+        id,
+        profile_id,
+        event_id,
+        role_id,
+        status,
+        applied_at,
 
-      volunteerId: item.volunteer_id,
-      volunteer: item.volunteer,
+        profiles (
+          id,
+          first_name,
+          last_name,
+          avatar_url
+        ),
 
-      eventId: item.event_id,
-      event: item.event,
+        events (
+          id,
+          title
+        ),
 
-      roleId: item.role_id,
-      role: item.role,
+        event_roles (
+          id,
+          name
+        )
+      `)
+      .order("applied_at", { ascending: false });
 
-      date: item.applied_at,
+    if (error) {
+      throw error;
+    }
 
-      status: item.status.toLowerCase() as AdminApplicationSummary["status"],
-    }));
+    return (data ?? []).map((item) => {
+      const profile = Array.isArray(item.profiles)
+        ? item.profiles[0]
+        : item.profiles;
+
+      const event = Array.isArray(item.events)
+        ? item.events[0]
+        : item.events;
+
+      const role = Array.isArray(item.event_roles)
+        ? item.event_roles[0]
+        : item.event_roles;
+
+      return {
+        id: item.id,
+
+        volunteerId: item.profile_id,
+        volunteer: fullName(
+          profile?.first_name,
+          profile?.last_name,
+        ),
+
+        avatar_url: profile?.avatar_url ?? null,
+
+        eventId: item.event_id,
+        event: event?.title ?? "Unknown event",
+
+        roleId: item.role_id,
+        role: role?.name ?? "Unknown role",
+
+        date: item.applied_at,
+
+        status: normalizeStatus(
+          item.status,
+        ) as AdminApplicationSummary["status"],
+      };
+    });
+  },
+
+  /**
+   * ---------------------------------------------------------
+   * APPLICATION DETAILS
+   * ---------------------------------------------------------
+   */
+
+  async getApplicationById(id: string) {
+    const { data, error } = await supabase
+      .from("applications")
+      .select(`
+        id,
+        profile_id,
+        event_id,
+        role_id,
+        status,
+        experience,
+        availability,
+        motivation,
+        admin_notes,
+        applied_at,
+        updated_at,
+
+        profiles (
+          id,
+          first_name,
+          last_name,
+          email,
+          phone,
+          avatar_url,
+          city,
+          country,
+          bio,
+          status,
+          role,
+          created_at
+        ),
+
+        events (
+          id,
+          title,
+          sport,
+          city,
+          country,
+          venue,
+          start_date,
+          end_date,
+          start_time,
+          end_time,
+          description,
+          status
+        ),
+
+        event_roles (
+          id,
+          name,
+          description,
+          responsibilities,
+          requirements,
+          skills,
+          positions,
+          filled_positions,
+          min_age,
+          mandatory_training
+        )
+      `)
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    const profile = Array.isArray(data.profiles)
+      ? data.profiles[0]
+      : data.profiles;
+
+    const event = Array.isArray(data.events)
+      ? data.events[0]
+      : data.events;
+
+    const role = Array.isArray(data.event_roles)
+      ? data.event_roles[0]
+      : data.event_roles;
+
+    return {
+      id: data.id,
+
+      volunteerId: data.profile_id,
+
+      volunteer: {
+        id: profile?.id ?? data.profile_id,
+        name: fullName(
+          profile?.first_name,
+          profile?.last_name,
+        ),
+        firstName: profile?.first_name ?? "",
+        lastName: profile?.last_name ?? "",
+        email: profile?.email ?? null,
+        phone: profile?.phone ?? null,
+        avatarUrl: profile?.avatar_url ?? null,
+        city: profile?.city ?? null,
+        country: profile?.country ?? null,
+        bio: profile?.bio ?? null,
+        status: profile?.status ?? null,
+        role: profile?.role ?? null,
+        createdAt: profile?.created_at ?? null,
+      },
+
+      event: {
+        id: event?.id ?? data.event_id,
+        title: event?.title ?? "Unknown event",
+        sport: event?.sport ?? null,
+        city: event?.city ?? null,
+        country: event?.country ?? null,
+        venue: event?.venue ?? null,
+        startDate: event?.start_date ?? null,
+        endDate: event?.end_date ?? null,
+        startTime: event?.start_time ?? null,
+        endTime: event?.end_time ?? null,
+        description: event?.description ?? null,
+        status: event?.status ?? null,
+      },
+
+      role: {
+        id: role?.id ?? data.role_id,
+        name: role?.name ?? "Unknown role",
+        description: role?.description ?? null,
+        responsibilities: role?.responsibilities ?? null,
+        requirements: role?.requirements ?? null,
+        skills: role?.skills ?? [],
+        positions: role?.positions ?? null,
+        filledPositions: role?.filled_positions ?? null,
+        minAge: role?.min_age ?? null,
+        mandatoryTraining: role?.mandatory_training ?? false,
+      },
+
+      status: normalizeStatus(data.status),
+
+      experience: data.experience ?? null,
+      availability: data.availability ?? null,
+      motivation: data.motivation ?? null,
+      adminNotes: data.admin_notes ?? null,
+
+      appliedAt: data.applied_at,
+      updatedAt: data.updated_at,
+    };
+  },
+
+  /**
+   * ---------------------------------------------------------
+   * UPDATE APPLICATION STATUS
+   * ---------------------------------------------------------
+   */
+
+  async updateApplicationStatus(
+    id: string,
+    status: string,
+  ) {
+    const { data, error } = await supabase
+      .from("applications")
+      .update({
+        status: status as never,
+      })
+      .eq("id", id)
+      .select("id, status, updated_at")
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return {
+      id: data.id,
+      status: normalizeStatus(data.status),
+      updatedAt: data.updated_at,
+    };
   },
 
   /**
    * ---------------------------------------------------------
    * VOLUNTEERS
    * ---------------------------------------------------------
+   *
+   * Events:
+   *   applications.profile_id
+   *
+   * Hours:
+   *   profiles.volunteer_hours
+   *
+   * Certificates:
+   *   certificates.profile_id
+   *
+   * Attendance:
+   *   profiles.attendance_rate
+   * ---------------------------------------------------------
    */
 
-  getVolunteers(): AdminVolunteerSummary[] {
-    return adminVolunteers.map((item) => ({
-      id: item.id,
+  async getVolunteers(): Promise<AdminVolunteerSummary[]> {
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select(`
+        id,
+        first_name,
+        last_name,
+        avatar_url,
+        email,
+        phone,
+        city,
+        country,
+        volunteer_hours,
+        attendance_rate,
+        status,
+        created_at
+      `)
+      .eq("role", "volunteer")
+      .order("created_at", { ascending: false });
 
-      name: item.name,
+    if (profilesError) {
+      throw profilesError;
+    }
 
-      email: item.email,
-      phone: item.phone,
+    if (!profiles || profiles.length === 0) {
+      return [];
+    }
 
-      city: item.city,
-      country: item.country,
+    const volunteerIds = profiles.map((profile) => profile.id);
 
-      events: item.events,
-      hours: item.hours,
+    const [
+      applicationsResult,
+      certificatesResult,
+    ] = await Promise.all([
+      supabase
+        .from("applications")
+        .select("profile_id, event_id")
+        .in("profile_id", volunteerIds),
 
-      attendance: item.attendance,
+      supabase
+        .from("certificates")
+        .select("profile_id")
+        .in("profile_id", volunteerIds),
+    ]);
 
-      certificates: item.certificates,
+    if (applicationsResult.error) {
+      throw applicationsResult.error;
+    }
 
-      status: item.status,
+    if (certificatesResult.error) {
+      throw certificatesResult.error;
+    }
 
-      joinedAt: item.joined_at,
-    }));
+    return profiles.map((profile) => {
+      const events = new Set(
+        (applicationsResult.data ?? [])
+          .filter((application) => application.profile_id === profile.id)
+          .map((application) => application.event_id),
+      ).size;
+
+      const certificates = (certificatesResult.data ?? []).filter(
+        (certificate) => certificate.profile_id === profile.id,
+      ).length;
+
+      return {
+        id: profile.id,
+
+        name: fullName(profile.first_name, profile.last_name),
+        avatar_url: profile.avatar_url ?? null,
+
+        email: profile.email,
+        phone: profile.phone,
+
+        city: profile.city ?? "",
+        country: profile.country ?? "",
+
+        events,
+
+        hours: Number(profile.volunteer_hours ?? 0),
+
+        attendance: `${Math.round(
+          Number(profile.attendance_rate ?? 0),
+        )}%`,
+
+        certificates,
+
+        status: profile.status,
+
+        joinedAt: profile.created_at,
+      };
+    });
+  },
+
+
+  async getVolunteerById(id: string) {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select(`
+        id,
+        email,
+        role,
+        status,
+        first_name,
+        last_name,
+        date_of_birth,
+        avatar_url,
+        phone,
+        city,
+        country,
+        bio,
+        interests,
+        skills,
+        languages,
+        experience,
+        volunteer_hours,
+        attendance_rate,
+        created_at,
+        updated_at,
+        nationality
+      `)
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    const [
+      applicationsResult,
+      certificatesResult,
+    ] = await Promise.all([
+      supabase
+        .from("applications")
+        .select(`
+          id,
+          event_id,
+          role_id,
+          status,
+          applied_at,
+
+          events (
+            id,
+            title,
+            sport,
+            city,
+            country,
+            venue,
+            start_date,
+            end_date,
+            status
+          ),
+
+          event_roles (
+            id,
+            name
+          )
+        `)
+        .eq("profile_id", id)
+        .order("applied_at", { ascending: false }),
+
+      supabase
+        .from("certificates")
+        .select("id", { count: "exact", head: true })
+        .eq("profile_id", id),
+    ]);
+
+    if (applicationsResult.error) {
+      throw applicationsResult.error;
+    }
+
+    if (certificatesResult.error) {
+      throw certificatesResult.error;
+    }
+
+    const applications = (applicationsResult.data ?? []).map((item) => {
+      const event = Array.isArray(item.events)
+        ? item.events[0]
+        : item.events;
+
+      const role = Array.isArray(item.event_roles)
+        ? item.event_roles[0]
+        : item.event_roles;
+
+      return {
+        id: item.id,
+        eventId: item.event_id,
+        event: event
+          ? {
+              id: event.id,
+              title: event.title,
+              sport: event.sport,
+              city: event.city,
+              country: event.country,
+              venue: event.venue,
+              startDate: event.start_date,
+              endDate: event.end_date,
+              status: event.status,
+            }
+          : null,
+        role: role
+          ? {
+              id: role.id,
+              name: role.name,
+            }
+          : null,
+        status: String(item.status ?? "").toLowerCase(),
+        appliedAt: item.applied_at,
+      };
+    });
+
+    return {
+      id: data.id,
+
+      name: fullName(
+        data.first_name,
+        data.last_name,
+      ),
+
+      firstName: data.first_name ?? "",
+      lastName: data.last_name ?? "",
+
+      email: data.email ?? null,
+      phone: data.phone ?? null,
+
+      avatarUrl: data.avatar_url ?? null,
+
+      dateOfBirth: data.date_of_birth ?? null,
+      nationality: data.nationality ?? null,
+
+      city: data.city ?? null,
+      country: data.country ?? null,
+
+      bio: data.bio ?? null,
+
+      interests: data.interests ?? [],
+      skills: data.skills ?? [],
+      languages: data.languages ?? [],
+
+      experience: data.experience ?? null,
+
+      role: String(data.role ?? ""),
+      status: normalizeStatus(data.status),
+
+      volunteerHours: data.volunteer_hours ?? 0,
+      attendanceRate: Number(data.attendance_rate ?? 0),
+
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+
+      certificates: certificatesResult.count ?? 0,
+
+      applications,
+    };
   },
 
   /**
    * ---------------------------------------------------------
    * TRAINING
    * ---------------------------------------------------------
+   *
+   * The current DB schema does not contain:
+   * - type
+   * - duration
+   * - status
+   * - published_at
+   *
+   * Therefore these are mapped to safe UI values.
+   * Training progress is the source for assigned/completed.
+   * ---------------------------------------------------------
    */
 
-  getTraining(): AdminTrainingSummary[] {
-    return adminTraining.map((item) => ({
-      id: item.id,
+  async getTraining(): Promise<AdminTrainingSummary[]> {
+    const { data: modules, error: modulesError } = await supabase
+      .from("training_modules")
+      .select(`
+        id,
+        title,
+        description,
+        required,
+        created_at
+      `)
+      .order("created_at", { ascending: false });
 
-      title: item.title,
+    if (modulesError) {
+      throw modulesError;
+    }
 
-      type: item.type,
+    if (!modules || modules.length === 0) {
+      return [];
+    }
 
-      description: item.description,
+    const trainingIds = modules.map((module) => module.id);
 
-      duration: item.duration,
+    const { data: progress, error: progressError } = await supabase
+      .from("training_progress")
+      .select(`
+        training_id,
+        profile_id,
+        completed
+      `)
+      .in("training_id", trainingIds);
 
-      assigned: item.assigned,
-      completed: item.completed,
+    if (progressError) {
+      throw progressError;
+    }
 
-      status: item.status.toLowerCase() as AdminTrainingSummary["status"],
+    return modules.map((module) => {
+      const moduleProgress = (progress ?? []).filter(
+        (item) => item.training_id === module.id,
+      );
 
-      createdAt: item.created_at,
-      publishedAt: item.published_at,
-    }));
+      const completed = moduleProgress.filter(
+        (item) => item.completed,
+      ).length;
+
+      return {
+        id: module.id,
+
+        title: module.title,
+
+        type: module.required ? "Required" : "Optional",
+
+        description: module.description ?? "",
+
+        duration: 0,
+
+        assigned: moduleProgress.length,
+
+        completed,
+
+        status: "published",
+
+        createdAt: module.created_at,
+
+        publishedAt: null,
+      };
+    });
   },
 
   /**
@@ -208,24 +890,76 @@ export const adminService = {
    * ---------------------------------------------------------
    */
 
-  getAttendance(): AdminAttendanceSummary[] {
-    return adminAttendance.map((item) => ({
-      id: item.id,
+  async getAttendance(): Promise<AdminAttendanceSummary[]> {
+    const { data, error } = await supabase
+      .from("attendance_records")
+      .select(`
+        id,
+        profile_id,
+        event_id,
+        shift_id,
+        status,
+        check_in_time,
+        check_out_time,
 
-      eventId: item.event_id,
-      event: item.event,
+        profiles (
+          id,
+          first_name,
+          last_name
+        ),
 
-      volunteerId: item.volunteer_id,
-      volunteer: item.volunteer,
+        events (
+          id,
+          title
+        ),
 
-      shiftId: item.shift_id,
-      shift: item.shift,
+        event_shifts (
+          id,
+          title
+        )
+      `)
+      .order("date", { ascending: false });
 
-      checkIn: item.check_in,
-      checkOut: item.check_out,
+    if (error) {
+      throw error;
+    }
 
-      status: item.status.toLowerCase() as AdminAttendanceSummary["status"],
-    }));
+    return (data ?? []).map((item) => {
+      const profile = Array.isArray(item.profiles)
+        ? item.profiles[0]
+        : item.profiles;
+
+      const event = Array.isArray(item.events)
+        ? item.events[0]
+        : item.events;
+
+      const shift = Array.isArray(item.event_shifts)
+        ? item.event_shifts[0]
+        : item.event_shifts;
+
+      return {
+        id: item.id,
+
+        eventId: item.event_id,
+        event: event?.title ?? "Unknown event",
+
+        volunteerId: item.profile_id,
+        volunteer: fullName(
+          profile?.first_name,
+          profile?.last_name,
+        ),
+
+        shiftId: item.shift_id,
+        shift: shift?.title ?? "Unknown shift",
+
+        checkIn: item.check_in_time,
+        checkOut: item.check_out_time,
+
+        status: normalizeStatus(
+          item.status,
+        ) as AdminAttendanceSummary["status"],
+      };
+    });
   },
 
   /**
@@ -234,66 +968,237 @@ export const adminService = {
    * ---------------------------------------------------------
    */
 
-  getCertificates(): AdminCertificateSummary[] {
-    return adminCertificates.map((item) => ({
-      id: item.id,
+  async getCertificates(): Promise<AdminCertificateSummary[]> {
+    const { data, error } = await supabase
+      .from("certificates")
+      .select(`
+        id,
+        profile_id,
+        event_id,
+        hours,
+        date,
+        issued_at,
 
-      volunteerId: item.volunteer_id,
-      volunteer: item.volunteer,
+        profiles (
+          id,
+          first_name,
+          last_name
+        ),
 
-      eventId: item.event_id,
-      event: item.event,
+        events (
+          id,
+          title
+        )
+      `)
+      .order("issued_at", { ascending: false });
 
-      hours: item.hours,
+    if (error) {
+      throw error;
+    }
 
-      date: item.date,
-      issuedAt: item.issued_at,
+    return (data ?? []).map((item) => {
+      const profile = Array.isArray(item.profiles)
+        ? item.profiles[0]
+        : item.profiles;
 
-      status: item.status.toLowerCase() as AdminCertificateSummary["status"],
-    }));
+      const event = Array.isArray(item.events)
+        ? item.events[0]
+        : item.events;
+
+      return {
+        id: item.id,
+
+        volunteerId: item.profile_id,
+
+        volunteer: fullName(
+          profile?.first_name,
+          profile?.last_name,
+        ),
+
+        eventId: item.event_id,
+
+        event: event?.title ?? "Unknown event",
+
+        hours: Number(item.hours ?? 0),
+
+        date: item.date,
+
+        issuedAt: item.issued_at,
+
+        status: "issued",
+      };
+    });
   },
 
   /**
    * ---------------------------------------------------------
    * NOTIFICATIONS
    * ---------------------------------------------------------
+   *
+   * Current DB stores one notification per profile.
+   *
+   * audienceType:
+   *   event_id != null -> event_team
+   *   event_id == null -> all_volunteers
+   *
+   * status:
+   *   read == true -> sent
+   *   read == false -> draft
+   *
+   * These are UI mappings because the DB does not contain
+   * separate audience/status/sent_at columns.
+   * ---------------------------------------------------------
    */
 
-  getNotifications(): AdminNotificationSummary[] {
-    return adminNotifications.map((item) => ({
-      id: item.id,
+  async getNotifications(): Promise<AdminNotificationSummary[]> {
+    const { data, error } = await supabase
+      .from("notifications")
+      .select(`
+        id,
+        profile_id,
+        event_id,
+        title,
+        body,
+        category,
+        read,
+        created_at,
 
-      title: item.title,
+        profiles (
+          id,
+          first_name,
+          last_name
+        ),
 
-      audienceType: item.audience_type,
-      audience: item.audience,
+        events (
+          id,
+          title
+        )
+      `)
+      .order("created_at", { ascending: false });
 
-      category: item.category.toLowerCase() as AdminNotificationSummary["category"],
+    if (error) {
+      throw error;
+    }
 
-      eventId: item.event_id,
-      event: item.event,
+    return (data ?? []).map((item) => {
+      const profile = Array.isArray(item.profiles)
+        ? item.profiles[0]
+        : item.profiles;
 
-      message: item.message,
+      const event = Array.isArray(item.events)
+        ? item.events[0]
+        : item.events;
 
-      sentAt: item.sent_at,
+      return {
+        id: item.id,
 
-      status: item.status.toLowerCase() as AdminNotificationSummary["status"],
-    }));
+        title: item.title,
+
+        audienceType: item.event_id
+          ? "event_team"
+          : "all_volunteers",
+
+        audience: fullName(
+          profile?.first_name,
+          profile?.last_name,
+        ),
+
+        category: normalizeStatus(
+          item.category,
+        ) as AdminNotificationSummary["category"],
+
+        eventId: item.event_id,
+
+        event: event?.title ?? "All volunteers",
+
+        message: item.body,
+
+        sentAt: item.read ? item.created_at : null,
+
+        status: item.read ? "sent" : "draft",
+      };
+    });
   },
 
   /**
    * ---------------------------------------------------------
    * REPORTS
    * ---------------------------------------------------------
+   *
+   * Reports table stores individual reports, not precomputed
+   * dashboard cards.
+   *
+   * The existing AdminReportSummary is a presentation model,
+   * so we aggregate reports by status/type.
+   * ---------------------------------------------------------
    */
 
-  getReports(): AdminReportSummary[] {
-    return adminReports.map((item) => ({
-      label: item.label,
-      value: item.value,
-      change: item.change,
-      description: item.description,
-    }));
+  async getReports(): Promise<AdminReportSummary[]> {
+    const { data, error } = await supabase
+      .from("reports")
+      .select(`
+        id,
+        target_type,
+        report_type,
+        status,
+        created_at
+      `)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    const reports = data ?? [];
+
+    const openCount = reports.filter(
+      (report) => normalizeStatus(report.status) === "open",
+    ).length;
+
+    const resolvedCount = reports.filter(
+      (report) => normalizeStatus(report.status) === "resolved",
+    ).length;
+
+    const totalCount = reports.length;
+
+    const byType = new Map<string, number>();
+
+    for (const report of reports) {
+      const type = report.report_type || "other";
+      byType.set(type, (byType.get(type) ?? 0) + 1);
+    }
+
+    const result: AdminReportSummary[] = [
+      {
+        label: "Total reports",
+        value: String(totalCount),
+        change: "",
+        description: "Total reports submitted to the platform.",
+      },
+      {
+        label: "Open reports",
+        value: String(openCount),
+        change: "",
+        description: "Reports that still require attention.",
+      },
+      {
+        label: "Resolved reports",
+        value: String(resolvedCount),
+        change: "",
+        description: "Reports that have been resolved.",
+      },
+    ];
+
+    for (const [type, count] of byType) {
+      result.push({
+        label: type,
+        value: String(count),
+        change: "",
+        description: `Reports classified as ${type}.`,
+      });
+    }
+
+    return result;
   },
 
   /**
@@ -302,27 +1207,564 @@ export const adminService = {
    * ---------------------------------------------------------
    */
 
-  getAnalytics(): AdminAnalyticsSummary[] {
-    return adminAnalytics.map((item) => ({
-      label: item.label,
-      value: item.value,
-      color: item.color,
+  async getAnalytics(): Promise<AdminAnalyticsSummary[]> {
+    const [
+      volunteersResult,
+      eventsResult,
+      applicationsResult,
+      attendanceResult,
+      certificatesResult,
+    ] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("role", "volunteer"),
+
+      supabase
+        .from("events")
+        .select("id", { count: "exact", head: true }),
+
+      supabase
+        .from("applications")
+        .select("id", { count: "exact", head: true }),
+
+      supabase
+        .from("attendance_records")
+        .select("id", { count: "exact", head: true }),
+
+      supabase
+        .from("certificates")
+        .select("id", { count: "exact", head: true }),
+    ]);
+
+    if (volunteersResult.error) throw volunteersResult.error;
+    if (eventsResult.error) throw eventsResult.error;
+    if (applicationsResult.error) throw applicationsResult.error;
+    if (attendanceResult.error) throw attendanceResult.error;
+    if (certificatesResult.error) throw certificatesResult.error;
+
+    return [
+      {
+        label: "Volunteers",
+        value: volunteersResult.count ?? 0,
+        color: "bg-primary",
+      },
+      {
+        label: "Events",
+        value: eventsResult.count ?? 0,
+        color: "bg-ink",
+      },
+      {
+        label: "Applications",
+        value: applicationsResult.count ?? 0,
+        color: "bg-primary/70",
+      },
+      {
+        label: "Attendance records",
+        value: attendanceResult.count ?? 0,
+        color: "bg-ink/70",
+      },
+      {
+        label: "Certificates",
+        value: certificatesResult.count ?? 0,
+        color: "bg-primary/50",
+      },
+    ];
+  },
+
+  /**
+   * ---------------------------------------------------------
+   * ACCREDITATIONS
+   * ---------------------------------------------------------
+   */
+
+  async getAccreditations() {
+    const { data, error } = await supabase
+      .from("accreditations")
+      .select(`
+        id,
+        profile_id,
+        event_id,
+        role_id,
+        volunteer_identifier,
+        zone,
+        qr_code_data,
+        status,
+        created_at,
+        updated_at,
+
+        profiles (
+          id,
+          first_name,
+          last_name,
+          avatar_url
+        ),
+
+        events (
+          id,
+          title
+        ),
+
+        event_roles (
+          id,
+          name
+        )
+      `)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []).map((item) => {
+      const profile = Array.isArray(item.profiles)
+        ? item.profiles[0]
+        : item.profiles;
+
+      const event = Array.isArray(item.events)
+        ? item.events[0]
+        : item.events;
+
+      const role = Array.isArray(item.event_roles)
+        ? item.event_roles[0]
+        : item.event_roles;
+
+      return {
+        id: item.id,
+        volunteerId: item.profile_id,
+        volunteer: fullName(
+          profile?.first_name,
+          profile?.last_name,
+        ),
+        avatar_url: profile?.avatar_url ?? null,
+        eventId: item.event_id,
+        event: event?.title ?? "Unknown event",
+        roleId: item.role_id,
+        role: role?.name ?? "Unknown role",
+        volunteerIdentifier: item.volunteer_identifier,
+        zone: item.zone,
+        qrCodeData: item.qr_code_data,
+        status: item.status,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at,
+      };
+    });
+  },
+
+  async getAccreditationById(id: string) {
+    const { data, error } = await supabase
+      .from("accreditations")
+      .select(`
+        id,
+        profile_id,
+        event_id,
+        role_id,
+        volunteer_identifier,
+        zone,
+        qr_code_data,
+        status,
+        created_at,
+        updated_at,
+
+        profiles (
+          id,
+          first_name,
+          last_name,
+          email,
+          phone,
+          avatar_url,
+          date_of_birth,
+          nationality,
+          city,
+          country,
+          bio,
+          interests,
+          skills,
+          languages,
+          experience,
+          volunteer_hours,
+          attendance_rate,
+          status
+        ),
+
+        events (
+          id,
+          title,
+          sport,
+          city,
+          country,
+          venue,
+          start_date,
+          end_date,
+          start_time,
+          end_time,
+          description,
+          status
+        ),
+
+        event_roles (
+          id,
+          name,
+          description,
+          responsibilities,
+          requirements,
+          skills,
+          positions,
+          filled_positions,
+          min_age,
+          mandatory_training
+        )
+      `)
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    const profile = Array.isArray(data.profiles)
+      ? data.profiles[0]
+      : data.profiles;
+
+    const event = Array.isArray(data.events)
+      ? data.events[0]
+      : data.events;
+
+    const role = Array.isArray(data.event_roles)
+      ? data.event_roles[0]
+      : data.event_roles;
+
+    return {
+      id: data.id,
+
+      volunteer: {
+        id: profile?.id ?? data.profile_id,
+        name: fullName(
+          profile?.first_name,
+          profile?.last_name,
+        ),
+        firstName: profile?.first_name ?? "",
+        lastName: profile?.last_name ?? "",
+        email: profile?.email ?? null,
+        phone: profile?.phone ?? null,
+        avatarUrl: profile?.avatar_url ?? null,
+        dateOfBirth: profile?.date_of_birth ?? null,
+        nationality: profile?.nationality ?? null,
+        city: profile?.city ?? null,
+        country: profile?.country ?? null,
+        bio: profile?.bio ?? null,
+        interests: profile?.interests ?? [],
+        skills: profile?.skills ?? [],
+        languages: profile?.languages ?? [],
+        experience: profile?.experience ?? null,
+        volunteerHours: profile?.volunteer_hours ?? 0,
+        attendanceRate: Number(
+          profile?.attendance_rate ?? 0,
+        ),
+        status: profile?.status ?? null,
+      },
+
+      event: {
+        id: event?.id ?? data.event_id,
+        title: event?.title ?? "Unknown event",
+        sport: event?.sport ?? null,
+        city: event?.city ?? null,
+        country: event?.country ?? null,
+        venue: event?.venue ?? null,
+        startDate: event?.start_date ?? null,
+        endDate: event?.end_date ?? null,
+        startTime: event?.start_time ?? null,
+        endTime: event?.end_time ?? null,
+        description: event?.description ?? null,
+        status: event?.status ?? null,
+      },
+
+      role: {
+        id: role?.id ?? data.role_id,
+        name: role?.name ?? "Unknown role",
+        description: role?.description ?? null,
+        responsibilities:
+          role?.responsibilities ?? null,
+        requirements: role?.requirements ?? null,
+        skills: role?.skills ?? [],
+        positions: role?.positions ?? null,
+        filledPositions:
+          role?.filled_positions ?? null,
+        minAge: role?.min_age ?? null,
+        mandatoryTraining:
+          role?.mandatory_training ?? false,
+      },
+
+      volunteerIdentifier:
+        data.volunteer_identifier,
+
+      zone: data.zone ?? null,
+
+      qrCodeData:
+        data.qr_code_data ?? null,
+
+      status: normalizeStatus(data.status),
+
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  },
+
+async updateAccreditationStatus(
+  id: string,
+  status: string,
+) {
+  const { data, error } = await supabase
+    .from("accreditations")
+    .update({
+      status,
+    })
+    .eq("id", id)
+    .select("id, status, updated_at")
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return {
+    id: data.id,
+    status: normalizeStatus(data.status),
+    updatedAt: data.updated_at,
+  };
+},
+
+  /**
+   * ---------------------------------------------------------
+   * ADMIN PROFILE
+   * ---------------------------------------------------------
+   */
+
+  async getAdminProfile() {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError) {
+      throw authError;
+    }
+
+    if (!user) {
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select(`
+        id,
+        email,
+        first_name,
+        last_name,
+        avatar_url,
+        phone,
+        city,
+        country,
+        bio,
+        status,
+        role,
+        created_at,
+        updated_at
+      `)
+      .eq("id", user.id)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return {
+      id: data.id,
+      email: data.email ?? user.email ?? null,
+      firstName: data.first_name ?? "",
+      lastName: data.last_name ?? "",
+      avatarUrl: data.avatar_url ?? null,
+      phone: data.phone,
+      city: data.city,
+      country: data.country,
+      bio: data.bio,
+      status: data.status,
+      role: data.role,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+    };
+  },
+
+  async updateAdminProfile({
+    firstName,
+    lastName,
+    email,
+  }: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  }) {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError) throw userError;
+    if (!user) {
+      throw new Error("No authenticated user found.");
+    }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        email: email.trim(),
+      })
+      .eq("id", user.id)
+      .select("id, first_name, last_name, email")
+      .single();
+
+    if (error) throw error;
+
+    return {
+      id: data.id,
+      firstName: data.first_name ?? "",
+      lastName: data.last_name ?? "",
+      email: data.email ?? "",
+    };
+  },
+
+  /**
+   * ---------------------------------------------------------
+   * EVENT ROLES
+   * ---------------------------------------------------------
+   */
+
+  async getRoles() {
+    const { data, error } = await supabase
+      .from("event_roles")
+      .select(`
+        id,
+        event_id,
+        name,
+        description,
+        responsibilities,
+        requirements,
+        skills,
+        positions,
+        filled_positions,
+        min_age,
+        mandatory_training,
+        created_at,
+        updated_at
+      `)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []).map((role) => ({
+      id: role.id,
+      eventId: role.event_id,
+
+      name: role.name,
+      description: role.description,
+      responsibilities: role.responsibilities,
+      requirements: role.requirements,
+
+      skills: role.skills ?? [],
+
+      positions: role.positions,
+      filledPositions: role.filled_positions,
+
+      minAge: role.min_age,
+      mandatoryTraining: role.mandatory_training,
+
+      createdAt: role.created_at,
+      updatedAt: role.updated_at,
     }));
   },
 
-  getAccreditations() {
-    return adminAccreditations;
-  },
+  /**
+   * ---------------------------------------------------------
+   * SHIFTS
+   * ---------------------------------------------------------
+   */
 
-  getAdminProfile() {
-    return adminProfile;
-  },
+  async getShifts() {
+    const { data, error } = await supabase
+      .from("event_shifts")
+      .select(`
+        id,
+        event_id,
+        role_id,
+        title,
+        location,
+        date,
+        start_time,
+        end_time,
+        capacity,
+        instructions,
+        created_at,
+        updated_at,
 
-  getRoles() {
-    return adminRoles;
-  },
+        events (
+          id,
+          title
+        ),
 
-  getShifts() {
-    return adminShifts;
+        event_roles (
+          id,
+          name
+        )
+      `)
+      .order("date", { ascending: true })
+      .order("start_time", { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []).map((shift) => {
+      const event = Array.isArray(shift.events)
+        ? shift.events[0]
+        : shift.events;
+
+      const role = Array.isArray(shift.event_roles)
+        ? shift.event_roles[0]
+        : shift.event_roles;
+
+      return {
+        id: shift.id,
+
+        eventId: shift.event_id,
+        eventTitle: event?.title ?? "Unknown event",
+
+        roleId: shift.role_id,
+        roleName: role?.name ?? "Unknown role",
+
+        title: shift.title,
+
+        date: shift.date,
+
+        startTime: shift.start_time,
+        endTime: shift.end_time,
+
+        location: shift.location ?? "",
+
+        capacity: shift.capacity,
+
+        instructions: shift.instructions,
+
+        createdAt: shift.created_at,
+        updatedAt: shift.updated_at,
+      };
+    });
   },
 };

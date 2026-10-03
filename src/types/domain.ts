@@ -488,7 +488,7 @@ export interface AdminVolunteerSummary {
   id: string;
 
   name: string;
-
+  avatar_url: string | null;
   email: string | null;
   phone: string | null;
 
