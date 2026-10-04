@@ -84,22 +84,22 @@ function Attendance() {
 
   const stats = useMemo(() => {
     const completed = records.filter(
-      (record) => record.status === "checked-out",
+      (record) => normalizeAttendanceStatus(record.status) === "checked-out",
     ).length;
 
     const checkedIn = records.filter(
-      (record) => record.status === "checked-in",
+      (record) => normalizeAttendanceStatus(record.status) === "checked-in",
     ).length;
 
-    const upcoming = records.filter(
-      (record) => record.status === "pending",
+    const scheduled = records.filter(
+      (record) => normalizeAttendanceStatus(record.status) === "scheduled",
     ).length;
 
     return {
       total: records.length,
       completed,
       checkedIn,
-      upcoming,
+      upcoming: scheduled,
     };
   }, [records]);
 
@@ -337,15 +337,15 @@ function AttendanceGroupCard({
   group: AttendanceGroup;
 }) {
   const completedCount = group.shifts.filter(
-    (shift) => shift.status === "checked-out",
+    (shift) => normalizeAttendanceStatus(shift.status) === "checked-out",
   ).length;
 
   const checkedInCount = group.shifts.filter(
-    (shift) => shift.status === "checked-in",
+    (shift) => normalizeAttendanceStatus(shift.status) === "checked-in",
   ).length;
 
-  const upcomingCount = group.shifts.filter(
-    (shift) => shift.status === "pending",
+  const scheduledCount = group.shifts.filter(
+    (shift) => normalizeAttendanceStatus(shift.status) === "scheduled",
   ).length;
 
   return (
@@ -412,11 +412,11 @@ function AttendanceGroupCard({
                 />
               )}
 
-              {upcomingCount > 0 && (
+              {scheduledCount > 0 && (
                 <StatusCount
                   icon={Clock3}
-                  value={upcomingCount}
-                  label="Upcoming"
+                  value={scheduledCount}
+                  label="Scheduled"
                   variant="muted"
                 />
               )}
@@ -447,6 +447,10 @@ function AttendanceGroupCard({
    SHIFT ROW
 ================================================================ */
 
+function normalizeAttendanceStatus(status: string | null | undefined): string {
+  return (status ?? "scheduled").trim().toLowerCase().replace(/_/g, "-");
+}
+
 function ShiftRow({
   record,
   index,
@@ -454,8 +458,9 @@ function ShiftRow({
   record: AttendanceRecord;
   index: number;
 }) {
-  const checkedOut = record.status === "checked-out";
-  const checkedIn = record.status === "checked-in";
+  const normalizedStatus = normalizeAttendanceStatus(record.status);
+  const checkedOut = normalizedStatus === "checked-out";
+  const checkedIn = normalizedStatus === "checked-in";
 
   return (
     <div className="rounded-2xl border border-border bg-background p-4 transition-colors hover:bg-muted/[0.18] sm:p-5">
@@ -530,10 +535,7 @@ function ShiftRow({
 
         {/* Status */}
         <div className="xl:w-[150px] xl:shrink-0">
-          <ShiftStatus
-            checkedOut={checkedOut}
-            checkedIn={checkedIn}
-          />
+          <ShiftStatus status={record.status} />
         </div>
       </div>
 
@@ -586,13 +588,13 @@ function ShiftRow({
 ================================================================ */
 
 function ShiftStatus({
-  checkedOut,
-  checkedIn,
+  status,
 }: {
-  checkedOut: boolean;
-  checkedIn: boolean;
+  status: string;
 }) {
-  if (checkedOut) {
+  const normalizedStatus = normalizeAttendanceStatus(status);
+
+  if (normalizedStatus === "checked-out") {
     return (
       <div className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-600">
         <CheckCircle2 className="h-3.5 w-3.5" />
@@ -601,7 +603,7 @@ function ShiftStatus({
     );
   }
 
-  if (checkedIn) {
+  if (normalizedStatus === "checked-in") {
     return (
       <div className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary">
         <LogIn className="h-3.5 w-3.5" />
@@ -610,10 +612,28 @@ function ShiftStatus({
     );
   }
 
+  if (normalizedStatus === "late") {
+    return (
+      <div className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-600">
+        <Clock3 className="h-3.5 w-3.5" />
+        Late
+      </div>
+    );
+  }
+
+  if (normalizedStatus === "absent") {
+    return (
+      <div className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-600">
+        <ShieldCheck className="h-3.5 w-3.5" />
+        Absent
+      </div>
+    );
+  }
+
   return (
     <div className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground">
       <Clock3 className="h-3.5 w-3.5" />
-      Upcoming
+      Scheduled
     </div>
   );
 }

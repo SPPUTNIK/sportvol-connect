@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { AccreditationRecord } from "@/lib/types";
+import { isEventFinished } from "@/services/shared/eventService";
 
 type AccreditationRow = {
   id: string;
@@ -141,6 +142,11 @@ export const accreditationService = {
     }
 
     const accreditation = data as unknown as AccreditationRow;
+    const event = accreditation.events;
+
+    if (!event || isEventFinished(event.end_date)) {
+      return null;
+    }
 
     let shiftData: ShiftAssignmentRow | null = null;
 
@@ -180,7 +186,6 @@ export const accreditationService = {
       shiftData = assignment as unknown as ShiftAssignmentRow;
     }
 
-    const event = accreditation.events;
     const role = accreditation.event_roles;
     const profile = accreditation.profiles;
 

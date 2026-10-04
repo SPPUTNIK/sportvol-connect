@@ -33,6 +33,248 @@ export interface MyEvent {
   attendance: string;
 }
 
+const MOROCCO_TIMEZONE = "Africa/Casablanca";
+
+function getMoroccoDateString(date = new Date()): string {
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: MOROCCO_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+export function isEventFinished(endDate: string | null | undefined): boolean {
+  if (!endDate) {
+    return false;
+  }
+
+  return endDate < getMoroccoDateString();
+}
+
+export function isApplicationDeadlinePassed(deadline: string | null | undefined): boolean {
+  if (!deadline) {
+    return false;
+  }
+
+  const deadlineDate = new Date(`${deadline}T00:00:00`);
+  const today = new Date();
+
+  today.setHours(0, 0, 0, 0);
+
+  return deadlineDate.getTime() < today.getTime();
+}
+
+export function isShiftFinished(shiftDate: string | null | undefined, endTime: string | null | undefined): boolean {
+  if (!shiftDate || !endTime) {
+    return false;
+  }
+
+  const normalizedEndTime = String(endTime).trim();
+
+  if (!normalizedEndTime) {
+    return false;
+  }
+
+  const paddedEndTime = normalizedEndTime.includes(":")
+    ? normalizedEndTime
+    : `${normalizedEndTime}:00`;
+
+  const shiftEndDate = new Date(`${shiftDate}T${paddedEndTime}`);
+
+  if (Number.isNaN(shiftEndDate.getTime())) {
+    return false;
+  }
+
+  return shiftEndDate.getTime() < Date.now();
+}
+
+function hasValidAttendanceStatus(status: string | null | undefined): boolean {
+  if (!status) {
+    return false;
+  }
+
+  const normalized = status.toLowerCase();
+
+  return [
+    "late",
+    "excused",
+    "checked-in",
+    "checked-out",
+    "present",
+    "complete",
+    "completed",
+  ].includes(normalized);
+}
+
+function isRlsViolation(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+
+  return /row-level security|new row violates|permission denied/i.test(message);
+}
+
+async function getCurrentUserId(): Promise<string | null> {
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    return null;
+  }
+
+  return user.id;
+}
+
+async function finalizeExpiredShiftAttendance(): Promise<number> {
+  const userId = await getCurrentUserId();
+
+  if (!userId) {
+    return 0;
+  }
+
+  const { data: assignments, error: assignmentsError } = await supabase
+    .from("shift_assignments")
+    .select(
+      `
+        id,
+        profile_id,
+        shift_id,
+        status,
+        event_shifts (
+          id,
+          event_id,
+          role_id,
+          date,
+          start_time,
+          end_time
+        )
+      `,
+    )
+    .eq("profile_id", userId)
+    .eq("status", "assigned");
+
+  if (assignmentsError) {
+    throw new Error(assignmentsError.message);
+  }
+
+  const expiredAssignments = (assignments ?? []).filter((assignment) => {
+    const shift = Array.isArray(assignment.event_shifts)
+      ? assignment.event_shifts[0]
+      : assignment.event_shifts;
+
+    return shift ? isShiftFinished(shift.date, shift.end_time) : false;
+  });
+
+  if (!expiredAssignments.length) {
+    return 0;
+  }
+
+  const shiftIds = expiredAssignments.map((assignment) => assignment.shift_id).filter(Boolean);
+
+  if (!shiftIds.length) {
+    return 0;
+  }
+
+  const { data: attendanceRows, error: attendanceError } = await supabase
+    .from("attendance_records")
+    .select("id, profile_id, shift_id, status")
+    .eq("profile_id", userId)
+    .in("shift_id", shiftIds);
+
+  if (attendanceError) {
+    throw new Error(attendanceError.message);
+  }
+
+  const attendanceByShiftId = new Map(
+    (attendanceRows ?? []).map((record) => [record.shift_id, record]),
+  );
+
+  let updated = 0;
+
+  for (const assignment of expiredAssignments) {
+    const attendance = attendanceByShiftId.get(assignment.shift_id);
+
+    if (attendance && hasValidAttendanceStatus(attendance.status)) {
+      continue;
+    }
+
+    const shiftDate = assignment.event_shifts?.date ?? null;
+
+    const payload = {
+      profile_id: userId,
+      shift_id: assignment.shift_id,
+      event_id: assignment.event_shifts?.event_id ?? null,
+      role_id: assignment.event_shifts?.role_id ?? null,
+      date: shiftDate,
+      status: "absent",
+      check_in_time: attendance?.check_in_time ?? null,
+      check_out_time: attendance?.check_out_time ?? null,
+      notes: attendance?.notes ?? null,
+    };
+
+    if (!shiftDate) {
+      console.warn("Skipping finalization insert because the assigned shift is missing its date.");
+      continue;
+    }
+
+    if (attendance) {
+      try {
+        const { error } = await supabase
+          .from("attendance_records")
+          .update({
+            status: "absent",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", attendance.id);
+
+        if (error) {
+          if (isRlsViolation(error)) {
+            console.warn("Skipping attendance finalization update because the volunteer cannot modify this record yet.");
+            continue;
+          }
+
+          throw new Error(error.message);
+        }
+      } catch (error) {
+        if (isRlsViolation(error)) {
+          console.warn("Skipping attendance finalization update because the volunteer cannot modify this record yet.");
+          continue;
+        }
+
+        throw error;
+      }
+
+      updated += 1;
+      continue;
+    }
+
+    try {
+      const { error: insertError } = await supabase.from("attendance_records").insert(payload);
+
+      if (insertError) {
+        if (isRlsViolation(insertError)) {
+          console.warn("Skipping attendance finalization insert because current RLS policy blocks volunteer self-insert for absent shifts.");
+          continue;
+        }
+
+        throw new Error(insertError.message);
+      }
+    } catch (error) {
+      if (isRlsViolation(error)) {
+        console.warn("Skipping attendance finalization insert because current RLS policy blocks volunteer self-insert for absent shifts.");
+        continue;
+      }
+
+      throw error;
+    }
+
+    updated += 1;
+  }
+
+  return updated;
+}
+
 async function getEventsWithRegistrationCounts(): Promise<Event[]> {
   /*
    * ============================================================
@@ -69,7 +311,15 @@ async function getEventsWithRegistrationCounts(): Promise<Event[]> {
     throw new Error(eventsError.message);
   }
 
-  if (!events) {
+  const visibleEvents = (events ?? []).filter((event) => {
+    if (isEventFinished(event.end_date)) {
+      return false;
+    }
+
+    return !isApplicationDeadlinePassed(event.application_deadline);
+  });
+
+  if (!visibleEvents.length) {
     return [];
   }
 
@@ -118,7 +368,7 @@ async function getEventsWithRegistrationCounts(): Promise<Event[]> {
    * ============================================================
    */
 
-  return events.map((event) => {
+  return visibleEvents.map((event) => {
     const registered = registrationCounts.get(event.id) ?? 0;
 
     return {
@@ -175,6 +425,10 @@ export const eventService = {
     }
 
     if (!event) {
+      return null;
+    }
+
+    if (isEventFinished(event.end_date) || isApplicationDeadlinePassed(event.application_deadline)) {
       return null;
     }
 
@@ -240,6 +494,10 @@ export const eventService = {
       return null;
     }
 
+    if (isEventFinished(event.end_date) || isApplicationDeadlinePassed(event.application_deadline)) {
+      return null;
+    }
+
     const { count, error: applicationsError } = await supabase
       .from("applications")
       .select("id", {
@@ -271,29 +529,14 @@ export const eventService = {
    * has an accepted application.
    */
   async getMyEvents(): Promise<MyEvent[]> {
-    /**
-     * ----------------------------------------------------------
-     * 1. Get authenticated user
-     * ----------------------------------------------------------
-     */
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const userId = await getCurrentUserId();
 
-    if (authError) {
-      throw new Error(authError.message);
-    }
-
-    if (!user) {
+    if (!userId) {
       throw new Error("You must be signed in.");
     }
 
-    /**
-     * ----------------------------------------------------------
-     * 2. Get accepted applications
-     * ----------------------------------------------------------
-     */
+    await finalizeExpiredShiftAttendance();
+
     const { data: applications, error: applicationsError } = await supabase
       .from("applications")
       .select(
@@ -302,7 +545,7 @@ export const eventService = {
           event_id,
           role_id,
           status,
-
+          applied_at,
           events (
             id,
             title,
@@ -313,79 +556,171 @@ export const eventService = {
             start_time,
             end_time
           ),
-
           event_roles (
             id,
             name
           )
         `,
       )
-      .eq("profile_id", user.id)
-      .order("applied_at", {
-        ascending: false,
-      });
+      .eq("profile_id", userId)
+      .order("applied_at", { ascending: false });
 
     if (applicationsError) {
       throw new Error(applicationsError.message);
     }
 
-    if (!applications?.length) {
-      return [];
-    }
+    const eventIds = new Set<string>();
 
-    /**
-     * ----------------------------------------------------------
-     * 3. Build result
-     * ----------------------------------------------------------
-     */
-    const result: MyEvent[] = [];
-
-    for (const application of applications) {
+    for (const application of applications ?? []) {
       const event = Array.isArray(application.events) ? application.events[0] : application.events;
 
+      if (event) {
+        eventIds.add(event.id);
+      }
+    }
+
+    const [shiftResult, trainingResult, accreditationResult, attendanceResult] = await Promise.all([
+      eventIds.size
+        ? supabase
+            .from("shift_assignments")
+            .select(
+              `
+                id,
+                status,
+                profile_id,
+                shift_id,
+                event_shifts (
+                  id,
+                  title,
+                  location,
+                  date,
+                  start_time,
+                  end_time,
+                  event_id,
+                  role_id,
+                  instructions
+                )
+              `,
+            )
+            .eq("profile_id", userId)
+        : Promise.resolve({ data: [], error: null }),
+      eventIds.size
+        ? supabase
+            .from("training_modules")
+            .select(
+              `
+                id,
+                title,
+                required,
+                event_id,
+                training_progress (
+                  completed,
+                  profile_id
+                )
+              `,
+            )
+            .in("event_id", [...eventIds])
+        : Promise.resolve({ data: [], error: null }),
+      eventIds.size
+        ? supabase
+            .from("accreditations")
+            .select(
+              `
+                id,
+                profile_id,
+                event_id,
+                role_id,
+                status,
+                volunteer_identifier,
+                zone,
+                qr_code_data
+              `,
+            )
+            .eq("profile_id", userId)
+            .in("event_id", [...eventIds])
+        : Promise.resolve({ data: [], error: null }),
+      eventIds.size
+        ? supabase
+            .from("attendance_records")
+            .select(
+              `
+                id,
+                profile_id,
+                event_id,
+                shift_id,
+                status,
+                check_in_time,
+                check_out_time
+              `,
+            )
+            .eq("profile_id", userId)
+            .in("event_id", [...eventIds])
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+    if (shiftResult.error) throw new Error(shiftResult.error.message);
+    if (trainingResult.error) throw new Error(trainingResult.error.message);
+    if (accreditationResult.error) throw new Error(accreditationResult.error.message);
+    if (attendanceResult.error) throw new Error(attendanceResult.error.message);
+
+    const shiftsByEventId = new Map<string, any[]>();
+    for (const assignment of shiftResult.data ?? []) {
+      const shift = Array.isArray(assignment.event_shifts)
+        ? assignment.event_shifts[0]
+        : assignment.event_shifts;
+
+      if (!shift || !shift.event_id) {
+        continue;
+      }
+
+      const list = shiftsByEventId.get(shift.event_id) ?? [];
+      list.push(assignment);
+      shiftsByEventId.set(shift.event_id, list);
+    }
+
+    const trainingsByEventId = new Map<string, any[]>();
+    for (const module of trainingResult.data ?? []) {
+      if (!module.event_id) {
+        continue;
+      }
+
+      const list = trainingsByEventId.get(module.event_id) ?? [];
+      list.push(module);
+      trainingsByEventId.set(module.event_id, list);
+    }
+
+    const accreditationsByEventIdAndRole = new Map<string, any>();
+    for (const accreditation of accreditationResult.data ?? []) {
+      const key = `${accreditation.event_id}:${accreditation.role_id ?? ""}`;
+      accreditationsByEventIdAndRole.set(key, accreditation);
+    }
+
+    const attendanceByEventId = new Map<string, any>();
+    for (const attendance of attendanceResult.data ?? []) {
+      if (!attendance.event_id) {
+        continue;
+      }
+      attendanceByEventId.set(attendance.event_id, attendance);
+    }
+
+    const result: MyEvent[] = [];
+
+    for (const application of applications ?? []) {
+      const event = Array.isArray(application.events) ? application.events[0] : application.events;
       const role = Array.isArray(application.event_roles)
         ? application.event_roles[0]
         : application.event_roles;
 
-      if (!event || !role) {
+      if (!event || !role || isEventFinished(event.end_date)) {
         continue;
       }
 
-      /**
-       * --------------------------------------------------------
-       * 4. Get volunteer shift
-       * --------------------------------------------------------
-       */
-      const { data: shifts, error: shiftError } = await supabase
-        .from("shift_assignments")
-        .select(
-          `
-            id,
-            status,
-
-            event_shifts (
-              id,
-              title,
-              location,
-              date,
-              start_time,
-              end_time,
-              instructions
-            )
-          `,
-        )
-        .eq("profile_id", user.id);
-
-      if (shiftError) {
-        throw new Error(shiftError.message);
-      }
-
-      const assignedShift = (shifts ?? []).find((assignment) => {
+      const assignedShift = (shiftsByEventId.get(event.id) ?? []).find((assignment) => {
         const shift = Array.isArray(assignment.event_shifts)
           ? assignment.event_shifts[0]
           : assignment.event_shifts;
 
-        return shift && application.event_id === event.id;
+        return shift && assignment.profile_id === userId && shift.event_id === event.id;
       });
 
       const shift = assignedShift
@@ -394,38 +729,12 @@ export const eventService = {
           : assignedShift.event_shifts
         : null;
 
-      /**
-       * --------------------------------------------------------
-       * 5. Get training
-       * --------------------------------------------------------
-       */
-      const { data: trainingModules, error: trainingError } = await supabase
-        .from("training_modules")
-        .select(
-          `
-            id,
-            title,
-            required,
-            training_progress (
-              completed,
-              profile_id
-            )
-          `,
-        )
-        .eq("event_id", event.id);
-
-      if (trainingError) {
-        throw new Error(trainingError.message);
-      }
-
-      const eventTraining = trainingModules ?? [];
-
+      const eventTraining = trainingsByEventId.get(event.id) ?? [];
       let trainingLabel = "Not required";
-
       if (eventTraining.length > 0) {
         const completed = eventTraining.filter((training) => {
           const progress = Array.isArray(training.training_progress)
-            ? training.training_progress.find((item) => item.profile_id === user.id)
+            ? training.training_progress.find((item) => item.profile_id === userId)
             : training.training_progress;
 
           return progress?.completed === true;
@@ -434,65 +743,26 @@ export const eventService = {
         trainingLabel = `${completed}/${eventTraining.length} completed`;
       }
 
-      /**
-       * --------------------------------------------------------
-       * 6. Get accreditation
-       * --------------------------------------------------------
-       */
-      const { data: accreditation, error: accreditationError } = await supabase
-        .from("accreditations")
-        .select(
-          `
-            id,
-            volunteer_identifier,
-            zone,
-            status,
-            qr_code_data
-          `,
-        )
-        .eq("profile_id", user.id)
-        .eq("event_id", event.id)
-        .eq("role_id", role.id)
-        .maybeSingle();
-
-      if (accreditationError) {
-        throw new Error(accreditationError.message);
-      }
-
+      const accreditationKey = `${event.id}:${role.id}`;
+      const accreditation = accreditationsByEventIdAndRole.get(accreditationKey) ?? null;
       const accreditationLabel = accreditation
         ? accreditation.status === "approved"
           ? "Approved"
           : accreditation.status
         : "Pending";
 
-      /**
-       * --------------------------------------------------------
-       * 7. Get attendance
-       * --------------------------------------------------------
-       */
-      const { data: attendance, error: attendanceError } = await supabase
-        .from("attendance_records")
-        .select(
-          `
-            id,
-            status,
-            check_in_time,
-            check_out_time
-          `,
-        )
-        .eq("profile_id", user.id)
-        .eq("event_id", event.id)
-        .maybeSingle();
-
-      if (attendanceError) {
-        throw new Error(attendanceError.message);
-      }
-
+      const attendance = attendanceByEventId.get(event.id) ?? null;
       let attendanceLabel = "Scheduled";
 
       if (attendance) {
         switch (attendance.status) {
-          case "present":
+          case "checked-in":
+          case "checked_in":
+            attendanceLabel = "Present";
+            break;
+
+          case "checked-out":
+          case "checked_out":
             attendanceLabel = "Present";
             break;
 
@@ -513,49 +783,28 @@ export const eventService = {
         }
       }
 
-      /**
-       * --------------------------------------------------------
-       * 8. Format shift
-       * --------------------------------------------------------
-       */
       let shiftLabel = "Not assigned";
-
       if (shift) {
         const location = shift.location ? ` · ${shift.location}` : "";
-
         shiftLabel = `${shift.date} · ${shift.start_time} – ${shift.end_time}${location}`;
       }
 
-      /**
-       * --------------------------------------------------------
-       * 9. Add My Event
-       * --------------------------------------------------------
-       */
       result.push({
         id: application.id,
         eventId: event.id,
-
         event: event.title,
-
         location: `${event.venue}, ${event.city}`,
-
         date:
           event.start_date === event.end_date
             ? event.start_date
             : `${event.start_date} – ${event.end_date}`,
-
         role: role.name,
         roleId: role.id,
-
         status: application.status,
-
         shift: shiftLabel,
         shiftId: shift?.id ?? null,
-
         training: trainingLabel,
-
         accreditation: accreditationLabel,
-
         attendance: attendanceLabel,
       });
     }

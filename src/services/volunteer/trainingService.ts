@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import type { Training } from "@/lib/types";
+import { isEventFinished } from "@/services/shared/eventService";
 
 export type TrainingQuestion = {
   id: string;
@@ -30,7 +31,24 @@ type TrainingModuleRow = {
   status: "draft" | "published";
   published_at: string | null;
   created_at: string;
+  events?:
+    | Array<{ id: string; start_date: string | null; end_date: string | null }>
+    | { id: string; start_date: string | null; end_date: string | null }
+    | null;
 };
+
+function isEventStarted(event: { start_date?: string | null } | null | undefined): boolean {
+  if (!event?.start_date) {
+    return false;
+  }
+
+  const startDate = new Date(`${event.start_date}T00:00:00`);
+  const today = new Date();
+
+  today.setHours(0, 0, 0, 0);
+
+  return startDate.getTime() <= today.getTime();
+}
 
 type TrainingProgressRow = {
   id: string;
@@ -99,7 +117,12 @@ export const trainingService = {
         zoom_url,
         status,
         published_at,
-        created_at
+        created_at,
+        events (
+          id,
+          start_date,
+          end_date
+        )
       `)
       .eq("status", "published")
       .order("created_at", { ascending: false });
@@ -134,7 +157,17 @@ export const trainingService = {
       ]),
     );
 
-    return ((modules ?? []) as TrainingModuleRow[]).map((module) => {
+    const visibleModules = ((modules ?? []) as TrainingModuleRow[]).filter((module) => {
+      const event = Array.isArray(module.events) ? module.events[0] : module.events;
+
+      if (!event) {
+        return false;
+      }
+
+      return !isEventStarted(event) && !isEventFinished(event.end_date);
+    });
+
+    return visibleModules.map((module) => {
       const progress = progressByTrainingId.get(module.id);
 
       return {
