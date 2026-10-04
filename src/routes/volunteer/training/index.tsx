@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   BookOpen,
   CheckCircle2,
@@ -16,7 +16,7 @@ import { VSBadge, VSCard, VSCardContent, VSPageHeader } from "@/components/desig
 import { trainingService } from "@/services/volunteer/trainingService";
 import type { Training } from "@/lib/types";
 
-export const Route = createFileRoute("/volunteer/training")({
+export const Route = createFileRoute("/volunteer/training/")({
   component: TrainingPage,
   head: () => ({
     meta: [
@@ -156,95 +156,111 @@ function TrainingPage() {
 
             <div className="space-y-5">
               {modules.map((module, index) => (
-                <VSCard key={module.id} className="overflow-hidden rounded-[2rem] border-border">
-                  <VSCardContent className="p-6 sm:p-8">
-                    {/* TOP */}
-                    <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="flex gap-4">
-                        <div
-                          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${
-                            module.completed
-                              ? "bg-emerald-500/10 text-emerald-600"
-                              : "bg-primary/10 text-primary"
-                          }`}
-                        >
-                          {module.completed ? (
-                            <CheckCircle2 className="h-5 w-5" />
-                          ) : (
-                            <BookOpen className="h-5 w-5" />
-                          )}
-                        </div>
-
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                              Module {String(index + 1).padStart(2, "0")}
-                            </span>
-
-                            {module.completed && <VSBadge variant="soft">Completed</VSBadge>}
+                <Link
+                  key={module.id}
+                  to="/volunteer/training/$trainingId"
+                  params={{ trainingId: module.id }}
+                  className="block"
+                >
+                  <VSCard className="overflow-hidden rounded-[2rem] border-border transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md">
+                    <VSCardContent className="p-6 sm:p-8">
+                      {/* TOP */}
+                      <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="flex gap-4">
+                          <div
+                            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${
+                              module.completed
+                                ? "bg-emerald-500/10 text-emerald-600"
+                                : "bg-primary/10 text-primary"
+                            }`}
+                          >
+                            {module.completed ? (
+                              <CheckCircle2 className="h-5 w-5" />
+                            ) : (
+                              <BookOpen className="h-5 w-5" />
+                            )}
                           </div>
 
-                          <h2 className="mt-2 text-xl font-semibold text-foreground sm:text-2xl">
-                            {module.title}
-                          </h2>
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                                Module {String(index + 1).padStart(2, "0")}
+                              </span>
 
-                          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                            {module.description}
-                          </p>
+                              {module.completed && <VSBadge variant="soft">Completed</VSBadge>}
+                            </div>
+
+                            <h2 className="mt-2 text-xl font-semibold text-foreground sm:text-2xl">
+                              {module.title}
+                            </h2>
+
+                            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                              {module.description}
+                            </p>
+
+                            <Link
+                              to="/volunteer/training/$trainingId"
+                              params={{ trainingId: module.id }}
+                              className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary transition hover:gap-3"
+                            >
+                              View training
+                              <ExternalLink className="h-4 w-4" />
+                            </Link>
+                          </div>
+                        </div>
+
+                        <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+                          <Clock3 className="h-3.5 w-3.5" />
+                          Training module
                         </div>
                       </div>
 
-                      <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
-                        <Clock3 className="h-3.5 w-3.5" />
-                        Training module
+                      {/* RESOURCES */}
+
+                      <div className="mt-7">
+                        <p className="font-mono text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                          Learning resources
+                        </p>
+
+                        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                          {module.resources.map((resource) => {
+                            const isVideo = resource.type === "video";
+
+                            return (
+                              <a
+                                key={`${module.id}-${resource.url}`}
+                                href={resource.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="group flex items-center gap-4 rounded-2xl border border-border bg-background p-4 transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-sm"
+                              >
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground transition group-hover:bg-primary/10 group-hover:text-primary">
+                                  {isVideo ? (
+                                    <PlayCircle className="h-4 w-4" />
+                                  ) : (
+                                    <FileText className="h-4 w-4" />
+                                  )}
+                                </div>
+
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm font-semibold text-foreground">
+                                    {resource.title}
+                                  </p>
+
+                                  <p className="mt-1 text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
+                                    {resource.type}
+                                  </p>
+                                </div>
+
+                                <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
+                              </a>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-
-                    {/* RESOURCES */}
-
-                    <div className="mt-7">
-                      <p className="font-mono text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                        Learning resources
-                      </p>
-
-                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                        {module.resources.map((resource) => {
-                          const isVideo = resource.type === "video";
-
-                          return (
-                            <a
-                              key={`${module.id}-${resource.url}`}
-                              href={resource.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="group flex items-center gap-4 rounded-2xl border border-border bg-background p-4 transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-sm"
-                            >
-                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground transition group-hover:bg-primary/10 group-hover:text-primary">
-                                {isVideo ? (
-                                  <PlayCircle className="h-4 w-4" />
-                                ) : (
-                                  <FileText className="h-4 w-4" />
-                                )}
-                              </div>
-
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-semibold text-foreground">
-                                  {resource.title}
-                                </p>
-
-                                <p className="mt-1 text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
-                                  {resource.type}
-                                </p>
-                              </div>
-
-                              <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
-                            </a>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </VSCardContent>
-                </VSCard>
+                    </VSCardContent>
+                  </VSCard>
+                </Link>
               ))}
             </div>
 

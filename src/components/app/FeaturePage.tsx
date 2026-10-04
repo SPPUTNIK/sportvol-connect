@@ -17,7 +17,19 @@ import {
   BadgeCheck,
   ClipboardCheck,
   GraduationCap,
+  ArrowLeft,
+  ExternalLink,
+  FileText,
+  PlayCircle,
+  RotateCcw,
 } from "lucide-react";
+
+
+import  { 
+  trainingService,
+  TrainingQuestion,
+  TrainingResult,
+} from "@/services/volunteer/trainingService";
 
 import { AppShell } from "@/components/app/AppShell";
 import {
@@ -38,7 +50,7 @@ import { useAuth } from "@/lib/auth";
 
 import { getVolunteerDashboard, getVolunteerHours, getAttendance } from "@/services/shared/backendService";
 
-import { VolunteerDashboard, VolunteerHours, AttendanceRecord } from "@/lib/types";
+import { VolunteerDashboard, VolunteerHours, AttendanceRecord, Training } from "@/lib/types";
 
 import { eventService, type MyEvent } from "@/services/shared/eventService";
 
@@ -1148,75 +1160,544 @@ function EventInfo({
 //   );
 // }
 
-export function TrainingPage() {
-  const completed = volunteerContentService.getTraining().filter((item) => item.complete).length;
-  return (
-    <AppShell title="Training">
-      <div className="mx-auto max-w-7xl">
-        <VSPageHeader
-          eyebrow="Preparation"
-          title="Train with confidence"
-          description="Build the knowledge and habits that make event days safer, calmer, and more human."
-        />
-        <VSCard className="mt-8 rounded-[2rem] border-border">
-          <VSCardContent className="p-6 sm:p-8">
-            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-              <div>
-                <p className="eyebrow">Your progress</p>
-                <p className="mt-2 text-3xl font-semibold text-foreground">
-                  {completed} of {volunteerContentService.getTraining().length} modules complete
+
+
+export function TrainingDetailPage({
+  trainingId,
+}: {
+  trainingId: string;
+}) {
+  const [item, setItem] = useState<Training | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [questions, setQuestions] = useState<TrainingQuestion[]>([]);
+  const [answers, setAnswers] = useState<Record<string, string[]>>({});
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+
+  const [assessmentStarted, setAssessmentStarted] = useState(false);
+  const [assessmentLoading, setAssessmentLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [result, setResult] = useState<TrainingResult | null>(null);
+  const [assessmentError, setAssessmentError] = useState<string | null>(null);
+
+  /*
+   * Load training module + existing result.
+   */
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadTraining() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const training = await trainingService.getTrainingById(trainingId);
+
+        if (cancelled) return;
+
+        if (!training) {
+          setError("Training module not found.");
+          return;
+        }
+
+        setItem(training);
+
+        const existingResult =
+          await trainingService.getTrainingResult(trainingId);
+
+        if (cancelled) return;
+
+        setResult(existingResult);
+      } catch (err: unknown) {
+        if (cancelled) return;
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load this training module.",
+        );
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadTraining();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [trainingId]);
+
+  /*
+   * Start assessment.
+   */
+  async function handleStartAssessment() {
+    setAssessmentError(null);
+    setAssessmentLoading(true);
+
+    try {
+      const loadedQuestions =
+        await trainingService.getTrainingQuestions(trainingId);
+
+      if (loadedQuestions.length !== 20) {
+        throw new Error(
+          `This assessment is not ready yet. It currently has ${loadedQuestions.length} questions, but exactly 20 are required.`,
+        );
+      }
+
+      setQuestions(loadedQuestions);
+      setCurrentQuestion(0);
+      setAnswers({});
+      setAssessmentStarted(true);
+    } catch (err: unknown) {
+      setAssessmentError(
+        err instanceof Error
+          ? err.message
+          : "Unable to load the assessment.",
+      );
+    } finally {
+      setAssessmentLoading(false);
+    }
+  }
+
+  /*
+   * Toggle checkbox answer.
+   */
+  function toggleAnswer(
+    questionId: string,
+    option: string,
+  ) {
+    setAnswers((previous) => {
+      const current = previous[questionId] ?? [];
+
+      const exists = current.includes(option);
+
+      return {
+        ...previous,
+        [questionId]: exists
+          ? current.filter((value) => value !== option)
+          : [...current, option],
+      };
+    });
+  }
+
+  /*
+   * Submit assessment.
+   */
+  async function handleSubmitAssessment() {
+    setAssessmentError(null);
+
+    const unanswered = questions.findIndex(
+      (question) => (answers[question.id] ?? []).length === 0,
+    );
+
+    if (unanswered !== -1) {
+      setCurrentQuestion(unanswered);
+      setAssessmentError(
+        `Please answer question ${unanswered + 1} before submitting.`,
+      );
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const trainingResult =
+        await trainingService.submitTraining(
+          trainingId,
+          answers,
+        );
+
+      setResult(trainingResult);
+      setAssessmentStarted(false);
+
+      /*
+       * Keep the local training state in sync.
+       */
+      setItem((previous) =>
+        previous
+          ? {
+              ...previous,
+              completed: trainingResult.passed,
+            }
+          : previous,
+      );
+    } catch (err: unknown) {
+      setAssessmentError(
+        err instanceof Error
+          ? err.message
+          : "Unable to submit the assessment.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  /*
+   * Restart assessment.
+   */
+  function handleRetry() {
+    setResult(null);
+    setAnswers({});
+    setQuestions([]);
+    setCurrentQuestion(0);
+    setAssessmentError(null);
+    setAssessmentStarted(false);
+  }
+
+  if (loading) {
+    return (
+      <AppShell title="Training detail">
+        <div className="mx-auto max-w-4xl">
+          <VSCard className="rounded-[2rem] border-border">
+            <VSCardContent className="p-8">
+              <div className="animate-pulse space-y-4">
+                <div className="h-4 w-32 rounded bg-muted" />
+                <div className="h-10 w-2/3 rounded bg-muted" />
+                <div className="h-5 w-full rounded bg-muted" />
+                <div className="h-5 w-4/5 rounded bg-muted" />
+              </div>
+            </VSCardContent>
+          </VSCard>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (error || !item) {
+    return (
+      <AppShell title="Training detail">
+        <div className="mx-auto max-w-4xl">
+          <VSCard className="rounded-[2rem] border-border">
+            <VSCardContent className="p-8 text-center">
+              <p className="text-sm font-semibold text-destructive">
+                {error ?? "Training module not found."}
+              </p>
+            </VSCardContent>
+          </VSCard>
+        </div>
+      </AppShell>
+    );
+  }
+
+  /*
+   * ============================================================
+   * ASSESSMENT SCREEN
+   * ============================================================
+   */
+  if (assessmentStarted && questions.length > 0) {
+    const question = questions[currentQuestion];
+    const selectedAnswers = answers[question.id] ?? [];
+
+    const isLastQuestion =
+      currentQuestion === questions.length - 1;
+
+    const answeredCount = Object.values(answers).filter(
+      (value) => value.length > 0,
+    ).length;
+
+    return (
+      <AppShell title="Training assessment">
+        <div className="mx-auto max-w-4xl">
+          <VSPageHeader
+            eyebrow="Assessment"
+            title={item.title}
+            description="Answer all 20 questions to complete your training assessment."
+          />
+
+          <VSCard className="mt-8 rounded-[2rem] border-border">
+            <VSCardContent className="p-6 sm:p-8">
+
+              {/* Progress */}
+              <div className="mb-8">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold">
+                      Question {currentQuestion + 1} of{" "}
+                      {questions.length}
+                    </p>
+
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {answeredCount} of {questions.length} answered
+                    </p>
+                  </div>
+
+                  <VSBadge variant="outline">
+                    {Math.round(
+                      ((currentQuestion + 1) /
+                        questions.length) *
+                        100,
+                    )}
+                    %
+                  </VSBadge>
+                </div>
+
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all"
+                    style={{
+                      width: `${
+                        ((currentQuestion + 1) /
+                          questions.length) *
+                        100
+                      }%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Question */}
+              <div className="rounded-3xl border border-border bg-muted/20 p-6 sm:p-8">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-bold text-ink">
+                    {question.questionNumber}
+                  </div>
+
+                  <div className="min-w-0">
+                    <h2 className="text-lg font-bold leading-relaxed sm:text-xl">
+                      {question.question}
+                    </h2>
+
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Select all answers that apply.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Options */}
+                <div className="mt-8 space-y-3">
+                  {question.options.map((option, index) => {
+                    const checked =
+                      selectedAnswers.includes(option);
+
+                    return (
+                      <label
+                        key={`${question.id}-${option}`}
+                        className={`flex cursor-pointer items-start gap-4 rounded-2xl border p-4 transition ${
+                          checked
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/40"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() =>
+                            toggleAnswer(
+                              question.id,
+                              option,
+                            )
+                          }
+                          className="mt-1 h-4 w-4 accent-primary"
+                        />
+
+                        <span className="flex min-w-0 flex-1 items-start gap-3">
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-semibold">
+                            {String.fromCharCode(65 + index)}
+                          </span>
+
+                          <span className="text-sm leading-6">
+                            {option}
+                          </span>
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Error */}
+              {assessmentError && (
+                <div className="mt-5 rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
+                  <p className="text-sm font-medium text-destructive">
+                    {assessmentError}
+                  </p>
+                </div>
+              )}
+
+              {/* Navigation */}
+              <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <VSButton
+                  variant="outline"
+                  disabled={
+                    currentQuestion === 0 || submitting
+                  }
+                  onClick={() =>
+                    setCurrentQuestion(
+                      (value) => value - 1,
+                    )
+                  }
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Previous
+                </VSButton>
+
+                {!isLastQuestion ? (
+                  <VSButton
+                    onClick={() => {
+                      if (selectedAnswers.length === 0) {
+                        setAssessmentError(
+                          "Please select at least one answer before continuing.",
+                        );
+                        return;
+                      }
+
+                      setAssessmentError(null);
+                      setCurrentQuestion(
+                        (value) => value + 1,
+                      );
+                    }}
+                  >
+                    Next
+                    <ArrowRight className="h-4 w-4" />
+                  </VSButton>
+                ) : (
+                  <VSButton
+                    disabled={submitting}
+                    onClick={() => {
+                      void handleSubmitAssessment();
+                    }}
+                  >
+                    {submitting
+                      ? "Submitting..."
+                      : "Submit assessment"}
+                    <CheckCircle2 className="h-4 w-4" />
+                  </VSButton>
+                )}
+              </div>
+            </VSCardContent>
+          </VSCard>
+        </div>
+      </AppShell>
+    );
+  }
+
+  /*
+   * ============================================================
+   * RESULT SCREEN
+   * ============================================================
+   */
+  if (result) {
+    const percentage =
+      result.totalQuestions > 0
+        ? Math.round(
+            (result.score / result.totalQuestions) * 100,
+          )
+        : 0;
+
+    return (
+      <AppShell title="Training result">
+        <div className="mx-auto max-w-4xl">
+          <VSPageHeader
+            eyebrow="Assessment result"
+            title={item.title}
+            description="Here is your latest training assessment result."
+          />
+
+          <VSCard className="mt-8 rounded-[2rem] border-border">
+            <VSCardContent className="p-6 sm:p-8">
+              <div className="text-center">
+                <div
+                  className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full ${
+                    result.passed
+                      ? "bg-primary/15 text-primary"
+                      : "bg-destructive/10 text-destructive"
+                  }`}
+                >
+                  {result.passed ? (
+                    <CheckCircle2 className="h-9 w-9" />
+                  ) : (
+                    <RotateCcw className="h-9 w-9" />
+                  )}
+                </div>
+
+                <p className="mt-5 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  {result.passed
+                    ? "Assessment passed"
+                    : "Assessment not passed"}
+                </p>
+
+                <h2 className="mt-2 text-4xl font-black tracking-tight">
+                  {percentage}%
+                </h2>
+
+                <p className="mt-2 text-sm text-muted-foreground">
+                  You scored {result.score} out of{" "}
+                  {result.totalQuestions}.
                 </p>
               </div>
-              <VSBadge variant="soft">
-                {Math.round((completed / volunteerContentService.getTraining().length) * 100)}%
-              </VSBadge>
-            </div>
-            <div className="mt-5 h-2 rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary"
-                style={{
-                  width: `${(completed / volunteerContentService.getTraining().length) * 100}%`,
-                }}
-              />
-            </div>
-          </VSCardContent>
-        </VSCard>
-        <div className="mt-6 grid gap-4 lg:grid-cols-3">
-          {volunteerContentService.getTraining().map((item) => (
-            <VSCard key={item.id} className="rounded-[1.75rem] border-border">
-              <VSCardContent className="p-6">
-                <div className="flex items-start justify-between gap-3">
-                  <VSBadge variant={item.complete ? "soft" : "outline"}>
-                    {item.complete ? "Complete" : "To do"}
-                  </VSBadge>
-                  <span className="text-xs text-muted-foreground">{item.duration}</span>
-                </div>
-                <h2 className="mt-5 text-lg font-semibold text-foreground">{item.title}</h2>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.description}</p>
-                <VSButton
-                  asChild
-                  variant={item.complete ? "outline" : "default"}
-                  size="sm"
-                  className="mt-6"
-                >
-                  <Link to="/volunteer/training/$trainingId" params={{ trainingId: item.id }}>
-                    {item.complete ? "Review module" : "Start module"}
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </VSButton>
-              </VSCardContent>
-            </VSCard>
-          ))}
-        </div>
-      </div>
-    </AppShell>
-  );
-}
 
-export function TrainingDetailPage({ trainingId }: { trainingId: string }) {
-  const item =
-    volunteerContentService.getTraining().find((training) => training.id === trainingId) ??
-    volunteerContentService.getTraining()[0];
+              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-border p-4 text-center">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Score
+                  </p>
+                  <p className="mt-1 text-lg font-bold">
+                    {result.score}/{result.totalQuestions}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-border p-4 text-center">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Result
+                  </p>
+                  <p className="mt-1 text-lg font-bold">
+                    {result.passed
+                      ? "Passed"
+                      : "Not passed"}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-border p-4 text-center">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Required mark
+                  </p>
+                  <p className="mt-1 text-lg font-bold">
+                    70%
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-8 rounded-2xl border border-border bg-muted/30 p-5">
+                <p className="text-sm font-semibold">
+                  {result.passed
+                    ? "Congratulations!"
+                    : "You can try again."}
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  {result.passed
+                    ? "You have successfully completed this training assessment."
+                    : "You need at least 70% to pass this training. Review the training materials and try again."}
+                </p>
+              </div>
+
+              {!result.passed && (
+                <VSButton
+                  className="mt-8 w-full sm:w-auto"
+                  onClick={handleRetry}
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Try again
+                </VSButton>
+              )}
+            </VSCardContent>
+          </VSCard>
+        </div>
+      </AppShell>
+    );
+  }
+
+  /*
+   * ============================================================
+   * NORMAL TRAINING DETAIL SCREEN
+   * ============================================================
+   */
+
   return (
     <AppShell title="Training detail">
       <div className="mx-auto max-w-4xl">
@@ -1225,49 +1706,196 @@ export function TrainingDetailPage({ trainingId }: { trainingId: string }) {
           title={item.title}
           description={item.description}
           action={
-            <VSBadge variant={item.complete ? "soft" : "outline"}>
-              {item.complete ? "Complete" : "In progress"}
+            <VSBadge variant={item.completed ? "soft" : "outline"}>
+              {item.completed ? "Complete" : "In progress"}
             </VSBadge>
           }
         />
+
         <VSCard className="mt-8 rounded-[2rem] border-border">
           <VSCardContent className="p-6 sm:p-8">
-            <div className="flex aspect-video items-center justify-center rounded-3xl bg-ink text-white">
-              <div className="text-center">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary">
-                  <ExternalLink className="h-6 w-6" />
-                </div>
-                <p className="mt-4 text-sm font-semibold">Video lesson placeholder</p>
-                <p className="mt-1 text-xs text-white/60">
-                  {item.duration} · ready for your next session
+
+            {/* Training overview */}
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-border p-4">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Type
+                </p>
+
+                <p className="mt-1 text-sm font-semibold capitalize">
+                  {item.type.replace("_", " ")}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-border p-4">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Status
+                </p>
+
+                <p className="mt-1 text-sm font-semibold">
+                  {item.completed
+                    ? "Completed"
+                    : "Not completed"}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-border p-4">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Required
+                </p>
+
+                <p className="mt-1 text-sm font-semibold">
+                  {item.required
+                    ? "Yes"
+                    : "Optional"}
                 </p>
               </div>
             </div>
+
+            {/* Training content */}
             <div className="mt-8">
-              <VSSectionHeader eyebrow="Resources" title="Keep exploring" />
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {item.resources.map((resource) => (
-                  <a
-                    key={resource.title}
-                    href={resource.url}
-                    className="flex items-center justify-between rounded-2xl border border-border p-4 transition hover:border-primary/40"
-                  >
-                    <span>
-                      <span className="block text-sm font-semibold text-foreground">
-                        {resource.title}
-                      </span>
-                      <span className="mt-1 block text-xs uppercase tracking-wider text-muted-foreground">
-                        {resource.type}
-                      </span>
-                    </span>
-                    <ArrowRight className="h-4 w-4 text-primary" />
-                  </a>
-                ))}
+              <VSSectionHeader
+                eyebrow="Training"
+                title="Prepare for your assignment"
+              />
+
+              <div className="mt-4 rounded-3xl bg-ink p-8 text-white">
+                <div className="mx-auto flex max-w-md flex-col items-center text-center">
+
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary">
+                    {item.type === "online" ? (
+                      <PlayCircle className="h-6 w-6" />
+                    ) : (
+                      <ExternalLink className="h-6 w-6" />
+                    )}
+                  </div>
+
+                  <p className="mt-4 text-sm font-semibold">
+                    {item.type === "online"
+                      ? "Online training"
+                      : item.type === "hybrid"
+                        ? "Hybrid training"
+                        : "In-person training"}
+                  </p>
+
+                  <p className="mt-1 text-xs text-white/60">
+                    Complete this module to prepare for your volunteer
+                    assignment.
+                  </p>
+
+                  {item.zoomUrl && (
+                    <a
+                      href={item.zoomUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-ink transition hover:opacity-90"
+                    >
+                      Join Zoom
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
-            <VSButton className="mt-8">
-              {item.complete ? "Mark as reviewed" : "Mark module complete"}
-              <CheckCircle2 className="h-4 w-4" />
+
+            {/* Resources */}
+            {item.resources.length > 0 && (
+              <div className="mt-8">
+                <VSSectionHeader
+                  eyebrow="Resources"
+                  title="Keep exploring"
+                />
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {item.resources.map((resource) => (
+                    <a
+                      key={`${resource.type}-${resource.title}-${resource.url}`}
+                      href={resource.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between rounded-2xl border border-border p-4 transition hover:border-primary/40"
+                    >
+                      <span className="flex min-w-0 items-center gap-3">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                          {resource.type === "pdf" ? (
+                            <FileText className="h-4 w-4" />
+                          ) : (
+                            <ExternalLink className="h-4 w-4" />
+                          )}
+                        </span>
+
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-semibold text-foreground">
+                            {resource.title}
+                          </span>
+
+                          <span className="mt-1 block text-xs uppercase tracking-wider text-muted-foreground">
+                            {resource.type}
+                          </span>
+                        </span>
+                      </span>
+
+                      <ArrowRight className="ml-3 h-4 w-4 shrink-0 text-primary" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Current progress */}
+            <div className="mt-8 rounded-2xl border border-border bg-muted/30 p-5">
+              <div className="flex items-start gap-3">
+                <CheckCircle2
+                  className={`mt-0.5 h-5 w-5 shrink-0 ${
+                    item.completed
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                  }`}
+                />
+
+                <div>
+                  <p className="text-sm font-semibold">
+                    {item.completed
+                      ? "Training completed"
+                      : "Training not completed yet"}
+                  </p>
+
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {item.completed
+                      ? "You have completed this training module."
+                      : "Complete the training assessment to finish this module."}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Assessment */}
+            {assessmentError && (
+              <div className="mt-5 rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
+                <p className="text-sm font-medium text-destructive">
+                  {assessmentError}
+                </p>
+              </div>
+            )}
+
+            <VSButton
+              className="mt-8"
+              disabled={assessmentLoading || item.completed}
+              onClick={() => {
+                void handleStartAssessment();
+              }}
+            >
+              {assessmentLoading
+                ? "Loading assessment..."
+                : item.completed
+                  ? "Training completed"
+                  : "Start assessment"}
+
+              {item.completed ? (
+                <CheckCircle2 className="h-4 w-4" />
+              ) : (
+                <ArrowRight className="h-4 w-4" />
+              )}
             </VSButton>
           </VSCardContent>
         </VSCard>
@@ -1275,6 +1903,7 @@ export function TrainingDetailPage({ trainingId }: { trainingId: string }) {
     </AppShell>
   );
 }
+
 
 // export function AccreditationPage() {
 //   return (

@@ -47,7 +47,6 @@ import { Route as VolunteerDashboardRouteImport } from './routes/volunteer/dashb
 import { Route as VolunteerMyEventsRouteImport } from './routes/volunteer/my-events'
 import { Route as VolunteerNotificationsRouteImport } from './routes/volunteer/notifications'
 import { Route as VolunteerProfileRouteImport } from './routes/volunteer/profile'
-import { Route as VolunteerTrainingRouteImport } from './routes/volunteer/training'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AdminCommitteesIndexRouteImport } from './routes/admin/committees/index'
 import { Route as AdminCommitteesCommitteeIdRouteImport } from './routes/admin/committees/$committeeId'
@@ -60,6 +59,7 @@ import { Route as AdminVolunteersVolunteerIdRouteImport } from './routes/admin/v
 import { Route as VolunteerCertificatesCertificateIdRouteImport } from './routes/volunteer/certificates/$certificateId'
 import { Route as VolunteerEventsIndexRouteImport } from './routes/volunteer/events/index'
 import { Route as VolunteerEventsEventIdRouteImport } from './routes/volunteer/events/$eventId'
+import { Route as VolunteerTrainingIndexRouteImport } from './routes/volunteer/training/index'
 import { Route as VolunteerTrainingTrainingIdRouteImport } from './routes/volunteer/training/$trainingId'
 import { Route as AdminTrainingTrainingIdQuestionsRouteImport } from './routes/admin/training/$trainingId/questions'
 
@@ -253,11 +253,6 @@ const VolunteerProfileRoute = VolunteerProfileRouteImport.update({
   path: '/volunteer/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VolunteerTrainingRoute = VolunteerTrainingRouteImport.update({
-  id: '/volunteer/training',
-  path: '/volunteer/training',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -321,11 +316,16 @@ const VolunteerEventsEventIdRoute = VolunteerEventsEventIdRouteImport.update({
   path: '/volunteer/events/$eventId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VolunteerTrainingIndexRoute = VolunteerTrainingIndexRouteImport.update({
+  id: '/volunteer/training/',
+  path: '/volunteer/training/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VolunteerTrainingTrainingIdRoute =
   VolunteerTrainingTrainingIdRouteImport.update({
-    id: '/$trainingId',
-    path: '/$trainingId',
-    getParentRoute: () => VolunteerTrainingRoute,
+    id: '/volunteer/training/$trainingId',
+    path: '/volunteer/training/$trainingId',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const AdminTrainingTrainingIdQuestionsRoute =
   AdminTrainingTrainingIdQuestionsRouteImport.update({
@@ -371,7 +371,6 @@ export interface FileRoutesByFullPath {
   '/volunteer/my-events': typeof VolunteerMyEventsRoute
   '/volunteer/notifications': typeof VolunteerNotificationsRoute
   '/volunteer/profile': typeof VolunteerProfileRoute
-  '/volunteer/training': typeof VolunteerTrainingRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/leader/': typeof LeaderIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -387,6 +386,7 @@ export interface FileRoutesByFullPath {
   '/admin/training/': typeof AdminTrainingIndexRoute
   '/admin/volunteers/': typeof AdminVolunteersIndexRoute
   '/volunteer/events/': typeof VolunteerEventsIndexRoute
+  '/volunteer/training/': typeof VolunteerTrainingIndexRoute
   '/admin/training/$trainingId/questions': typeof AdminTrainingTrainingIdQuestionsRoute
 }
 export interface FileRoutesByTo {
@@ -424,7 +424,6 @@ export interface FileRoutesByTo {
   '/volunteer/my-events': typeof VolunteerMyEventsRoute
   '/volunteer/notifications': typeof VolunteerNotificationsRoute
   '/volunteer/profile': typeof VolunteerProfileRoute
-  '/volunteer/training': typeof VolunteerTrainingRouteWithChildren
   '/admin': typeof AdminIndexRoute
   '/leader': typeof LeaderIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -440,6 +439,7 @@ export interface FileRoutesByTo {
   '/admin/training': typeof AdminTrainingIndexRoute
   '/admin/volunteers': typeof AdminVolunteersIndexRoute
   '/volunteer/events': typeof VolunteerEventsIndexRoute
+  '/volunteer/training': typeof VolunteerTrainingIndexRoute
   '/admin/training/$trainingId/questions': typeof AdminTrainingTrainingIdQuestionsRoute
 }
 export interface FileRoutesById {
@@ -480,7 +480,6 @@ export interface FileRoutesById {
   '/volunteer/my-events': typeof VolunteerMyEventsRoute
   '/volunteer/notifications': typeof VolunteerNotificationsRoute
   '/volunteer/profile': typeof VolunteerProfileRoute
-  '/volunteer/training': typeof VolunteerTrainingRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/leader/': typeof LeaderIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -496,6 +495,7 @@ export interface FileRoutesById {
   '/admin/training/': typeof AdminTrainingIndexRoute
   '/admin/volunteers/': typeof AdminVolunteersIndexRoute
   '/volunteer/events/': typeof VolunteerEventsIndexRoute
+  '/volunteer/training/': typeof VolunteerTrainingIndexRoute
   '/admin/training/$trainingId/questions': typeof AdminTrainingTrainingIdQuestionsRoute
 }
 export interface FileRouteTypes {
@@ -537,7 +537,6 @@ export interface FileRouteTypes {
     | '/volunteer/my-events'
     | '/volunteer/notifications'
     | '/volunteer/profile'
-    | '/volunteer/training'
     | '/admin/'
     | '/leader/'
     | '/.lovable/oauth/consent'
@@ -553,6 +552,7 @@ export interface FileRouteTypes {
     | '/admin/training/'
     | '/admin/volunteers/'
     | '/volunteer/events/'
+    | '/volunteer/training/'
     | '/admin/training/$trainingId/questions'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -590,7 +590,6 @@ export interface FileRouteTypes {
     | '/volunteer/my-events'
     | '/volunteer/notifications'
     | '/volunteer/profile'
-    | '/volunteer/training'
     | '/admin'
     | '/leader'
     | '/.lovable/oauth/consent'
@@ -606,6 +605,7 @@ export interface FileRouteTypes {
     | '/admin/training'
     | '/admin/volunteers'
     | '/volunteer/events'
+    | '/volunteer/training'
     | '/admin/training/$trainingId/questions'
   id:
     | '__root__'
@@ -645,7 +645,6 @@ export interface FileRouteTypes {
     | '/volunteer/my-events'
     | '/volunteer/notifications'
     | '/volunteer/profile'
-    | '/volunteer/training'
     | '/admin/'
     | '/leader/'
     | '/.lovable/oauth/consent'
@@ -661,6 +660,7 @@ export interface FileRouteTypes {
     | '/admin/training/'
     | '/admin/volunteers/'
     | '/volunteer/events/'
+    | '/volunteer/training/'
     | '/admin/training/$trainingId/questions'
   fileRoutesById: FileRoutesById
 }
@@ -682,10 +682,11 @@ export interface RootRouteChildren {
   VolunteerMyEventsRoute: typeof VolunteerMyEventsRoute
   VolunteerNotificationsRoute: typeof VolunteerNotificationsRoute
   VolunteerProfileRoute: typeof VolunteerProfileRoute
-  VolunteerTrainingRoute: typeof VolunteerTrainingRouteWithChildren
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   VolunteerEventsEventIdRoute: typeof VolunteerEventsEventIdRoute
+  VolunteerTrainingTrainingIdRoute: typeof VolunteerTrainingTrainingIdRoute
   VolunteerEventsIndexRoute: typeof VolunteerEventsIndexRoute
+  VolunteerTrainingIndexRoute: typeof VolunteerTrainingIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -956,13 +957,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VolunteerProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/volunteer/training': {
-      id: '/volunteer/training'
-      path: '/volunteer/training'
-      fullPath: '/volunteer/training'
-      preLoaderRoute: typeof VolunteerTrainingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
@@ -1047,12 +1041,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VolunteerEventsEventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/volunteer/training/': {
+      id: '/volunteer/training/'
+      path: '/volunteer/training'
+      fullPath: '/volunteer/training/'
+      preLoaderRoute: typeof VolunteerTrainingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/volunteer/training/$trainingId': {
       id: '/volunteer/training/$trainingId'
-      path: '/$trainingId'
+      path: '/volunteer/training/$trainingId'
       fullPath: '/volunteer/training/$trainingId'
       preLoaderRoute: typeof VolunteerTrainingTrainingIdRouteImport
-      parentRoute: typeof VolunteerTrainingRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/training/$trainingId/questions': {
       id: '/admin/training/$trainingId/questions'
@@ -1155,17 +1156,6 @@ const VolunteerCertificatesRouteWithChildren =
     VolunteerCertificatesRouteChildren,
   )
 
-interface VolunteerTrainingRouteChildren {
-  VolunteerTrainingTrainingIdRoute: typeof VolunteerTrainingTrainingIdRoute
-}
-
-const VolunteerTrainingRouteChildren: VolunteerTrainingRouteChildren = {
-  VolunteerTrainingTrainingIdRoute: VolunteerTrainingTrainingIdRoute,
-}
-
-const VolunteerTrainingRouteWithChildren =
-  VolunteerTrainingRoute._addFileChildren(VolunteerTrainingRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   R404Route: R404Route,
@@ -1184,10 +1174,11 @@ const rootRouteChildren: RootRouteChildren = {
   VolunteerMyEventsRoute: VolunteerMyEventsRoute,
   VolunteerNotificationsRoute: VolunteerNotificationsRoute,
   VolunteerProfileRoute: VolunteerProfileRoute,
-  VolunteerTrainingRoute: VolunteerTrainingRouteWithChildren,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   VolunteerEventsEventIdRoute: VolunteerEventsEventIdRoute,
+  VolunteerTrainingTrainingIdRoute: VolunteerTrainingTrainingIdRoute,
   VolunteerEventsIndexRoute: VolunteerEventsIndexRoute,
+  VolunteerTrainingIndexRoute: VolunteerTrainingIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

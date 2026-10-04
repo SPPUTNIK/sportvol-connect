@@ -4,11 +4,16 @@ import { TrainingDetailPage } from "@/components/app/FeaturePage";
 export const Route = createFileRoute("/volunteer/training/$trainingId")({
   component: TrainingDetailRoute,
   head: ({ params }) => ({
-    meta: [{ title: `Training · ${params.trainingId} | VolunSport Morocco` }],
+    meta: [
+      {
+        title: `Training · ${params.trainingId} | VolunSport Morocco`,
+      },
+    ],
   }),
 });
 
 function TrainingDetailRoute() {
   const { trainingId } = Route.useParams();
+
   return <TrainingDetailPage trainingId={trainingId} />;
 }
