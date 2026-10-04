@@ -2,13 +2,13 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 import { enforceProtectedRoute } from "../lib/auth-guards";
 
-export const Route = createFileRoute("/admin")({
+export const Route = createFileRoute("/volunteer")({
   beforeLoad: async ({ location }) => {
-    await enforceProtectedRoute(location.pathname, "admin");
+    await enforceProtectedRoute(location.pathname, "volunteer");
   },
-  component: AdminRoute,
+  component: VolunteerRoute,
 });
 
-function AdminRoute() {
+function VolunteerRoute() {
   return <Outlet />;
 }

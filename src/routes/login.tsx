@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useLocation, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
   Eye,
@@ -45,6 +45,8 @@ function Login() {
 function LoginContent() {
   const { user, profile, signIn, loading } = useAuth();
   const { next } = Route.useSearch();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -59,6 +61,8 @@ function LoginContent() {
   useEffect(() => {
     if (loading || !user || !profile) return;
 
+    if (location.pathname !== "/login") return;
+
     const roleDestination =
       profile.role === "admin"
         ? "/admin"
@@ -66,8 +70,13 @@ function LoginContent() {
           ? "/leader/dashboard"
           : "/volunteer/dashboard";
 
-    window.location.href = safeNext(next) ?? roleDestination;
-  }, [loading, user, profile, next]);
+    const destination = safeNext(next) ?? roleDestination;
+
+    navigate({
+      to: destination,
+      replace: true,
+    });
+  }, [loading, user, profile, next, navigate, location.pathname]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
