@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+
 import { TrainingDetailPage } from "@/components/app/FeaturePage";
 
 export const Route = createFileRoute("/volunteer/training/$trainingId")({

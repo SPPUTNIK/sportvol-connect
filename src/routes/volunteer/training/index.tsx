@@ -151,7 +151,7 @@ function TrainingPage() {
         {!loading && !error && modules.length > 0 && (
           <div className="grid gap-8 xl:grid-cols-[1fr_340px]">
             {/* =================================================
-                MODULES
+                MODULES...
             ================================================= */}
 
             <div className="space-y-5">
