@@ -308,6 +308,50 @@ export const committeeService = {
     profileId: string,
     eventRoleId?: string,
   ): Promise<DomainCommitteeMember> {
+    // Check whether this profile already has a committee membership.
+    const { data: existing, error: existingError } = await supabase
+      .from("committee_members")
+      .select("*")
+      .eq("committee_id", committeeId)
+      .eq("profile_id", profileId)
+      .maybeSingle();
+
+    if (existingError) {
+      throw new Error(existingError.message);
+    }
+
+    // If the member already exists, reactivate the existing record
+    // instead of creating a duplicate row.
+    if (existing) {
+      const existingMember = existing as CommitteeMembersRow;
+
+      if (existingMember.status !== "removed") {
+        throw new Error("This volunteer is already a member of this committee.");
+      }
+
+      const { data, error } = await supabase
+        .from("committee_members")
+        .update({
+          status: "assigned",
+          event_role_id: eventRoleId ?? null,
+          joined_at: new Date().toISOString(),
+        })
+        .eq("id", existingMember.id)
+        .select()
+        .maybeSingle();
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (!data) {
+        throw new Error("Failed to reactivate committee member.");
+      }
+
+      return this.mapMember(data as CommitteeMembersRow);
+    }
+
+    // No previous membership exists, so create a new one.
     const payload: CommitteeMembersInsert = {
       committee_id: committeeId,
       profile_id: profileId,
@@ -320,7 +364,13 @@ export const committeeService = {
       .select()
       .maybeSingle();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      throw new Error("Failed to add committee member.");
+    }
 
     return this.mapMember(data as CommitteeMembersRow);
   },

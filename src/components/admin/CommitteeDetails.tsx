@@ -37,6 +37,7 @@ import MemberAddForm from "./MemberAddForm";
 import CommitteeForm from "./CommitteeForm";
 import { formatStatus } from "./components/adminHelpers";
 
+
 type DetailedMember = {
   member: {
     id: string;
@@ -51,9 +52,11 @@ type DetailedMember = {
     first_name: string | null;
     last_name: string | null;
     avatar_url: string | null;
+    email?: string | null;
   };
   eventRoleId: string | null;
 };
+
 
 type Props = {
   committee: Committee;
@@ -436,10 +439,23 @@ export default function CommitteeDetails({
               <VSCardContent className="p-5">
                 <MemberAddForm
                   committeeId={committee.id}
-                  roles={roles}
-                  onAdded={async () => {
-                    setAdding(false);
+                  eventId={committee.eventId}
+                  existingMembers={activeMembers.map((item) => ({
+                    memberId: item.member.id,
+                    profile: {
+                      id: item.profile.id,
+                      first_name: item.profile.first_name,
+                      last_name: item.profile.last_name,
+                      avatar_url: item.profile.avatar_url,
+                    },
+                    eventRoleId: item.eventRoleId,
+                  }))}
+                  maxMembers={20}
+                  onSaved={async () => {
                     await refresh();
+                  }}
+                  onCancel={() => {
+                    setAdding(false);
                   }}
                 />
               </VSCardContent>
