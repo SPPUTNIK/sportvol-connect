@@ -2,12 +2,13 @@ import { Link } from "@tanstack/react-router";
 import { MapPin, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { Event } from "@/lib/types";
-import { eventCoverDefaults } from "@/lib/mock-data";
+
+const DEFAULT_EVENT_COVER = "/images/default-event-cover.jpg";
 
 export function EventCard({ event }: { event: Event }) {
   const filled = event.event_roles?.reduce((sum, role) => sum + role.filled_positions, 0) ?? 0;
   const available = event.total_volunteers_needed - filled;
-  const cover = event.cover_url ?? eventCoverDefaults[event.sport] ?? eventCoverDefaults.Running;
+  const cover = event.cover_url ?? DEFAULT_EVENT_COVER;
 
   return (
     <Card className="group overflow-hidden">

@@ -20,7 +20,6 @@ import {
   VSStatusBadge,
 } from "@/components/design-system";
 import { useAuth } from "@/lib/auth";
-import { eventCoverDefaults } from "@/lib/mock-data";
 import type { Event } from "@/lib/types";
 import { applicationService } from "@/services/volunteer/applicationService";
 import { eventService } from "@/services/shared/eventService";
@@ -141,7 +140,7 @@ function EventDetails() {
       </AppShell>
     );
 
-  const cover = event.cover_url ?? eventCoverDefaults[event.sport] ?? eventCoverDefaults.Running;
+  const cover = event.cover_url ?? "/images/default-event-cover.jpg";
   const filled = event.event_roles?.reduce((sum, role) => sum + role.filled_positions, 0) ?? 0;
   const remaining = event.total_volunteers_needed - filled;
   const handleSubmit = async (submitEvent: React.FormEvent<HTMLFormElement>) => {

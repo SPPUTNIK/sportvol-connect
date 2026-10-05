@@ -442,17 +442,6 @@ function Accreditation() {
                         </VSButton>
                       </div>
 
-                      {/* CREDENTIAL CODE */}
-
-                      {accreditation.qr_code_data && (
-                        <div className="mt-4 w-full min-w-0 rounded-2xl border border-border bg-muted/30 p-4">
-                          <p className="text-xs font-semibold text-foreground">Credential code</p>
-
-                          <p className="mt-2 max-w-full break-all font-mono text-[11px] leading-5 text-muted-foreground">
-                            {accreditation.qr_code_data}
-                          </p>
-                        </div>
-                      )}
 
                       {/* PRIVACY */}
 

@@ -235,55 +235,104 @@ $$;
 CREATE FUNCTION public.handle_new_user() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'public'
-    AS $$begin
-
-  insert into public.profiles (
-    id,
-    email,
-    role,
-    status,
-    first_name,
-    last_name,
-    date_of_birth,
-    phone,
-    city,
-    country
-  )
-  values (
-    new.id,
-    new.email,
-    'volunteer',
-    'active',
-
-    nullif(new.raw_user_meta_data ->> 'first_name', ''),
-    nullif(new.raw_user_meta_data ->> 'last_name', ''),
-
-    nullif(
-      new.raw_user_meta_data ->> 'date_of_birth',
-      ''
-    )::date,
-
-    nullif(new.raw_user_meta_data ->> 'phone', ''),
-    nullif(new.raw_user_meta_data ->> 'city', ''),
-
-    coalesce(
-      nullif(new.raw_user_meta_data ->> 'country', ''),
-      'Morocco'
-    )
-  );
-
-  return new;
-
-exception
-  when others then
-
-    raise warning
-      'Unable to create profile for user %: %',
-      new.id,
-      sqlerrm;
-
-    return new;
-
+    AS $$begin
+
+
+
+  insert into public.profiles (
+
+    id,
+
+    email,
+
+    role,
+
+    status,
+
+    first_name,
+
+    last_name,
+
+    date_of_birth,
+
+    phone,
+
+    city,
+
+    country
+
+  )
+
+  values (
+
+    new.id,
+
+    new.email,
+
+    'volunteer',
+
+    'active',
+
+
+
+    nullif(new.raw_user_meta_data ->> 'first_name', ''),
+
+    nullif(new.raw_user_meta_data ->> 'last_name', ''),
+
+
+
+    nullif(
+
+      new.raw_user_meta_data ->> 'date_of_birth',
+
+      ''
+
+    )::date,
+
+
+
+    nullif(new.raw_user_meta_data ->> 'phone', ''),
+
+    nullif(new.raw_user_meta_data ->> 'city', ''),
+
+
+
+    coalesce(
+
+      nullif(new.raw_user_meta_data ->> 'country', ''),
+
+      'Morocco'
+
+    )
+
+  );
+
+
+
+  return new;
+
+
+
+exception
+
+  when others then
+
+
+
+    raise warning
+
+      'Unable to create profile for user %: %',
+
+      new.id,
+
+      sqlerrm;
+
+
+
+    return new;
+
+
+
 end;$$;
 
 
@@ -328,16 +377,26 @@ $$;
 CREATE FUNCTION public.is_committee_leader_for_shift(p_shift_id uuid) RETURNS boolean
     LANGUAGE sql STABLE SECURITY DEFINER
     SET search_path TO 'public'
-    AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM public.committee_shifts cs
-    INNER JOIN public.committees c
-      ON c.id = cs.committee_id
-    WHERE cs.shift_id = p_shift_id
-      AND c.leader_profile_id = auth.uid()
-      AND c.status = 'active'::public.committee_status
-  );
+    AS $$
+
+  SELECT EXISTS (
+
+    SELECT 1
+
+    FROM public.committee_shifts cs
+
+    INNER JOIN public.committees c
+
+      ON c.id = cs.committee_id
+
+    WHERE cs.shift_id = p_shift_id
+
+      AND c.leader_profile_id = auth.uid()
+
+      AND c.status = 'active'::public.committee_status
+
+  );
+
 $$;
 
 
@@ -366,16 +425,26 @@ $$;
 CREATE FUNCTION public.is_committee_member_for_shift(p_shift_id uuid) RETURNS boolean
     LANGUAGE sql STABLE SECURITY DEFINER
     SET search_path TO 'public'
-    AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM public.committee_shifts cs
-    INNER JOIN public.committee_members cm
-      ON cm.committee_id = cs.committee_id
-    WHERE cs.shift_id = p_shift_id
-      AND cm.profile_id = auth.uid()
-      AND cm.status = 'assigned'::public.committee_member_status
-  );
+    AS $$
+
+  SELECT EXISTS (
+
+    SELECT 1
+
+    FROM public.committee_shifts cs
+
+    INNER JOIN public.committee_members cm
+
+      ON cm.committee_id = cs.committee_id
+
+    WHERE cs.shift_id = p_shift_id
+
+      AND cm.profile_id = auth.uid()
+
+      AND cm.status = 'assigned'::public.committee_member_status
+
+  );
+
 $$;
 
 
@@ -385,24 +454,42 @@ $$;
 
 CREATE FUNCTION public.protect_application_fields() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$BEGIN
-
-  IF TG_OP = 'UPDATE' THEN
-
-    IF NEW.profile_id IS DISTINCT FROM OLD.profile_id THEN
-      RAISE EXCEPTION 'You cannot change the application owner.';
-    END IF;
-
-    IF NOT public.is_admin() THEN
-      IF NEW.status IS DISTINCT FROM OLD.status THEN
-        RAISE EXCEPTION 'You cannot change the application status.';
-      END IF;
-    END IF;
-
-  END IF;
-
-  RETURN NEW;
-
+    AS $$BEGIN
+
+
+
+  IF TG_OP = 'UPDATE' THEN
+
+
+
+    IF NEW.profile_id IS DISTINCT FROM OLD.profile_id THEN
+
+      RAISE EXCEPTION 'You cannot change the application owner.';
+
+    END IF;
+
+
+
+    IF NOT public.is_admin() THEN
+
+      IF NEW.status IS DISTINCT FROM OLD.status THEN
+
+        RAISE EXCEPTION 'You cannot change the application status.';
+
+      END IF;
+
+    END IF;
+
+
+
+  END IF;
+
+
+
+  RETURN NEW;
+
+
+
 END;$$;
 
 
@@ -413,38 +500,247 @@ END;$$;
 CREATE FUNCTION public.protect_profile_fields() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'public'
-    AS $$
-BEGIN
-
-  -- Never allow changing profile ID
-  NEW.id := OLD.id;
-
-  -- Only protect role from non-admin users
-  IF NOT public.is_admin() THEN
-    NEW.role := OLD.role;
-  END IF;
-
-  -- Never allow public users to change account status
-  IF NOT public.is_admin() THEN
-    NEW.status := OLD.status;
-  END IF;
-
-  -- Email should follow auth.users
-  NEW.email := OLD.email;
-
-  -- System-managed fields
-  NEW.volunteer_hours := OLD.volunteer_hours;
-  NEW.attendance_rate := OLD.attendance_rate;
-
-  -- Keep original creation date
-  NEW.created_at := OLD.created_at;
-
-  -- Always refresh updated_at
-  NEW.updated_at := now();
-
-  RETURN NEW;
-
-END;
+    AS $$
+
+BEGIN
+
+
+
+  -- Never allow changing profile ID
+
+  NEW.id := OLD.id;
+
+
+
+  -- Only protect role from non-admin users
+
+  IF NOT public.is_admin() THEN
+
+    NEW.role := OLD.role;
+
+  END IF;
+
+
+
+  -- Never allow public users to change account status
+
+  IF NOT public.is_admin() THEN
+
+    NEW.status := OLD.status;
+
+  END IF;
+
+
+
+  -- Email should follow auth.users
+
+  NEW.email := OLD.email;
+
+
+
+  -- System-managed fields
+
+  NEW.volunteer_hours := OLD.volunteer_hours;
+
+  NEW.attendance_rate := OLD.attendance_rate;
+
+
+
+  -- Keep original creation date
+
+  NEW.created_at := OLD.created_at;
+
+
+
+  -- Always refresh updated_at
+
+  NEW.updated_at := now();
+
+
+
+  RETURN NEW;
+
+
+
+END;
+
+$$;
+
+
+--
+-- Name: calculate_attendance_hours(time without time zone, time without time zone); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.calculate_attendance_hours(p_check_in_time time without time zone, p_check_out_time time without time zone) RETURNS integer
+    LANGUAGE sql
+    AS $$
+  SELECT CASE
+    WHEN p_check_in_time IS NULL OR p_check_out_time IS NULL THEN 0
+    WHEN p_check_out_time < p_check_in_time THEN 0
+    ELSE CAST(ROUND(EXTRACT(EPOCH FROM (p_check_out_time - p_check_in_time)) / 3600.0)::numeric AS integer)
+  END;
+$$;
+
+
+--
+-- Name: sync_volunteer_hours(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.sync_volunteer_hours() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+DECLARE
+  previous_hours integer := 0;
+  next_hours integer := 0;
+  delta_hours integer := 0;
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.check_in_time IS NULL OR NEW.check_out_time IS NULL THEN
+      RETURN NEW;
+    END IF;
+
+    next_hours := public.calculate_attendance_hours(NEW.check_in_time, NEW.check_out_time);
+    IF next_hours > 0 THEN
+      UPDATE public.profiles
+      SET volunteer_hours = volunteer_hours + next_hours
+      WHERE id = NEW.profile_id;
+
+      INSERT INTO public.volunteer_hours (
+        profile_id,
+        event_id,
+        shift_id,
+        attendance_id,
+        hours,
+        approval_notes,
+        year
+      )
+      VALUES (
+        NEW.profile_id,
+        NEW.event_id,
+        NEW.shift_id,
+        NEW.id,
+        next_hours,
+        'Auto-calculated from attendance check-in/check-out',
+        EXTRACT(YEAR FROM NEW.date)::integer
+      )
+      ON CONFLICT (attendance_id) WHERE attendance_id IS NOT NULL
+      DO UPDATE SET
+        profile_id = EXCLUDED.profile_id,
+        event_id = EXCLUDED.event_id,
+        shift_id = EXCLUDED.shift_id,
+        hours = EXCLUDED.hours,
+        year = EXCLUDED.year,
+        approval_notes = EXCLUDED.approval_notes,
+        updated_at = now();
+    END IF;
+
+    RETURN NEW;
+  END IF;
+
+  IF TG_OP = 'UPDATE' THEN
+    previous_hours := public.calculate_attendance_hours(OLD.check_in_time, OLD.check_out_time);
+    next_hours := public.calculate_attendance_hours(NEW.check_in_time, NEW.check_out_time);
+    delta_hours := next_hours - previous_hours;
+
+    IF delta_hours <> 0 THEN
+      UPDATE public.profiles
+      SET volunteer_hours = volunteer_hours + delta_hours
+      WHERE id = NEW.profile_id;
+    END IF;
+
+    INSERT INTO public.volunteer_hours (
+      profile_id,
+      event_id,
+      shift_id,
+      attendance_id,
+      hours,
+      approval_notes,
+      year
+    )
+    VALUES (
+      NEW.profile_id,
+      NEW.event_id,
+      NEW.shift_id,
+      NEW.id,
+      next_hours,
+      'Auto-calculated from attendance check-in/check-out',
+      EXTRACT(YEAR FROM NEW.date)::integer
+    )
+    ON CONFLICT (attendance_id) WHERE attendance_id IS NOT NULL
+    DO UPDATE SET
+      profile_id = EXCLUDED.profile_id,
+      event_id = EXCLUDED.event_id,
+      shift_id = EXCLUDED.shift_id,
+      hours = EXCLUDED.hours,
+      year = EXCLUDED.year,
+      approval_notes = EXCLUDED.approval_notes,
+      updated_at = now();
+
+    RETURN NEW;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: recalculate_attendance_rate(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.recalculate_attendance_rate(p_profile_id uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+DECLARE
+  total_records integer := 0;
+  attended_records integer := 0;
+BEGIN
+  SELECT COUNT(*) INTO total_records
+  FROM public.attendance_records
+  WHERE profile_id = p_profile_id;
+
+  IF total_records = 0 THEN
+    UPDATE public.profiles
+    SET attendance_rate = 0
+    WHERE id = p_profile_id;
+    RETURN;
+  END IF;
+
+  SELECT COUNT(*) INTO attended_records
+  FROM public.attendance_records
+  WHERE profile_id = p_profile_id
+    AND status IN ('checked-in'::public.attendance_status, 'checked-out'::public.attendance_status, 'late'::public.attendance_status);
+
+  UPDATE public.profiles
+  SET attendance_rate = ROUND((attended_records::numeric / total_records::numeric) * 100, 2)
+  WHERE id = p_profile_id;
+END;
+$$;
+
+
+--
+-- Name: sync_attendance_rate(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.sync_attendance_rate() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    PERFORM public.recalculate_attendance_rate(OLD.profile_id);
+    RETURN OLD;
+  END IF;
+
+  IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
+    PERFORM public.recalculate_attendance_rate(NEW.profile_id);
+    RETURN NEW;
+  END IF;
+
+  RETURN NEW;
+END;
 $$;
 
 
@@ -487,11 +783,16 @@ $$;
 
 CREATE FUNCTION public.trigger_set_updated_at() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$
-begin
-  new.updated_at = now();
-  return new;
-end;
+    AS $$
+
+begin
+
+  new.updated_at = now();
+
+  return new;
+
+end;
+
 $$;
 
 
@@ -502,36 +803,66 @@ $$;
 CREATE FUNCTION public.validate_committee_shift_event() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'public'
-    AS $$
-DECLARE
-  committee_event_id uuid;
-  shift_event_id uuid;
-BEGIN
-  SELECT c.event_id
-  INTO committee_event_id
-  FROM public.committees c
-  WHERE c.id = NEW.committee_id;
-
-  SELECT s.event_id
-  INTO shift_event_id
-  FROM public.event_shifts s
-  WHERE s.id = NEW.shift_id;
-
-  IF committee_event_id IS NULL THEN
-    RAISE EXCEPTION 'Committee % does not exist', NEW.committee_id;
-  END IF;
-
-  IF shift_event_id IS NULL THEN
-    RAISE EXCEPTION 'Shift % does not exist', NEW.shift_id;
-  END IF;
-
-  IF committee_event_id <> shift_event_id THEN
-    RAISE EXCEPTION
-      'Committee and shift must belong to the same event';
-  END IF;
-
-  RETURN NEW;
-END;
+    AS $$
+
+DECLARE
+
+  committee_event_id uuid;
+
+  shift_event_id uuid;
+
+BEGIN
+
+  SELECT c.event_id
+
+  INTO committee_event_id
+
+  FROM public.committees c
+
+  WHERE c.id = NEW.committee_id;
+
+
+
+  SELECT s.event_id
+
+  INTO shift_event_id
+
+  FROM public.event_shifts s
+
+  WHERE s.id = NEW.shift_id;
+
+
+
+  IF committee_event_id IS NULL THEN
+
+    RAISE EXCEPTION 'Committee % does not exist', NEW.committee_id;
+
+  END IF;
+
+
+
+  IF shift_event_id IS NULL THEN
+
+    RAISE EXCEPTION 'Shift % does not exist', NEW.shift_id;
+
+  END IF;
+
+
+
+  IF committee_event_id <> shift_event_id THEN
+
+    RAISE EXCEPTION
+
+      'Committee and shift must belong to the same event';
+
+  END IF;
+
+
+
+  RETURN NEW;
+
+END;
+
 $$;
 
 
@@ -1767,6 +2098,7 @@ CREATE INDEX volunteer_hours_profile_id_idx ON public.volunteer_hours USING btre
 --
 
 CREATE INDEX volunteer_hours_year_idx ON public.volunteer_hours USING btree (year);
+CREATE UNIQUE INDEX volunteer_hours_attendance_id_unique_idx ON public.volunteer_hours USING btree (attendance_id) WHERE (attendance_id IS NOT NULL);
 
 
 --
@@ -1788,6 +2120,20 @@ CREATE TRIGGER applications_set_updated_at BEFORE UPDATE ON public.applications 
 --
 
 CREATE TRIGGER attendance_records_set_updated_at BEFORE UPDATE ON public.attendance_records FOR EACH ROW EXECUTE FUNCTION public.trigger_set_updated_at();
+
+
+--
+-- Name: attendance_records attendance_records_sync_attendance_rate; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER attendance_records_sync_attendance_rate AFTER INSERT OR UPDATE OF status OR DELETE ON public.attendance_records FOR EACH ROW EXECUTE FUNCTION public.sync_attendance_rate();
+
+
+--
+-- Name: attendance_records attendance_records_sync_volunteer_hours; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER attendance_records_sync_volunteer_hours AFTER INSERT OR UPDATE OF check_in_time, check_out_time ON public.attendance_records FOR EACH ROW EXECUTE FUNCTION public.sync_volunteer_hours();
 
 
 --

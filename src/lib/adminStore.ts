@@ -1,6 +1,5 @@
 import { useSyncExternalStore } from "react";
 
-import { adminEvents, adminRoles, adminShifts } from "@/mocks/adminDemo";
 import { createSlug } from "@/components/admin/components/adminHelpers";
 
 export type AdminEventRecord = {
@@ -58,49 +57,9 @@ function uid(prefix: string) {
 }
 
 let state: AdminState = {
-  events: adminEvents.map((event) => ({
-    id: event.id,
-    title: event.title,
-    slug: event.slug,
-    sport: event.sport,
-    city: event.city,
-    country: event.country,
-    venue: event.venue,
-    date: event.start_date,
-    startDate: event.start_date,
-    endDate: event.end_date,
-    startTime: event.start_time,
-    endTime: event.end_time,
-    applicationDeadline: event.application_deadline,
-    totalVolunteersNeeded: event.total_volunteers_needed,
-    description: event.description,
-    status: event.status.toLowerCase(),
-    volunteers: event.volunteers,
-  })),
-
-  roles: adminRoles.map((role) => ({
-    id: role.id,
-    name: role.name,
-    eventId: role.event_id,
-    event: role.event,
-    description: role.description,
-    volunteers: role.volunteers,
-    required: role.required,
-  })),
-
-  shifts: adminShifts.map((shift) => ({
-    id: shift.id,
-    eventId: shift.eventId,
-    event: shift.event,
-    roleId: shift.roleId,
-    role: shift.role,
-    date: shift.date,
-    startTime: shift.startTime,
-    endTime: shift.endTime,
-    location: shift.location,
-    volunteers: shift.volunteers,
-    capacity: shift.capacity,
-  })),
+  events: [],
+  roles: [],
+  shifts: [],
 };
 
 const listeners = new Set<() => void>();

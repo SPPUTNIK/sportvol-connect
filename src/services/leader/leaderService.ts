@@ -169,6 +169,44 @@ function getDisplayName(
   return fullName || "Volunteer";
 }
 
+function getMoroccoCalendarDate(date = new Date()) {
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Africa/Casablanca",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+function isLeaderFeedExpired(eventEndDate: string | null | undefined, graceDays = 1): boolean {
+  if (!eventEndDate) {
+    return false;
+  }
+
+  const currentDate = new Date(`${getMoroccoCalendarDate()}T00:00:00`);
+  const cutoffDate = new Date(`${eventEndDate}T00:00:00`);
+  cutoffDate.setDate(cutoffDate.getDate() + graceDays);
+
+  return currentDate.getTime() > cutoffDate.getTime();
+}
+
+function isLeaderShiftExpired(shiftDate: string | null | undefined, endTime: string | null | undefined, graceDays = 1): boolean {
+  if (!shiftDate) {
+    return false;
+  }
+
+  const normalizedEndTime = String(endTime ?? "").trim();
+  const shiftEndValue = normalizedEndTime.includes(":") ? normalizedEndTime : `${normalizedEndTime}:00`;
+  const endDateTime = new Date(`${shiftDate}T${shiftEndValue || "00:00:00"}`);
+
+  if (Number.isNaN(endDateTime.getTime())) {
+    return false;
+  }
+
+  const cutoffTime = endDateTime.getTime() + 1000 * 60 * 60 * 24 * graceDays;
+  return Date.now() > cutoffTime;
+}
+
 /**
  * Returns the current date/time in Morocco.
  *
@@ -537,6 +575,8 @@ export const leaderService = {
         `)
         .in("id", eventIds);
 
+    const visibleEvents = (events ?? []).filter((event) => !isLeaderFeedExpired(event.end_date, 1));
+
     if (error) {
       console.error(
         "Failed to load leader events:",
@@ -570,7 +610,7 @@ export const leaderService = {
       );
     }
 
-    return events
+    return visibleEvents
       .map((event) => {
         const eventCommittees =
           committeesByEvent.get(
@@ -1341,6 +1381,10 @@ export const leaderService = {
           item,
         );
 
+        continue;
+      }
+
+      if (isLeaderShiftExpired(shift.date, shift.end_time, 1)) {
         continue;
       }
 
