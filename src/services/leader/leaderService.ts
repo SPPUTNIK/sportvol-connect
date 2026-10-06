@@ -2514,13 +2514,37 @@ export const leaderService = {
       };
     }
 
-    const profile =
-      accreditation.profile ??
-      null;
+    const {
+      data: profile,
+      error: profileError,
+    } = await supabase
+      .from("profiles")
+      .select(`
+        id,
+        first_name,
+        last_name,
+        avatar_url
+      `)
+      .eq("id", accreditation.profile_id)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error(
+        "Accreditation profile lookup failed:",
+        profileError,
+      );
+
+      return {
+        ok: false,
+        reason:
+          "PROFILE_NOT_FOUND",
+      };
+    }
 
     if (!profile) {
       console.warn(
-        "Accreditation profile not found.",
+        "Accreditation profile not found for authorized volunteer:",
+        accreditation.profile_id,
       );
 
       return {
