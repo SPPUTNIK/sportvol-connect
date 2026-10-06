@@ -2342,6 +2342,26 @@ export const leaderService = {
     const normalizedQrCode =
       qrCode.trim();
 
+    const normalizeQrValue = (value: string | null | undefined) =>
+      (value ?? "")
+        .toString()
+        .trim()
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toUpperCase();
+
+    const normalizedQrValue =
+      normalizeQrValue(normalizedQrCode);
+
+    const canonicalVolunteerQr = (
+      profileId: string,
+      eventId: string,
+      roleId: string,
+    ) => {
+      const seed = `${profileId}${eventId}${roleId}`.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+      const token = seed.slice(-6).padStart(6, "0");
+      return `VOL-${token}`;
+    };
+
     console.log(
       "QR lookup:",
       normalizedQrCode,
@@ -2350,56 +2370,53 @@ export const leaderService = {
     let accreditation: any =
       null;
 
-    const {
-      data: qrData,
-      error: qrError,
-    } = await supabase
-      .from("accreditations")
-      .select(`
-        id,
-        profile_id,
-        event_id,
-        role_id,
-        volunteer_identifier,
-        qr_code_data,
-        profile:profiles(
-          id,
-          first_name,
-          last_name,
-          avatar_url
-        )
-      `)
-      .in(
-        "event_id",
-        eventIds,
-      )
-      .eq(
-        "qr_code_data",
-        normalizedQrCode,
-      )
-      .maybeSingle();
+    const matchAccreditationRows = (rows: any[] = []) => {
+      return rows.find((item: any) => {
+        const legacyQr = `volunteer:${item.profile_id}:${item.event_id}:${item.role_id}`;
+        const values = [
+          item.qr_code_data,
+          item.volunteer_identifier,
+          item.profile_id,
+          legacyQr,
+          canonicalVolunteerQr(item.profile_id, item.event_id, item.role_id),
+        ];
 
-    if (qrError) {
-      console.error(
-        "QR lookup qr_code_data error:",
-        qrError,
-      );
-    }
+        return values.some(
+          (value) =>
+            normalizeQrValue(value) === normalizedQrValue,
+        );
+      });
+    };
 
-    accreditation =
-      qrData;
-
-    if (!accreditation) {
-      const {
-        data: identifierData,
-        error: identifierError,
-      } = await supabase
+    const [{ data: eventAccreditations, error: eventAccreditationsError }, { data: fallbackAccreditations, error: fallbackAccreditationsError }] = await Promise.all([
+      eventIds.length
+        ? supabase
+            .from("accreditations")
+            .select(`
+              id,
+              profile_id,
+              event_id,
+              role_id,
+              status,
+              volunteer_identifier,
+              qr_code_data,
+              profile:profiles(
+                id,
+                first_name,
+                last_name,
+                avatar_url
+              )
+            `)
+            .in("event_id", eventIds)
+        : Promise.resolve({ data: [], error: null }),
+      supabase
         .from("accreditations")
         .select(`
           id,
           profile_id,
           event_id,
           role_id,
+          status,
           volunteer_identifier,
           qr_code_data,
           profile:profiles(
@@ -2409,26 +2426,26 @@ export const leaderService = {
             avatar_url
           )
         `)
-        .in(
-          "event_id",
-          eventIds,
-        )
-        .eq(
-          "volunteer_identifier",
-          normalizedQrCode,
-        )
-        .maybeSingle();
+        .limit(500),
+    ]);
 
-      if (identifierError) {
-        console.error(
-          "QR lookup volunteer_identifier error:",
-          identifierError,
-        );
-      }
-
-      accreditation =
-        identifierData;
+    if (eventAccreditationsError) {
+      console.error(
+        "QR lookup event accreditations error:",
+        eventAccreditationsError,
+      );
     }
+
+    if (fallbackAccreditationsError) {
+      console.error(
+        "QR lookup fallback accreditations error:",
+        fallbackAccreditationsError,
+      );
+    }
+
+    accreditation =
+      matchAccreditationRows(eventAccreditations ?? []) ??
+      matchAccreditationRows(fallbackAccreditations ?? []);
 
     if (!accreditation) {
       console.warn(
@@ -2440,6 +2457,16 @@ export const leaderService = {
         ok: false,
         reason:
           "NO_ACCREDITATION",
+      };
+    }
+
+    if (
+      accreditation.status !== "approved"
+    ) {
+      return {
+        ok: false,
+        reason:
+          "ACCREDITATION_NOT_APPROVED",
       };
     }
 

@@ -195,6 +195,12 @@ export function AdminShiftAssignmentsPage() {
       });
   }, [dateFilter, search, shifts, sortOrder, timeFilter]);
 
+  const buildVolunteerQrCode = (profileId: string, eventId: string, roleId: string) => {
+    const seed = `${profileId}${eventId}${roleId}`.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+    const token = seed.slice(-6).padStart(6, "0");
+    return `VOL-${token}`;
+  };
+
   const handleAssignVolunteer = async (profileId: string, shiftId: string) => {
     if (!profileId || !shiftId) return;
 
@@ -209,13 +215,82 @@ export function AdminShiftAssignmentsPage() {
 
     try {
       setAddingVolunteerId(profileId);
-      const { error } = await supabase.from("shift_assignments").insert({
+      const { data: shiftData, error: shiftError } = await supabase
+        .from("event_shifts")
+        .select("event_id, role_id, date")
+        .eq("id", shiftId)
+        .maybeSingle();
+
+      if (shiftError) throw shiftError;
+
+      const { error: assignmentError } = await supabase.from("shift_assignments").insert({
         profile_id: profileId,
         shift_id: shiftId,
         status: "assigned",
       });
 
-      if (error) throw error;
+      if (assignmentError) throw assignmentError;
+
+      if (shiftData?.event_id && shiftData?.role_id) {
+        const { data: existingAccreditation, error: accreditationLookupError } = await supabase
+          .from("accreditations")
+          .select("id")
+          .eq("profile_id", profileId)
+          .eq("event_id", shiftData.event_id)
+          .eq("role_id", shiftData.role_id)
+          .maybeSingle();
+
+        if (accreditationLookupError) throw accreditationLookupError;
+
+        const isToday =
+          shiftData.date &&
+          new Date(`${shiftData.date}T00:00:00`).toDateString() === new Date().toDateString();
+
+        const nextStatus = isToday ? "approved" : "pending";
+
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("first_name, last_name, email")
+          .eq("id", profileId)
+          .maybeSingle();
+
+        if (profileError) throw profileError;
+
+        const volunteerIdentifier =
+          [profileData?.first_name, profileData?.last_name].filter(Boolean).join(" ").trim() ||
+          profileData?.email ||
+          profileId;
+
+        const canonicalQrCode = buildVolunteerQrCode(
+          profileId,
+          shiftData.event_id,
+          shiftData.role_id,
+        );
+
+        if (!existingAccreditation) {
+          const { error: accreditationError } = await supabase.from("accreditations").insert({
+            profile_id: profileId,
+            event_id: shiftData.event_id,
+            role_id: shiftData.role_id,
+            volunteer_identifier: volunteerIdentifier,
+            qr_code_data: canonicalQrCode,
+            status: nextStatus,
+          });
+
+          if (accreditationError) throw accreditationError;
+        } else {
+          const { error: updateError } = await supabase
+            .from("accreditations")
+            .update({
+              status: nextStatus,
+              qr_code_data: canonicalQrCode,
+              volunteer_identifier: volunteerIdentifier,
+            })
+            .eq("id", existingAccreditation.id);
+
+          if (updateError) throw updateError;
+        }
+      }
 
       setDraggedVolunteerId(null);
       await loadData();

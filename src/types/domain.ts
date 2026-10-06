@@ -535,6 +535,20 @@ export interface AdminTrainingSummary {
   publishedAt: string | null;
 }
 
+export interface AdminTrainingResultSummary {
+  id: string;
+  trainingId: string;
+  trainingTitle: string;
+  volunteerId: string;
+  volunteer: string;
+  avatarUrl: string | null;
+  score: number;
+  totalQuestions: number;
+  passed: boolean;
+  submittedAt: string | null;
+  completed: boolean;
+}
+
 // ============================================================
 // Admin Attendance
 // ============================================================

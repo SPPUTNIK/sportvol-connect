@@ -10,6 +10,7 @@ import type {
   AdminNotificationSummary,
   AdminReportSummary,
   AdminStats,
+  AdminTrainingResultSummary,
   AdminTrainingSummary,
   AdminVolunteerSummary,
 } from "@/types/domain";
@@ -818,6 +819,71 @@ export const adminService = {
    * TRAINING
    * ---------------------------------------------------------
    */
+
+  async getTrainingResults(trainingId?: string): Promise<AdminTrainingResultSummary[]> {
+    let query = supabase
+      .from("training_progress")
+      .select(`
+        id,
+        training_id,
+        profile_id,
+        score,
+        total_questions,
+        passed,
+        completed,
+        submitted_at,
+
+        profiles (
+          id,
+          first_name,
+          last_name,
+          avatar_url
+        ),
+
+        training_modules (
+          id,
+          title
+        )
+      `)
+      .order("submitted_at", { ascending: false });
+
+    if (trainingId) {
+      query = query.eq("training_id", trainingId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []).map((row) => {
+      const profile = Array.isArray(row.profiles)
+        ? row.profiles[0]
+        : row.profiles;
+
+      const module = Array.isArray(row.training_modules)
+        ? row.training_modules[0]
+        : row.training_modules;
+
+      return {
+        id: row.id,
+        trainingId: row.training_id,
+        trainingTitle: module?.title ?? "Training",
+        volunteerId: row.profile_id,
+        volunteer: fullName(
+          profile?.first_name,
+          profile?.last_name,
+        ),
+        avatarUrl: profile?.avatar_url ?? null,
+        score: Number(row.score ?? 0),
+        totalQuestions: Number(row.total_questions ?? 0),
+        passed: Boolean(row.passed),
+        submittedAt: row.submitted_at ?? null,
+        completed: Boolean(row.completed),
+      };
+    });
+  },
 
   async getTraining(): Promise<AdminTrainingSummary[]> {
     const { data: modules, error: modulesError } = await supabase

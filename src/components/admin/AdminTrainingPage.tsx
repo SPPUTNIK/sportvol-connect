@@ -30,6 +30,7 @@ import { adminService } from "@/services/admin/adminService";
 
 import type {
   AdminEventSummary,
+  AdminTrainingResultSummary,
   AdminTrainingSummary,
 } from "@/types/domain";
 
@@ -59,6 +60,7 @@ const initialForm: TrainingForm = {
 
 export function AdminTrainingPage() {
   const [training, setTraining] = useState<AdminTrainingSummary[]>([]);
+  const [trainingResults, setTrainingResults] = useState<AdminTrainingResultSummary[]>([]);
   const [events, setEvents] = useState<AdminEventSummary[]>([]);
 
   const [roles, setRoles] = useState<
@@ -88,14 +90,16 @@ export function AdminTrainingPage() {
     setError(null);
 
     try {
-      const [trainingData, eventData, roleData] =
+      const [trainingData, eventData, roleData, resultData] =
         await Promise.all([
           adminService.getTraining(),
           adminService.getEvents(),
           adminService.getRoles(),
+          adminService.getTrainingResults(),
         ]);
 
       setTraining(trainingData);
+      setTrainingResults(resultData);
       setEvents(eventData);
       setRoles(roleData);
     } catch (err) {
@@ -142,6 +146,18 @@ export function AdminTrainingPage() {
       ),
     [roles, form.eventId],
   );
+
+  const resultsByTrainingId = useMemo(() => {
+    const map = new Map<string, AdminTrainingResultSummary[]>();
+
+    trainingResults.forEach((result) => {
+      const current = map.get(result.trainingId) ?? [];
+      current.push(result);
+      map.set(result.trainingId, current);
+    });
+
+    return map;
+  }, [trainingResults]);
 
   /**
    * ---------------------------------------------------------
@@ -450,6 +466,66 @@ export function AdminTrainingPage() {
                       <p className="mt-2 text-xs text-muted-foreground">
                         {completion}% completion
                       </p>
+
+                      <div className="mt-5 rounded-xl border border-border bg-muted/20 p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                            Results
+                          </p>
+                          <span className="text-xs text-muted-foreground">
+                            {(resultsByTrainingId.get(item.id) ?? []).length} scores
+                          </span>
+                        </div>
+
+                        {(resultsByTrainingId.get(item.id) ?? []).length === 0 ? (
+                          <p className="mt-3 text-sm text-muted-foreground">
+                            No volunteer result submitted yet.
+                          </p>
+                        ) : (
+                          <div className="mt-3 space-y-2">
+                            {(resultsByTrainingId.get(item.id) ?? [])
+                              .slice(0, 3)
+                              .map((result) => (
+                                <div
+                                  key={result.id}
+                                  className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-2.5 py-2"
+                                >
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
+                                      {result.avatarUrl ? (
+                                        <img
+                                          src={result.avatarUrl}
+                                          alt={result.volunteer}
+                                          className="h-full w-full object-cover"
+                                        />
+                                      ) : (
+                                        result.volunteer
+                                          .split(" ")
+                                          .map((part) => part[0])
+                                          .join("")
+                                          .slice(0, 2)
+                                          .toUpperCase() || "V"
+                                      )}
+                                    </div>
+                                    <div className="min-w-0">
+                                      <p className="truncate text-sm font-medium">
+                                        {result.volunteer}
+                                      </p>
+                                      <p className="text-[11px] text-muted-foreground">
+                                        {result.submittedAt
+                                          ? new Date(result.submittedAt).toLocaleDateString()
+                                          : "No submission"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <span className="text-sm font-semibold">
+                                    {result.score}/{result.totalQuestions}
+                                  </span>
+                                </div>
+                              ))}
+                          </div>
+                        )}
+                      </div>
 
                       {/* Actions */}
                       <div className="mt-5 flex flex-wrap gap-2">
