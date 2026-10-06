@@ -6,6 +6,7 @@ import {
   CalendarDays,
   CheckCircle2,
   ClipboardList,
+  Database,
   FileBarChart,
   ShieldCheck,
   Users,
@@ -67,6 +68,7 @@ export function AdminDashboardPage() {
     ["Events", "/admin/events", CalendarDays],
     ["Applications", "/admin/applications", ClipboardList],
     ["Volunteers", "/admin/volunteers", Users],
+    ["Catalog", "/admin/catalog", Database],
     ["Reports", "/admin/reports", FileBarChart],
   ] as const;
 

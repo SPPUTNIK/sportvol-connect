@@ -222,6 +222,34 @@ export const committeeService = {
     if (error) throw new Error(error.message);
   },
 
+  async listCommitteeShifts(committeeId: string) {
+    const { data, error } = await supabase
+      .from("committee_shifts")
+      .select("id, committee_id, shift_id, created_at, shift:event_shifts(id, title, date, start_time, end_time, event_id)")
+      .eq("committee_id", committeeId)
+      .order("created_at", { ascending: false });
+
+    if (error) throw new Error(error.message);
+
+    return data ?? [];
+  },
+
+  async addCommitteeShift(committeeId: string, shiftId: string) {
+    const { data, error } = await supabase
+      .from("committee_shifts")
+      .insert({ committee_id: committeeId, shift_id: shiftId })
+      .select()
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    return data;
+  },
+
+  async removeCommitteeShift(id: string) {
+    const { error } = await supabase.from("committee_shifts").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+  },
+
   // Members
   async listMembers(committeeId: string): Promise<DomainCommitteeMember[]> {
     const { data, error } = await supabase

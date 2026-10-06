@@ -30,6 +30,7 @@ import {
 
 import type { Committee, CommitteeFeedback } from "@/types/domain";
 
+import { supabase } from "@/lib/supabase";
 import committeeService from "@/services/admin/committeeService";
 import { eventService } from "@/services/shared/eventService";
 
@@ -43,7 +44,7 @@ type DetailedMember = {
     id: string;
     committeeId: string;
     profileId: string;
-    eventRoleId: string | null;
+    eventRoleId?: string | null;
     status: string;
     joinedAt: string | null;
   };
@@ -72,8 +73,33 @@ export default function CommitteeDetails({
   const [members, setMembers] = useState<DetailedMember[]>([]);
   const [feedback, setFeedback] = useState<CommitteeFeedback[]>([]);
   const [roles, setRoles] = useState<Array<{ id: string; name: string }>>([]);
+  const [availableShifts, setAvailableShifts] = useState<Array<{ id: string; title: string; date: string; start_time: string; end_time: string }>>([]);
+  const [assignedShifts, setAssignedShifts] = useState<Array<{ id: string; shift_id: string; shift?: { id: string; title: string; date: string; start_time: string; end_time: string } | null }>>([]);
+  const [committeeShiftAssignments, setCommitteeShiftAssignments] = useState<Array<{
+    id: string;
+    profile_id: string;
+    shift_id: string;
+    status: string;
+    profiles?: {
+      id: string;
+      first_name: string | null;
+      last_name: string | null;
+      avatar_url: string | null;
+    } | null;
+    event_shifts?: {
+      id: string;
+      title: string;
+      date: string;
+      start_time: string;
+      end_time: string;
+    } | null;
+  }>>([]);
+  const [selectedShiftId, setSelectedShiftId] = useState("");
+  const [activeShiftId, setActiveShiftId] = useState<string | null>(null);
+  const [addingShift, setAddingShift] = useState(false);
 
   const [loading, setLoading] = useState(true);
+  const [leaderProfile, setLeaderProfile] = useState<{ id: string; first_name: string | null; last_name: string | null; avatar_url: string | null } | null>(null);
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -83,21 +109,73 @@ export default function CommitteeDetails({
     try {
       setLoading(true);
 
-      const [memberRows, feedbackRows, event] = await Promise.all([
+      const [memberRows, feedbackRows, event, shiftsResult, assignedResult] = await Promise.all([
         committeeService.listMembersDetailed(committee.id),
         committeeService.listFeedback(committee.id),
         eventService.getEventById(committee.eventId),
+        supabase
+          .from("event_shifts")
+          .select("id, title, date, start_time, end_time, event_id")
+          .eq("event_id", committee.eventId)
+          .order("date", { ascending: true }),
+        committeeService.listCommitteeShifts(committee.id),
       ]);
 
-      setMembers(
-        memberRows.map((item) => ({
-          member: item.member,
-          profile: item.profile,
-          eventRoleId: item.eventRoleId,
-        })),
-      );
+      if (committee.leaderProfileId) {
+        const { data: leaderRow } = await supabase
+          .from("profiles")
+          .select("id, first_name, last_name, avatar_url")
+          .eq("id", committee.leaderProfileId)
+          .maybeSingle();
 
+        setLeaderProfile(leaderRow ?? null);
+      } else {
+        setLeaderProfile(null);
+      }
+
+      const assignedShiftRows = (Array.isArray(assignedResult)
+        ? (assignedResult as unknown as Array<{ shift_id: string; id: string; shift?: { id: string; title: string; date: string; start_time: string; end_time: string } | null }>)
+        : []) as Array<{ shift_id: string; id: string; shift?: { id: string; title: string; date: string; start_time: string; end_time: string } | null }>;
+
+      const linkedShiftIds = assignedShiftRows.map((item) => item.shift_id).filter(Boolean);
+
+      let shiftAssignments: typeof committeeShiftAssignments = [];
+
+      if (linkedShiftIds.length > 0) {
+        const { data: assignmentRows, error: assignmentError } = await supabase
+          .from("shift_assignments")
+          .select(
+            "id, profile_id, shift_id, status, profiles!shift_assignments_profile_id_fkey(id, first_name, last_name, avatar_url), event_shifts!shift_assignments_shift_id_fkey(id, title, date, start_time, end_time)"
+          )
+          .in("shift_id", linkedShiftIds)
+          .eq("status", "assigned")
+          .order("assigned_at", { ascending: false });
+
+        if (assignmentError) {
+          throw assignmentError;
+        }
+
+        shiftAssignments = (assignmentRows ?? []) as typeof committeeShiftAssignments;
+      }
+
+      const mappedMembers: DetailedMember[] = memberRows.map((item) => ({
+        member: {
+          ...item.member,
+          eventRoleId: item.eventRoleId ?? null,
+        } as DetailedMember["member"],
+        profile: item.profile,
+        eventRoleId: item.eventRoleId ?? null,
+      }));
+
+      setMembers(mappedMembers);
       setFeedback(feedbackRows);
+      setAssignedShifts(assignedShiftRows as typeof assignedShifts);
+      setCommitteeShiftAssignments(shiftAssignments);
+      setAvailableShifts((shiftsResult.data ?? []) as typeof availableShifts);
+
+      if (!activeShiftId && shiftAssignments.length > 0) {
+        setActiveShiftId(shiftAssignments[0].shift_id);
+      }
 
       setRoles(
         (event?.event_roles ?? []).map(
@@ -123,10 +201,79 @@ export default function CommitteeDetails({
     void loadDetails();
   }, [loadDetails]);
 
+  const uniqueAssignedVolunteerIds = useMemo(() => {
+    const uniqueIds = new Set<string>();
+
+    committeeShiftAssignments.forEach((assignment) => {
+      if (assignment.profile_id) {
+        uniqueIds.add(assignment.profile_id);
+      }
+    });
+
+    return uniqueIds;
+  }, [committeeShiftAssignments]);
+
   const activeMembers = useMemo(
     () => members.filter((item) => item.member.status !== "removed"),
     [members],
   );
+
+  const memberShiftMap = useMemo(() => {
+    const map = new Map<string, Array<{ id: string; title: string; date: string; start_time: string; end_time: string }>>();
+
+    committeeShiftAssignments.forEach((assignment) => {
+      const profileId = assignment.profile_id;
+      const shift = assignment.event_shifts;
+
+      if (!profileId || !shift) return;
+
+      const existing = map.get(profileId) ?? [];
+      if (existing.some((current) => current.id === shift.id)) return;
+
+      map.set(profileId, [
+        ...existing,
+        {
+          id: shift.id,
+          title: shift.title,
+          date: shift.date,
+          start_time: shift.start_time,
+          end_time: shift.end_time,
+        },
+      ]);
+    });
+
+    return map;
+  }, [committeeShiftAssignments]);
+
+  const activeShift = useMemo(
+    () => assignedShifts.find((item) => item.shift_id === activeShiftId)?.shift ?? null,
+    [activeShiftId, assignedShifts],
+  );
+
+  const activeShiftMembers = useMemo(() => {
+    const uniqueMembers = new Map<string, {
+      id: string;
+      first_name: string | null;
+      last_name: string | null;
+      avatar_url: string | null;
+    }>();
+
+    committeeShiftAssignments
+      .filter((assignment) => assignment.shift_id === activeShiftId)
+      .forEach((assignment) => {
+        const profileId = assignment.profile_id;
+        if (!profileId) return;
+
+        uniqueMembers.set(profileId, {
+          id: profileId,
+          first_name: assignment.profiles?.first_name ?? null,
+          last_name: assignment.profiles?.last_name ?? null,
+          avatar_url: assignment.profiles?.avatar_url ?? null,
+        });
+      });
+
+    return Array.from(uniqueMembers.values());
+  }, [activeShiftId, committeeShiftAssignments]);
 
   const leader = committee.leaderProfileId;
 
@@ -136,7 +283,7 @@ export default function CommitteeDetails({
   };
 
   const handleStatusChange = async (
-    status: "draft" | "active" | "closed",
+    status: "active" | "inactive" | "archived",
   ) => {
     if (status === committee.status) return;
 
@@ -187,6 +334,24 @@ export default function CommitteeDetails({
       toast.error(message);
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleAddShift = async () => {
+    if (!selectedShiftId) return;
+
+    try {
+      setAddingShift(true);
+      await committeeService.addCommitteeShift(committee.id, selectedShiftId);
+      toast.success("Shift added to committee.");
+      setSelectedShiftId("");
+      await refresh();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to add shift.";
+      toast.error(message);
+    } finally {
+      setAddingShift(false);
     }
   };
 
@@ -318,7 +483,7 @@ export default function CommitteeDetails({
               onClick={() =>
                 void handleStatusChange(
                   committee.status === "active"
-                    ? "closed"
+                    ? "inactive"
                     : "active",
                 )
               }
@@ -326,7 +491,7 @@ export default function CommitteeDetails({
               {committee.status === "active" ? (
                 <>
                   <X className="h-4 w-4" />
-                  Close committee
+                  Deactivate committee
                 </>
               ) : (
                 <>
@@ -370,11 +535,11 @@ export default function CommitteeDetails({
             <div className="mt-5 grid gap-3 border-t border-border pt-5 sm:grid-cols-3">
               <div>
                 <p className="text-xs text-muted-foreground">
-                  Members
+                  Total members
                 </p>
 
                 <p className="mt-1 font-semibold">
-                  {activeMembers.length}
+                  {uniqueAssignedVolunteerIds.size}
                 </p>
               </div>
 
@@ -383,9 +548,26 @@ export default function CommitteeDetails({
                   Leader
                 </p>
 
-                <p className="mt-1 font-semibold">
-                  {leader ? "Assigned" : "Not assigned"}
-                </p>
+                {leaderProfile ? (
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
+                      {leaderProfile.avatar_url ? (
+                        <img
+                          src={leaderProfile.avatar_url}
+                          alt={`${leaderProfile.first_name ?? ""} ${leaderProfile.last_name ?? ""}`.trim() || "Committee leader"}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        `${leaderProfile.first_name?.charAt(0) ?? ""}${leaderProfile.last_name?.charAt(0) ?? ""}`.trim().toUpperCase() || "L"
+                      )}
+                    </div>
+                    <span className="font-semibold">
+                      {`${leaderProfile.first_name ?? ""} ${leaderProfile.last_name ?? ""}`.trim() || "Assigned"}
+                    </span>
+                  </div>
+                ) : (
+                  <p className="mt-1 font-semibold">Not assigned</p>
+                )}
               </div>
 
               <div>
@@ -401,198 +583,214 @@ export default function CommitteeDetails({
           </VSCardContent>
         </VSCard>
 
-        {/* Members */}
+
+
+        {/* Committee shifts */}
         <section>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <VSSectionHeader
-              title="Members"
-              description={`${activeMembers.length} active ${
-                activeMembers.length === 1
-                  ? "member"
-                  : "members"
-              }`}
+              title="Assigned shifts"
+              description="Review the event shifts linked to this committee."
             />
 
-            <VSButton
-              size="sm"
-              onClick={() =>
-                setAdding((value) => !value)
-              }
-            >
-              {adding ? (
-                <>
-                  <X className="h-4 w-4" />
-                  Cancel
-                </>
-              ) : (
-                <>
-                  <Plus className="h-4 w-4" />
-                  Add member
-                </>
-              )}
-            </VSButton>
+            
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <select
+                value={selectedShiftId}
+                onChange={(event) => setSelectedShiftId(event.target.value)}
+                className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-primary/20 sm:min-w-64"
+              >
+                <option value="">Select a shift</option>
+                {availableShifts
+                  .filter((shift) => !assignedShifts.some((assigned) => assigned.shift_id === shift.id))
+                  .map((shift) => (
+                    <option key={shift.id} value={shift.id}>
+                      {shift.title} · {shift.date} · {shift.start_time} - {shift.end_time}
+                    </option>
+                  ))}
+              </select>
+
+              <VSButton size="sm" onClick={() => void handleAddShift()} disabled={!selectedShiftId || addingShift}>
+                <Plus className="h-4 w-4" />
+                {addingShift ? "Adding…" : "Add shift"}
+              </VSButton>
+            </div>
           </div>
 
-          {/* Add member */}
-          {adding && (
-            <VSCard className="mb-5 rounded-[1.5rem] border-border">
-              <VSCardContent className="p-5">
-                <MemberAddForm
-                  committeeId={committee.id}
-                  eventId={committee.eventId}
-                  existingMembers={activeMembers.map((item) => ({
-                    memberId: item.member.id,
-                    profile: {
-                      id: item.profile.id,
-                      first_name: item.profile.first_name,
-                      last_name: item.profile.last_name,
-                      avatar_url: item.profile.avatar_url,
-                    },
-                    eventRoleId: item.eventRoleId,
-                  }))}
-                  maxMembers={20}
-                  onSaved={async () => {
-                    await refresh();
-                  }}
-                  onCancel={() => {
-                    setAdding(false);
-                  }}
-                />
-              </VSCardContent>
-            </VSCard>
-          )}
+          
 
-          {/* Loading */}
-          {loading ? (
-            <VSLoadingState message="Loading members…" />
-          ) : activeMembers.length === 0 ? (
-            <VSEmptyState
-              title="No members yet"
-              description="Add volunteers to this committee to get started."
-              action={
-                <VSButton
-                  size="sm"
-                  onClick={() => setAdding(true)}
-                >
-                  <Plus className="h-4 w-4" />
-                  Add member
-                </VSButton>
-              }
-            />
-          ) : (
-            <div className="grid gap-4 lg:grid-cols-2">
-              {activeMembers.map((item) => {
-                const name = getMemberName(item);
-                const initials = getMemberInitials(item);
-                const roleName = getRoleName(
-                  item.eventRoleId,
-                );
+          <div className="mt-4">
+            {loading ? (
+              <VSLoadingState message="Loading assigned shifts…" />
+            ) : (!committee || !committee.id) ? (
+              <VSEmptyState
+                title="No committee selected"
+                description="Select a committee to review its assigned shifts."
+              />
+            ) : (
+              <div className="space-y-4">
+                {assignedShifts.length === 0 ? (
+                  <VSEmptyState
+                    title="No shifts assigned"
+                    description="Add a shift to define this committee’s operational coverage."
+                  />
+                ) : (
+                  <>
+                    {assignedShifts.map((item) => {
+                      const isSelected = activeShiftId === item.shift_id;
+                      const shiftMembers = committeeShiftAssignments.filter((assignment) => assignment.shift_id === item.shift_id);
+                      const visibleMembers = shiftMembers.slice(0, 4);
 
-                return (
-                  <VSCard
-                    key={item.member.id}
-                    className="rounded-[1.5rem] border-border"
-                  >
-                    <VSCardContent className="p-5">
-                      <div className="flex items-start gap-4">
-                        {/* Avatar */}
-                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-muted">
-                          {item.profile.avatar_url ? (
-                            <img
-                              src={item.profile.avatar_url}
-                              alt={name}
-                              className="h-full w-full object-cover"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-primary/10 text-sm font-semibold text-primary">
-                              {initials}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Info */}
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                            <div className="min-w-0">
-                              <h3 className="truncate text-base font-semibold">
-                                {name}
-                              </h3>
-
-                              {item.profile.id && (
-                                <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-                                  <Shield className="h-3 w-3 shrink-0" />
-                                  Volunteer
+                      return (
+                        <VSCard
+                          key={item.id}
+                          className={`rounded-[1.5rem] border-border ${
+                            isSelected ? "ring-1 ring-primary/40" : ""
+                          }`}
+                        >
+                          <VSCardContent className="p-4">
+                            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <p className="text-sm font-semibold">{item.shift?.title ?? "Shift"}</p>
+                                  {isSelected && (
+                                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary">
+                                      Active
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                  {item.shift?.date ?? "—"} · {item.shift?.start_time ?? "--:--"} to {item.shift?.end_time ?? "--:--"}
                                 </p>
-                              )}
+
+                                <div className="mt-3 flex items-center gap-2">
+                                  {visibleMembers.length === 0 ? (
+                                    <span className="text-xs text-muted-foreground">No volunteers assigned yet</span>
+                                  ) : (
+                                    <>
+                                      <div className="flex -space-x-2">
+                                        {visibleMembers.map((assignment) => (
+                                          <div
+                                            key={`${assignment.id}-mini`}
+                                            className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border-2 border-background bg-primary/10 text-[9px] font-semibold text-primary"
+                                            title={`${assignment.profiles?.first_name ?? ""} ${assignment.profiles?.last_name ?? ""}`.trim() || "Volunteer"}
+                                          >
+                                            {assignment.profiles?.avatar_url ? (
+                                              <img
+                                                src={assignment.profiles.avatar_url}
+                                                alt={`${assignment.profiles?.first_name ?? ""} ${assignment.profiles?.last_name ?? ""}`.trim() || "Volunteer"}
+                                                className="h-full w-full object-cover"
+                                              />
+                                            ) : (
+                                              `${assignment.profiles?.first_name?.charAt(0) ?? ""}${assignment.profiles?.last_name?.charAt(0) ?? ""}`.trim().toUpperCase() || "V"
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                      <span className="text-xs text-muted-foreground">
+                                        {shiftMembers.length > visibleMembers.length
+                                          ? `${shiftMembers.length} volunteers assigned`
+                                          : `${shiftMembers.length} ${shiftMembers.length === 1 ? "volunteer" : "volunteers"}`}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+
+                                <VSButton
+                                  variant={isSelected ? "default" : "outline"}
+                                  size="sm"
+                                  onClick={() => setActiveShiftId(isSelected ? null : item.shift_id)}
+                                >
+                                  {isSelected ? "Hide details" : "View details"}
+                                </VSButton>
+
+                                { <VSButton
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={async () => {
+                                    const confirmed = window.confirm("Remove this shift assignment?");
+                                    if (!confirmed) return;
+
+                                    try {
+                                      await committeeService.removeCommitteeShift(item.id);
+                                      toast.success("Shift removed from committee.");
+                                      await refresh();
+                                    } catch (error) {
+                                      const message =
+                                        error instanceof Error
+                                          ? error.message
+                                          : "Failed to remove shift.";
+                                      toast.error(message);
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Remove
+                                </VSButton> }
+                              </div>
+                            </div>
+                          </VSCardContent>
+                        </VSCard>
+                      );
+                    })}
+
+                    {activeShift ? (
+                      <VSCard className="rounded-[1.5rem] border-border">
+                        <VSCardContent className="p-4">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                Selected shift members
+                              </p>
+                              <h4 className="mt-1 text-lg font-semibold">{activeShift.title}</h4>
                             </div>
 
-                            <VSStatusBadge
-                              status={formatStatus(
-                                item.member.status,
-                              )}
-                            />
-                          </div>
-
-                          {/* Role */}
-                          <div className="mt-4">
-                            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                              Event role
-                            </label>
-
-                            <select
-                              value={
-                                item.eventRoleId ?? ""
-                              }
-                              onChange={(event) =>
-                                void handleMemberRoleChange(
-                                  item.member.id,
-                                  event.target.value || null,
-                                )
-                              }
-                              className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-primary/20"
-                            >
-                              <option value="">
-                                No role assigned
-                              </option>
-
-                              {roles.map((role) => (
-                                <option
-                                  key={role.id}
-                                  value={role.id}
-                                >
-                                  {role.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div className="mt-3 flex items-center justify-between gap-3">
-                            <span className="text-xs text-muted-foreground">
-                              {roleName}
-                            </span>
-
-                            <VSButton
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                void handleRemoveMember(
-                                  item.member.profileId,
-                                )
-                              }
-                            >
-                              <UserMinus className="h-4 w-4" />
-                              Remove
+                            <VSButton variant="outline" size="sm" onClick={() => setActiveShiftId(null)}>
+                              Clear
                             </VSButton>
                           </div>
-                        </div>
-                      </div>
-                    </VSCardContent>
-                  </VSCard>
-                );
-              })}
-            </div>
-          )}
+
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            {activeShiftMembers.length === 0 ? (
+                              <p className="text-sm text-muted-foreground">
+                                No volunteers assigned to this shift yet.
+                              </p>
+                            ) : (
+                              activeShiftMembers.map((profile) => (
+                                <div
+                                  key={`${activeShift.id}-${profile.id}`}
+                                  className="flex items-center gap-2 rounded-full border border-border bg-background px-2.5 py-1.5"
+                                >
+                                  <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
+                                    {profile.avatar_url ? (
+                                      <img
+                                        src={profile.avatar_url}
+                                        alt={`${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim() || "Volunteer"}
+                                        className="h-full w-full object-cover"
+                                      />
+                                    ) : (
+                                      `${profile.first_name?.charAt(0) ?? ""}${profile.last_name?.charAt(0) ?? ""}`.trim().toUpperCase() || "V"
+                                    )}
+                                  </div>
+                                  <span className="text-sm font-medium">
+                                    {`${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim() || "Volunteer"}
+                                  </span>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </VSCardContent>
+                      </VSCard>
+                    ) : null}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </section>
 
         {/* Feedback */}

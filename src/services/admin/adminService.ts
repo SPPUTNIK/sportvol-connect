@@ -553,12 +553,13 @@ export const adminService = {
         phone,
         city,
         country,
+        role,
         volunteer_hours,
         attendance_rate,
         status,
         created_at
       `)
-      .eq("role", "volunteer")
+      .neq("role", "admin")
       .order("created_at", { ascending: false });
 
     if (profilesError) {
@@ -613,6 +614,7 @@ export const adminService = {
 
         email: profile.email,
         phone: profile.phone,
+        role: (profile.role as AdminVolunteerSummary["role"]) ?? "volunteer",
 
         city: profile.city ?? "",
         country: profile.country ?? "",
@@ -634,6 +636,16 @@ export const adminService = {
     });
   },
 
+  async updateUserRole(userId: string, role: "volunteer" | "leader") {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ role })
+      .eq("id", userId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  },
 
   async getVolunteerById(id: string) {
     const { data, error } = await supabase

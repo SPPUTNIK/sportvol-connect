@@ -24,6 +24,8 @@ import { Route as AdminAccreditationRouteImport } from './routes/admin/accredita
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as AdminApplicationsRouteImport } from './routes/admin/applications'
 import { Route as AdminAttendanceRouteImport } from './routes/admin/attendance'
+import { Route as AdminCatalogRouteImport } from './routes/admin/catalog'
+import { Route as AdminCertificatRouteImport } from './routes/admin/certificat'
 import { Route as AdminCertificatesRouteImport } from './routes/admin/certificates'
 import { Route as AdminHoursRouteImport } from './routes/admin/hours'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
@@ -31,6 +33,7 @@ import { Route as AdminNotificationsRouteImport } from './routes/admin/notificat
 import { Route as AdminProfileRouteImport } from './routes/admin/profile'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
 import { Route as AdminRolesRouteImport } from './routes/admin/roles'
+import { Route as AdminShiftAssignmentsRouteImport } from './routes/admin/shift-assignments'
 import { Route as AdminShiftsRouteImport } from './routes/admin/shifts'
 import { Route as LeaderIndexRouteImport } from './routes/leader/index'
 import { Route as LeaderDashboardRouteImport } from './routes/leader/dashboard'
@@ -139,6 +142,16 @@ const AdminAttendanceRoute = AdminAttendanceRouteImport.update({
   path: '/attendance',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCatalogRoute = AdminCatalogRouteImport.update({
+  id: '/catalog',
+  path: '/catalog',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCertificatRoute = AdminCertificatRouteImport.update({
+  id: '/certificat',
+  path: '/certificat',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCertificatesRoute = AdminCertificatesRouteImport.update({
   id: '/certificates',
   path: '/certificates',
@@ -172,6 +185,11 @@ const AdminReportsRoute = AdminReportsRouteImport.update({
 const AdminRolesRoute = AdminRolesRouteImport.update({
   id: '/roles',
   path: '/roles',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminShiftAssignmentsRoute = AdminShiftAssignmentsRouteImport.update({
+  id: '/shift-assignments',
+  path: '/shift-assignments',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminShiftsRoute = AdminShiftsRouteImport.update({
@@ -355,6 +373,8 @@ export interface FileRoutesByFullPath {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
+  '/admin/catalog': typeof AdminCatalogRoute
+  '/admin/certificat': typeof AdminCertificatRoute
   '/admin/certificates': typeof AdminCertificatesRoute
   '/admin/hours': typeof AdminHoursRoute
   '/admin/login': typeof AdminLoginRoute
@@ -362,6 +382,7 @@ export interface FileRoutesByFullPath {
   '/admin/profile': typeof AdminProfileRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/roles': typeof AdminRolesRoute
+  '/admin/shift-assignments': typeof AdminShiftAssignmentsRoute
   '/admin/shifts': typeof AdminShiftsRoute
   '/leader/dashboard': typeof LeaderDashboardRoute
   '/leader/event': typeof LeaderEventRoute
@@ -409,6 +430,8 @@ export interface FileRoutesByTo {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
+  '/admin/catalog': typeof AdminCatalogRoute
+  '/admin/certificat': typeof AdminCertificatRoute
   '/admin/certificates': typeof AdminCertificatesRoute
   '/admin/hours': typeof AdminHoursRoute
   '/admin/login': typeof AdminLoginRoute
@@ -416,6 +439,7 @@ export interface FileRoutesByTo {
   '/admin/profile': typeof AdminProfileRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/roles': typeof AdminRolesRoute
+  '/admin/shift-assignments': typeof AdminShiftAssignmentsRoute
   '/admin/shifts': typeof AdminShiftsRoute
   '/leader/dashboard': typeof LeaderDashboardRoute
   '/leader/event': typeof LeaderEventRoute
@@ -466,6 +490,8 @@ export interface FileRoutesById {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/applications': typeof AdminApplicationsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
+  '/admin/catalog': typeof AdminCatalogRoute
+  '/admin/certificat': typeof AdminCertificatRoute
   '/admin/certificates': typeof AdminCertificatesRoute
   '/admin/hours': typeof AdminHoursRoute
   '/admin/login': typeof AdminLoginRoute
@@ -473,6 +499,7 @@ export interface FileRoutesById {
   '/admin/profile': typeof AdminProfileRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/roles': typeof AdminRolesRoute
+  '/admin/shift-assignments': typeof AdminShiftAssignmentsRoute
   '/admin/shifts': typeof AdminShiftsRoute
   '/leader/dashboard': typeof LeaderDashboardRoute
   '/leader/event': typeof LeaderEventRoute
@@ -524,6 +551,8 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/applications'
     | '/admin/attendance'
+    | '/admin/catalog'
+    | '/admin/certificat'
     | '/admin/certificates'
     | '/admin/hours'
     | '/admin/login'
@@ -531,6 +560,7 @@ export interface FileRouteTypes {
     | '/admin/profile'
     | '/admin/reports'
     | '/admin/roles'
+    | '/admin/shift-assignments'
     | '/admin/shifts'
     | '/leader/dashboard'
     | '/leader/event'
@@ -578,6 +608,8 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/applications'
     | '/admin/attendance'
+    | '/admin/catalog'
+    | '/admin/certificat'
     | '/admin/certificates'
     | '/admin/hours'
     | '/admin/login'
@@ -585,6 +617,7 @@ export interface FileRouteTypes {
     | '/admin/profile'
     | '/admin/reports'
     | '/admin/roles'
+    | '/admin/shift-assignments'
     | '/admin/shifts'
     | '/leader/dashboard'
     | '/leader/event'
@@ -634,6 +667,8 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/applications'
     | '/admin/attendance'
+    | '/admin/catalog'
+    | '/admin/certificat'
     | '/admin/certificates'
     | '/admin/hours'
     | '/admin/login'
@@ -641,6 +676,7 @@ export interface FileRouteTypes {
     | '/admin/profile'
     | '/admin/reports'
     | '/admin/roles'
+    | '/admin/shift-assignments'
     | '/admin/shifts'
     | '/leader/dashboard'
     | '/leader/event'
@@ -797,6 +833,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAttendanceRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/catalog': {
+      id: '/admin/catalog'
+      path: '/catalog'
+      fullPath: '/admin/catalog'
+      preLoaderRoute: typeof AdminCatalogRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/certificat': {
+      id: '/admin/certificat'
+      path: '/certificat'
+      fullPath: '/admin/certificat'
+      preLoaderRoute: typeof AdminCertificatRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/certificates': {
       id: '/admin/certificates'
       path: '/certificates'
@@ -844,6 +894,13 @@ declare module '@tanstack/react-router' {
       path: '/roles'
       fullPath: '/admin/roles'
       preLoaderRoute: typeof AdminRolesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/shift-assignments': {
+      id: '/admin/shift-assignments'
+      path: '/shift-assignments'
+      fullPath: '/admin/shift-assignments'
+      preLoaderRoute: typeof AdminShiftAssignmentsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/shifts': {
@@ -1078,6 +1135,8 @@ interface AdminRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminApplicationsRoute: typeof AdminApplicationsRoute
   AdminAttendanceRoute: typeof AdminAttendanceRoute
+  AdminCatalogRoute: typeof AdminCatalogRoute
+  AdminCertificatRoute: typeof AdminCertificatRoute
   AdminCertificatesRoute: typeof AdminCertificatesRoute
   AdminHoursRoute: typeof AdminHoursRoute
   AdminLoginRoute: typeof AdminLoginRoute
@@ -1085,6 +1144,7 @@ interface AdminRouteChildren {
   AdminProfileRoute: typeof AdminProfileRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminRolesRoute: typeof AdminRolesRoute
+  AdminShiftAssignmentsRoute: typeof AdminShiftAssignmentsRoute
   AdminShiftsRoute: typeof AdminShiftsRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminCommitteesCommitteeIdRoute: typeof AdminCommitteesCommitteeIdRoute
@@ -1103,6 +1163,8 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminApplicationsRoute: AdminApplicationsRoute,
   AdminAttendanceRoute: AdminAttendanceRoute,
+  AdminCatalogRoute: AdminCatalogRoute,
+  AdminCertificatRoute: AdminCertificatRoute,
   AdminCertificatesRoute: AdminCertificatesRoute,
   AdminHoursRoute: AdminHoursRoute,
   AdminLoginRoute: AdminLoginRoute,
@@ -1110,6 +1172,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminProfileRoute: AdminProfileRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminRolesRoute: AdminRolesRoute,
+  AdminShiftAssignmentsRoute: AdminShiftAssignmentsRoute,
   AdminShiftsRoute: AdminShiftsRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminCommitteesCommitteeIdRoute: AdminCommitteesCommitteeIdRoute,

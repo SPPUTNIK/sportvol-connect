@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Plus,
   Users,
@@ -32,6 +32,7 @@ import type { Committee } from "@/types/domain";
 
 import CommitteeForm from "@/components/admin/CommitteeForm";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/admin/committees/")({
   component: AdminCommitteesRoute,
@@ -59,8 +60,9 @@ type CommitteeEvent = {
 };
 
 function AdminCommitteesRoute() {
-  const [committees, setCommittees] = useState<Committee[] | null>(null);
+  const [committees, setCommittees] = useState<Array<Committee & { leaderName?: string | null; leaderAvatarUrl?: string | null }> | null>(null);
   const [events, setEvents] = useState<CommitteeEvent[]>([]);
+  const [search, setSearch] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [eventsLoading, setEventsLoading] = useState(false);
@@ -69,8 +71,31 @@ function AdminCommitteesRoute() {
   const [selectedEventId, setSelectedEventId] = useState("");
 
   async function loadCommittees() {
-    const data = await committeeService.listCommittees();
-    setCommittees(data);
+    const { data, error } = await supabase
+      .from("committees")
+      .select(
+        "*, leader:profiles!committees_leader_profile_id_fkey(id, first_name, last_name, avatar_url)",
+      )
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    const mapped = (data ?? []).map((row: any) => {
+      const mappedCommittee = committeeService.mapCommittee(row as any);
+      const leader = row.leader ?? null;
+      return {
+        ...mappedCommittee,
+        leaderName:
+          leader && (leader.first_name || leader.last_name)
+            ? `${leader.first_name ?? ""} ${leader.last_name ?? ""}`.trim()
+            : null,
+        leaderAvatarUrl: leader?.avatar_url ?? null,
+      };
+    });
+
+    setCommittees(mapped);
   }
 
   async function openCreateModal() {
@@ -97,19 +122,16 @@ function AdminCommitteesRoute() {
 
     (async () => {
       try {
-        const data = await committeeService.listCommittees();
+        await loadCommittees();
 
         if (mounted) {
-          setCommittees(data);
+          setLoading(false);
         }
       } catch (error) {
         console.error("Failed to load committees:", error);
 
         if (mounted) {
           setCommittees([]);
-        }
-      } finally {
-        if (mounted) {
           setLoading(false);
         }
       }
@@ -119,6 +141,23 @@ function AdminCommitteesRoute() {
       mounted = false;
     };
   }, []);
+
+  const filteredCommittees = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    if (!committees) return [];
+    if (!query) return committees;
+
+    return committees.filter((committee) => {
+      const leaderName = (committee.leaderName ?? "").toLowerCase();
+      const eventTitle = events.find((item) => item.id === committee.eventId)?.title ?? "";
+      return (
+        committee.name.toLowerCase().includes(query) ||
+        leaderName.includes(query) ||
+        eventTitle.toLowerCase().includes(query)
+      );
+    });
+  }, [committees, events, search]);
 
   const total = committees?.length ?? 0;
 
@@ -244,10 +283,30 @@ function AdminCommitteesRoute() {
           </div>
         )}
 
+        <div className="mt-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">Committee list</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {filteredCommittees.length} {filteredCommittees.length === 1 ? "committee" : "committees"}
+              </p>
+            </div>
+
+            <div className="w-full max-w-sm">
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search by committee or leader name"
+                className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Committee cards */}
-        {!loading && committees && committees.length > 0 && (
+        {!loading && filteredCommittees.length > 0 && (
           <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {committees.map((committee) => {
+            {filteredCommittees.map((committee) => {
               const event = events.find(
                 (item) => item.id === committee.eventId,
               );
@@ -288,16 +347,29 @@ function AdminCommitteesRoute() {
                     </p>
 
                     <div className="mt-5 rounded-2xl bg-muted/40 p-4">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          Leader
-                        </span>
+                      <div className="flex items-center justify-between gap-3 text-sm">
+                        <span className="text-muted-foreground">Leader</span>
 
-                        <span className="font-medium">
-                          {committee.leaderProfileId
-                            ? "Assigned"
-                            : "Not assigned"}
-                        </span>
+                        {committee.leaderProfileId ? (
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
+                              {committee.leaderAvatarUrl ? (
+                                <img
+                                  src={committee.leaderAvatarUrl}
+                                  alt={committee.leaderName ?? "Committee leader"}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                (committee.leaderName ?? "L").slice(0, 2).toUpperCase()
+                              )}
+                            </div>
+                            <span className="font-medium text-foreground">
+                              {committee.leaderName ?? "Assigned"}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="font-medium">Not assigned</span>
+                        )}
                       </div>
                     </div>
 

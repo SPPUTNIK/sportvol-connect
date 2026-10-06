@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ClipboardList,
   Clock3,
+  Database,
   FileBarChart,
   GraduationCap,
   LayoutDashboard,
@@ -109,9 +110,25 @@ const adminNavigation: AdminNavGroup[] = [
         icon: CheckCircle2,
       },
       {
+        label: "Shift assignments",
+        href: "/admin/shift-assignments",
+        icon: Clock3,
+      },
+      {
         label: "Accreditation",
         href: "/admin/accreditation",
         icon: ShieldCheck,
+      },
+    ],
+  },
+
+  {
+    label: "Reference data",
+    items: [
+      {
+        label: "Catalog",
+        href: "/admin/catalog",
+        icon: Database,
       },
     ],
   },

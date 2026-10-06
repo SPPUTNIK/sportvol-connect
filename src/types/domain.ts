@@ -41,7 +41,7 @@ export type EventStatus = "draft" | "published" | "closed" | "completed" | "canc
 
 export type ApplicationStatus = "pending" | "accepted" | "rejected" | "withdrawn" | "waitlisted";
 
-export type AttendanceStatus = "scheduled" | "checked_in" | "complete" | "absent" | "excused";
+export type AttendanceStatus = "scheduled" | "checked-in" | "checked-out" | "absent" | "late";
 
 export type CertificateStatus = "queued" | "issued";
 
@@ -491,6 +491,7 @@ export interface AdminVolunteerSummary {
   avatar_url: string | null;
   email: string | null;
   phone: string | null;
+  role?: "volunteer" | "leader" | "admin" | string | null;
 
   city: string;
   country: string;

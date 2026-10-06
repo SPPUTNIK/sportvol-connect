@@ -61,6 +61,29 @@ export function AdminVolunteersPage() {
   const [volunteers, setVolunteers] = useState<AdminVolunteerSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [savingRoleId, setSavingRoleId] = useState<string | null>(null);
+
+  const handleRoleChange = async (userId: string, nextRole: "volunteer" | "leader") => {
+    setSavingRoleId(userId);
+
+    try {
+      await adminService.updateUserRole(userId, nextRole);
+      setVolunteers((current) =>
+        current.map((volunteer) =>
+          volunteer.id === userId
+            ? { ...volunteer, role: nextRole }
+            : volunteer,
+        ),
+      );
+    } catch (err) {
+      console.error("Failed to update volunteer role:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to update volunteer role.",
+      );
+    } finally {
+      setSavingRoleId(null);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -273,6 +296,12 @@ export function AdminVolunteersPage() {
                             status={formatStatus(item.status)}
                           />
                         </div>
+
+                        <div className="mt-3 flex items-center gap-2">
+                          <span className="rounded-full bg-muted px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                            {item.role ?? "volunteer"}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -311,6 +340,21 @@ export function AdminVolunteersPage() {
 
                     {/* Footer */}
                     <div className="mt-4 flex items-center justify-between gap-3">
+                      <select
+                        value={item.role === "leader" ? "leader" : "volunteer"}
+                        onChange={(event) =>
+                          void handleRoleChange(
+                            item.id,
+                            event.target.value as "volunteer" | "leader",
+                          )
+                        }
+                        disabled={savingRoleId === item.id}
+                        className="rounded-xl border border-input bg-background px-2.5 py-2 text-sm outline-none transition focus:ring-2 focus:ring-primary/20"
+                        aria-label={`Change role for ${item.name}`}
+                      >
+                        <option value="volunteer">Volunteer</option>
+                        <option value="leader">Leader</option>
+                      </select>
 
                       <VSButton
                         asChild

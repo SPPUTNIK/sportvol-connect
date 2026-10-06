@@ -10,20 +10,22 @@ export type AdminStatus =
   | "waitlisted"
   | "withdrawn"
   | "scheduled"
-  | "checked_in"
-  | "complete"
+  | "checked-in"
+  | "checked-out"
   | "absent"
-  | "excused"
+  | "late"
   | "issued"
   | "queued"
   | "sent";
 
 export function normalizeStatus(status: string): AdminStatus {
-  return status.toLowerCase().replace(/\s+/g, "_") as AdminStatus;
+  return status.toLowerCase().replace(/[-\s]+/g, "_") as AdminStatus;
 }
 
 export function formatStatus(status: string) {
-  return status.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  return status
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 export function formatDate(value: string | null | undefined) {
