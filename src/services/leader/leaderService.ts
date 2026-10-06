@@ -2530,106 +2530,19 @@ export const leaderService = {
       };
     }
 
-    let matchedCommittee:
-      any = null;
-
-    let matchedMembership:
-      any = null;
-
-    for (
-      const committee of
-        leaderCommitteesForEvent
-    ) {
-      const {
-        data: membership,
-        error: membershipError,
-      } = await supabase
-        .from("committee_members")
-        .select(`
-          id,
-          committee_id,
-          profile_id,
-          event_role_id,
-          status
-        `)
-        .eq(
-          "committee_id",
+    const leaderCommitteeIds =
+      leaderCommitteesForEvent.map(
+        (committee) =>
           committee.id,
-        )
-        .eq(
-          "profile_id",
-          accreditation.profile_id,
-        )
-        .eq(
-          "status",
-          "assigned",
-        )
-        .maybeSingle();
-
-      if (membershipError) {
-        console.error(
-          "Committee membership lookup error:",
-          membershipError,
-        );
-
-        continue;
-      }
-
-      if (membership) {
-        matchedCommittee =
-          committee;
-
-        matchedMembership =
-          membership;
-
-        break;
-      }
-    }
-
-    if (
-      !matchedCommittee ||
-      !matchedMembership
-    ) {
-      console.warn(
-        "Volunteer is not assigned to leader committee.",
       );
-
-      return {
-        ok: false,
-        reason:
-          "NOT_ASSIGNED_TO_LEADER_COMMITTEE",
-      };
-    }
-
-    if (
-      matchedMembership.event_role_id !==
-      accreditation.role_id
-    ) {
-      console.warn(
-        "Role mismatch:",
-        {
-          committeeRole:
-            matchedMembership.event_role_id,
-
-          accreditationRole:
-            accreditation.role_id,
-        },
-      );
-
-      return {
-        ok: false,
-        reason:
-          "ROLE_MISMATCH",
-      };
-    }
 
     const {
-      data: committeeShifts,
-      error:
-        committeeShiftsError,
+      data: leaderCommitteeShiftRows,
+      error: leaderCommitteeShiftError,
     } = await supabase
       .from("committee_shifts")
       .select(`
+        committee_id,
         shift_id,
         shift:event_shifts(
           id,
@@ -2646,15 +2559,15 @@ export const leaderService = {
           )
         )
       `)
-      .eq(
+      .in(
         "committee_id",
-        matchedCommittee.id,
+        leaderCommitteeIds,
       );
 
-    if (committeeShiftsError) {
+    if (leaderCommitteeShiftError) {
       console.error(
         "Committee shifts lookup error:",
-        committeeShiftsError,
+        leaderCommitteeShiftError,
       );
 
       return {
@@ -2664,15 +2577,15 @@ export const leaderService = {
       };
     }
 
-    const shiftIds =
-      (committeeShifts ?? [])
+    const leaderShiftIds =
+      (leaderCommitteeShiftRows ?? [])
         .map(
           (row: any) =>
             row.shift_id,
         )
         .filter(Boolean);
 
-    if (!shiftIds.length) {
+    if (!leaderShiftIds.length) {
       console.warn(
         "Leader committee has no shifts.",
       );
@@ -2685,8 +2598,8 @@ export const leaderService = {
     }
 
     const {
-      data: assignments,
-      error: assignmentError,
+      data: volunteerAssignments,
+      error: volunteerAssignmentsError,
     } = await supabase
       .from("shift_assignments")
       .select(`
@@ -2716,7 +2629,7 @@ export const leaderService = {
       )
       .in(
         "shift_id",
-        shiftIds,
+        leaderShiftIds,
       )
       .eq(
         "status",
@@ -2729,10 +2642,10 @@ export const leaderService = {
         },
       );
 
-    if (assignmentError) {
+    if (volunteerAssignmentsError) {
       console.error(
         "Shift assignment lookup error:",
-        assignmentError,
+        volunteerAssignmentsError,
       );
 
       return {
@@ -2743,7 +2656,7 @@ export const leaderService = {
     }
 
     const matchingAssignments =
-      (assignments ?? []).filter(
+      (volunteerAssignments ?? []).filter(
         (assignment: any) =>
           assignment.shift &&
           assignment.shift.event_id ===
@@ -2786,11 +2699,27 @@ export const leaderService = {
     const shift =
       assignment.shift;
 
-    if (!shift) {
+    const matchedCommittee =
+      leaderCommitteesForEvent.find(
+        (committee) =>
+          (leaderCommitteeShiftRows ?? []).some(
+            (row: any) =>
+              row.committee_id ===
+                committee.id &&
+              row.shift_id ===
+                assignment.shift_id,
+          ),
+      ) ?? null;
+
+    if (!shift || !matchedCommittee) {
+      console.warn(
+        "Volunteer is not assigned to leader committee.",
+      );
+
       return {
         ok: false,
         reason:
-          "SHIFT_NOT_FOUND",
+          "NOT_ASSIGNED_TO_LEADER_COMMITTEE",
       };
     }
 
