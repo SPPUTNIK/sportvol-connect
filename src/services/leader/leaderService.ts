@@ -1117,68 +1117,124 @@ export const leaderService = {
   // MEMBERS / REAL VOLUNTEERS
   // ============================================================
 
-  async getCommitteeMembers(): Promise<
-    LeaderMember[]
-  > {
-    const committees =
-      await this.getLeaderCommittees();
+
+  async getShiftVolunteers(): Promise<LeaderMember[]> {
+    const committees = await this.getLeaderCommittees();
 
     if (!committees.length) {
       return [];
     }
 
-    const committeeIds =
-      committees.map(
-        (committee) =>
-          committee.id,
+    // ----------------------------------------------------------
+    // Get all shifts belonging to committees led by this leader
+    // ----------------------------------------------------------
+
+    const committeeShifts =
+      await this.getLeaderCommitteeShifts();
+
+    if (!committeeShifts.length) {
+      return [];
+    }
+
+    const validCommitteeShifts =
+      committeeShifts.filter(
+        (item) =>
+          item.shift &&
+          item.shift_id,
       );
+
+    if (!validCommitteeShifts.length) {
+      return [];
+    }
+
+    const shiftIds = [
+      ...new Set(
+        validCommitteeShifts.map(
+          (item) => item.shift_id,
+        ),
+      ),
+    ];
+
+    // ----------------------------------------------------------
+    // Map shift -> committee
+    // ----------------------------------------------------------
+
+    const shiftCommitteeMap =
+      new Map<string, string>();
+
+    const shiftEventMap =
+      new Map<string, string>();
+
+    for (const item of validCommitteeShifts) {
+      shiftCommitteeMap.set(
+        item.shift_id,
+        item.committee_id,
+      );
+
+      if (item.shift?.event_id) {
+        shiftEventMap.set(
+          item.shift_id,
+          item.shift.event_id,
+        );
+      }
+    }
+
+    // ----------------------------------------------------------
+    // Get ALL volunteers assigned to these shifts
+    // ----------------------------------------------------------
 
     const {
-      data: memberRows,
-      error: membersError,
+      data: assignmentRows,
+      error: assignmentError,
     } = await supabase
-      .from("committee_members")
+      .from("shift_assignments")
       .select(`
         id,
-        committee_id,
         profile_id,
-        event_role_id,
+        shift_id,
         status,
-        joined_at
+        assigned_at,
+        shift:event_shifts(
+          id,
+          event_id,
+          title,
+          start_time,
+          end_time,
+          role_id,
+          role:event_roles(
+            id,
+            name
+          )
+        )
       `)
-      .in(
-        "committee_id",
-        committeeIds,
-      )
-      .eq(
-        "status",
-        "assigned",
-      )
-      .order(
-        "joined_at",
-        {
-          ascending: true,
-        },
-      );
+      .in("shift_id", shiftIds)
+      .eq("status", "assigned")
+      .order("assigned_at", {
+        ascending: true,
+      });
 
-    if (membersError) {
+    if (assignmentError) {
       console.error(
-        "Failed to load committee members:",
-        membersError,
+        "Failed to load shift volunteers:",
+        assignmentError,
       );
 
       return [];
     }
 
-    if (!memberRows?.length) {
+    if (!assignmentRows?.length) {
       return [];
     }
+
+    // ----------------------------------------------------------
+    // Get profiles
+    // ----------------------------------------------------------
 
     const profileIds = [
       ...new Set(
-        memberRows.map(
-          (member) =>
-            member.profile_id,
+        assignmentRows.map(
+          (assignment) =>
+            assignment.profile_id,
         ),
       ),
     ];
@@ -1194,10 +1250,7 @@ export const leaderService = {
         last_name,
         avatar_url
       `)
-      .in(
-        "id",
-        profileIds,
-      );
+      .in("id", profileIds);
 
     if (profilesError) {
       console.error(
@@ -1218,8 +1271,9 @@ export const leaderService = {
         ),
       );
 
-    const committeeShifts =
-      await this.getLeaderCommitteeShifts();
+    // ----------------------------------------------------------
+    // Get events
+    // ----------------------------------------------------------
 
     const eventIds = [
       ...new Set(
@@ -1242,10 +1296,7 @@ export const leaderService = {
         end_date,
         end_time
       `)
-      .in(
-        "id",
-        eventIds,
-      );
+      .in("id", eventIds);
 
     if (eventsError) {
       console.error(
@@ -1264,14 +1315,68 @@ export const leaderService = {
         ),
       );
 
-    const memberProfileIds = [
-      ...new Set(
-        memberRows.map(
-          (member) =>
-            member.profile_id,
-        ),
-      ),
-    ];
+    // ----------------------------------------------------------
+    // Get attendance for these volunteers + shifts
+    // ----------------------------------------------------------
+
+    const {
+      data: attendanceRows,
+      error: attendanceError,
+    } = await supabase
+      .from("attendance_records")
+      .select(`
+        id,
+        profile_id,
+        shift_id,
+        status,
+        check_in_time,
+        check_out_time,
+        updated_at
+      `)
+      .in(
+        "profile_id",
+        profileIds,
+      )
+      .in(
+        "shift_id",
+        shiftIds,
+      )
+      .order("updated_at", {
+        ascending: false,
+      });
+
+    if (attendanceError) {
+      console.error(
+        "Failed to load volunteer attendance:",
+        attendanceError,
+      );
+    }
+
+    // ----------------------------------------------------------
+    // Keep latest attendance per volunteer + shift
+    // ----------------------------------------------------------
+
+    const attendanceByKey =
+      new Map<string, any>();
+
+    for (const attendance of attendanceRows ?? []) {
+      const key =
+        `${attendance.profile_id}:${attendance.shift_id}`;
+
+      if (!attendanceByKey.has(key)) {
+        attendanceByKey.set(
+          key,
+          attendance,
+        );
+      }
+    }
+
+    // ----------------------------------------------------------
+    // Get feedback
+    //
+    // Feedback is optional because committee_members is no
+    // longer part of the volunteer assignment flow.
+    // ----------------------------------------------------------
 
     const {
       data: feedbackRows,
@@ -1284,11 +1389,14 @@ export const leaderService = {
       `)
       .in(
         "committee_id",
-        committeeIds,
+        committees.map(
+          (committee) =>
+            committee.id,
+        ),
       )
       .in(
         "member_profile_id",
-        memberProfileIds,
+        profileIds,
       );
 
     if (feedbackError) {
@@ -1298,7 +1406,7 @@ export const leaderService = {
       );
     }
 
-    const feedbackByMember =
+    const feedbackByKey =
       new Set(
         (feedbackRows ?? []).map(
           (feedback) =>
@@ -1306,23 +1414,47 @@ export const leaderService = {
         ),
       );
 
-    const members:
-      LeaderMember[] = [];
+    // ----------------------------------------------------------
+    // Build LeaderMember records
+    //
+    // One volunteer can technically have multiple assignments.
+    // We keep one record per volunteer + use the first assignment
+    // belonging to the leader's shifts.
+    // ----------------------------------------------------------
 
-    for (
-      const row of memberRows
-    ) {
+    const members: LeaderMember[] = [];
+
+    const seenVolunteers =
+      new Set<string>();
+
+    for (const assignment of assignmentRows) {
       const profile =
         profilesById.get(
-          row.profile_id,
+          assignment.profile_id,
         );
 
       if (!profile) {
         console.warn(
           "Profile not found:",
-          row.profile_id,
+          assignment.profile_id,
         );
 
+        continue;
+      }
+
+      const shift =
+        assignment.shift;
+
+      if (!shift) {
+        continue;
+      }
+
+      const committeeId =
+        shiftCommitteeMap.get(
+          assignment.shift_id,
+        );
+
+      if (!committeeId) {
         continue;
       }
 
@@ -1330,147 +1462,35 @@ export const leaderService = {
         committees.find(
           (item) =>
             item.id ===
-            row.committee_id,
+            committeeId,
         );
 
       if (!committee) {
         continue;
       }
 
-      const memberShiftRows =
-        committeeShifts.filter(
-          (item) =>
-            item.committee_id ===
-              row.committee_id &&
-            item.shift,
-        );
-
-      const memberShiftIds =
-        memberShiftRows
-          .map(
-            (item) =>
-              item.shift_id,
-          )
-          .filter(Boolean);
-
-      let shiftAssignments:
-        any[] = [];
-
+      // Prevent duplicate volunteer cards when a volunteer
+      // is assigned to multiple shifts of the same leader.
       if (
-        memberShiftIds.length
+        seenVolunteers.has(
+          profile.id,
+        )
       ) {
-        const {
-          data: assignments,
-          error: assignmentError,
-        } = await supabase
-          .from("shift_assignments")
-          .select(`
-            id,
-            shift_id,
-            status,
-            assigned_at,
-            shift:event_shifts(
-              id,
-              title,
-              start_time,
-              end_time,
-              role_id,
-              role:event_roles(
-                id,
-                name
-              )
-            )
-          `)
-          .eq(
-            "profile_id",
-            row.profile_id,
-          )
-          .in(
-            "shift_id",
-            memberShiftIds,
-          )
-          .eq(
-            "status",
-            "assigned",
-          )
-          .order(
-            "assigned_at",
-            {
-              ascending: true,
-            },
-          );
-
-        if (assignmentError) {
-          console.error(
-            "Failed to load volunteer shift assignment:",
-            assignmentError,
-          );
-        }
-
-        shiftAssignments =
-          assignments ?? [];
+        continue;
       }
 
-      const selectedAssignment =
-        shiftAssignments[0] ??
-        null;
+      seenVolunteers.add(
+        profile.id,
+      );
 
-      const shift =
-        selectedAssignment?.shift ??
-        null;
+      // --------------------------------------------------------
+      // Attendance
+      // --------------------------------------------------------
 
-      const shiftRole =
-        shift?.role?.name ??
-        "Volunteer";
-
-      let attendanceData:
-        any = null;
-
-      if (
-        memberShiftIds.length
-      ) {
-        const {
-          data: attendance,
-          error: attendanceError,
-        } = await supabase
-          .from(
-            "attendance_records",
-          )
-          .select(`
-            id,
-            shift_id,
-            status,
-            check_in_time,
-            check_out_time,
-            updated_at
-          `)
-          .eq(
-            "profile_id",
-            row.profile_id,
-          )
-          .in(
-            "shift_id",
-            memberShiftIds,
-          )
-          .order(
-            "updated_at",
-            {
-              ascending: false,
-            },
-          )
-          .limit(1)
-          .maybeSingle();
-
-        if (attendanceError) {
-          console.error(
-            "Failed to load volunteer attendance:",
-            attendanceError,
-          );
-        }
-
-        attendanceData =
-          attendance;
-      }
+      const attendanceData =
+        attendanceByKey.get(
+          `${profile.id}:${assignment.shift_id}`,
+        ) ?? null;
 
       const rawAttendanceStatus =
         attendanceData?.status ??
@@ -1496,16 +1516,20 @@ export const leaderService = {
           "Checked in";
       }
 
+      // --------------------------------------------------------
+      // Feedback
+      // --------------------------------------------------------
+
       const event =
         eventsById.get(
           committee.eventId,
         );
 
       const feedbackKey =
-        `${committee.id}:${row.profile_id}`;
+        `${committee.id}:${profile.id}`;
 
       const feedbackSubmitted =
-        feedbackByMember.has(
+        feedbackByKey.has(
           feedbackKey,
         );
 
@@ -1531,6 +1555,10 @@ export const leaderService = {
           "Not available";
       }
 
+      // --------------------------------------------------------
+      // Push volunteer
+      // --------------------------------------------------------
+
       members.push({
         id:
           profile.id,
@@ -1548,14 +1576,15 @@ export const leaderService = {
           null,
 
         role:
-          shiftRole,
+          shift.role?.name ??
+          "Volunteer",
 
         status:
           displayStatus,
 
         assignedShift:
-          shift?.title ??
-          "Unassigned",
+          shift.title ??
+          "Assigned shift",
 
         attendance:
           attendanceLabel,
@@ -1574,6 +1603,7 @@ export const leaderService = {
 
     return members;
   },
+
 
   // ============================================================
   // SHIFTS

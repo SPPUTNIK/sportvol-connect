@@ -113,7 +113,7 @@ export function LeaderDashboardPage() {
         leaderService.getCurrentLeaderProfile(),
         leaderService.getCurrentCommittee(),
         leaderService.getCurrentEvent(),
-        leaderService.getCommitteeMembers(),
+        leaderService.getShiftVolunteers(),
         leaderService.getEventShifts(),
         leaderService.getRecentScans(),
       ]);
@@ -878,7 +878,7 @@ export function LeaderEventPage() {
         ] = await Promise.all([
           leaderService.getLeaderEvents(),
           leaderService.getLeaderCommittees(),
-          leaderService.getCommitteeMembers(),
+          leaderService.getShiftVolunteers(),
           leaderService.getEventShifts(),
         ]);
 
@@ -1152,7 +1152,7 @@ export function LeaderVolunteersPage() {
     async function load() {
       try {
         const data =
-          await leaderService.getCommitteeMembers();
+          await leaderService.getShiftVolunteers();
 
         if (!ignore) {
           setMembers(data);
