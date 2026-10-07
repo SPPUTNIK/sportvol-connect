@@ -2691,27 +2691,6 @@ export const leaderService = {
         },
       );
 
-    console.log("QR DEBUG - leaderShiftIds:", leaderShiftIds);
-
-  console.log(
-    "QR DEBUG - volunteerAssignments:",
-    volunteerAssignments,
-  );
-
-  console.log(
-    "QR DEBUG - volunteerAssignments count:",
-    volunteerAssignments?.length,
-  );
-
-  console.log(
-    "QR DEBUG - accreditation event/role:",
-    {
-      eventId: accreditation.event_id,
-      roleId: accreditation.role_id,
-    },
-  );
-
-
   
     if (volunteerAssignmentsError) {
       console.error(
