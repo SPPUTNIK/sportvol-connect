@@ -10,6 +10,7 @@ DECLARE
   volunteer_name text;
   qr_seed text;
   qr_code text;
+  qr_hash text;
 BEGIN
   SELECT s.event_id, s.role_id, s.date
     INTO shift_row
@@ -37,15 +38,9 @@ BEGIN
     next_status := 'pending';
   END IF;
 
-  qr_seed := regexp_replace(
-    upper(
-      NEW.profile_id::text || shift_row.event_id::text || shift_row.role_id::text
-    ),
-    '[^A-Z0-9]',
-    '',
-    'g'
-  );
-  qr_code := 'VOL-' || right(lpad(qr_seed, 6, '0'), 6);
+  qr_seed := NEW.profile_id::text || '|' || shift_row.event_id::text || '|' || shift_row.role_id::text || '|' || COALESCE(NEW.id::text, gen_random_uuid()::text);
+  qr_hash := upper(substr(md5(qr_seed), 1, 12));
+  qr_code := 'VOL-' || qr_hash;
 
   INSERT INTO public.accreditations (
     profile_id,

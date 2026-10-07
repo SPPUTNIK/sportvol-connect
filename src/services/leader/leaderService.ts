@@ -2377,13 +2377,33 @@ export const leaderService = {
     const normalizedQrValue =
       normalizeQrValue(normalizedQrCode);
 
-    const canonicalVolunteerQr = (
+    const canonicalVolunteerQrLegacy = (
       profileId: string,
       eventId: string,
       roleId: string,
     ) => {
       const seed = `${profileId}${eventId}${roleId}`.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
       const token = seed.slice(-6).padStart(6, "0");
+      return `VOL-${token}`;
+    };
+
+    const canonicalVolunteerQr = async (
+      profileId: string,
+      eventId: string,
+      roleId: string,
+    ) => {
+      const seed = `${profileId}|${eventId}|${roleId}`;
+      const digest = await crypto.subtle.digest(
+        "SHA-256",
+        new TextEncoder().encode(seed),
+      );
+
+      const token = Array.from(new Uint8Array(digest))
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("")
+        .slice(0, 10)
+        .toUpperCase();
+
       return `VOL-${token}`;
     };
 
@@ -2395,22 +2415,29 @@ export const leaderService = {
     let accreditation: any =
       null;
 
-    const matchAccreditationRows = (rows: any[] = []) => {
-      return rows.find((item: any) => {
+    const matchAccreditationRows = async (rows: any[] = []) => {
+      for (const item of rows) {
         const legacyQr = `volunteer:${item.profile_id}:${item.event_id}:${item.role_id}`;
         const values = [
           item.qr_code_data,
           item.volunteer_identifier,
           item.profile_id,
           legacyQr,
-          canonicalVolunteerQr(item.profile_id, item.event_id, item.role_id),
+          canonicalVolunteerQrLegacy(item.profile_id, item.event_id, item.role_id),
+          await canonicalVolunteerQr(item.profile_id, item.event_id, item.role_id),
         ];
 
-        return values.some(
-          (value) =>
-            normalizeQrValue(value) === normalizedQrValue,
-        );
-      });
+        if (
+          values.some(
+            (value) =>
+              normalizeQrValue(value) === normalizedQrValue,
+          )
+        ) {
+          return item;
+        }
+      }
+
+      return null;
     };
 
     const [{ data: eventAccreditations, error: eventAccreditationsError }, { data: fallbackAccreditations, error: fallbackAccreditationsError }] = await Promise.all([
@@ -2469,8 +2496,8 @@ export const leaderService = {
     }
 
     accreditation =
-      matchAccreditationRows(eventAccreditations ?? []) ??
-      matchAccreditationRows(fallbackAccreditations ?? []);
+      (await matchAccreditationRows(eventAccreditations ?? [])) ??
+      (await matchAccreditationRows(fallbackAccreditations ?? []));
 
     if (!accreditation) {
       console.warn(
