@@ -201,7 +201,7 @@ async function finalizeExpiredShiftAttendance(): Promise<number> {
 
     const shiftDate = assignment.event_shifts?.date ?? null;
 
-    const payload = {
+    const payload: any = {
       profile_id: userId,
       shift_id: assignment.shift_id,
       event_id: assignment.event_shifts?.event_id ?? null,

@@ -1195,33 +1195,45 @@ export type Database = {
           description: string | null;
           event_id: string | null;
           id: string;
+          published_at: string | null;
           required: boolean;
           resources: Json;
           role_id: string | null;
+          status: string;
           title: string;
+          training_mode: string;
           updated_at: string;
+          zoom_url: string | null;
         };
         Insert: {
           created_at?: string;
           description?: string | null;
           event_id?: string | null;
           id?: string;
+          published_at?: string | null;
           required?: boolean;
           resources?: Json;
           role_id?: string | null;
+          status?: string;
           title: string;
+          training_mode?: string;
           updated_at?: string;
+          zoom_url?: string | null;
         };
         Update: {
           created_at?: string;
           description?: string | null;
           event_id?: string | null;
           id?: string;
+          published_at?: string | null;
           required?: boolean;
           resources?: Json;
           role_id?: string | null;
+          status?: string;
           title?: string;
+          training_mode?: string;
           updated_at?: string;
+          zoom_url?: string | null;
         };
         Relationships: [
           {
@@ -1242,29 +1254,44 @@ export type Database = {
       };
       training_progress: {
         Row: {
+          answers: Json | null;
           completed: boolean;
           completed_at: string | null;
           created_at: string;
           id: string;
+          passed: boolean;
           profile_id: string;
+          score: number | null;
+          submitted_at: string | null;
+          total_questions: number | null;
           training_id: string;
           updated_at: string;
         };
         Insert: {
+          answers?: Json | null;
           completed?: boolean;
           completed_at?: string | null;
           created_at?: string;
           id?: string;
+          passed?: boolean;
           profile_id: string;
+          score?: number | null;
+          submitted_at?: string | null;
+          total_questions?: number | null;
           training_id: string;
           updated_at?: string;
         };
         Update: {
+          answers?: Json | null;
           completed?: boolean;
           completed_at?: string | null;
           created_at?: string;
           id?: string;
+          passed?: boolean;
           profile_id?: string;
+          score?: number | null;
+          submitted_at?: string | null;
+          total_questions?: number | null;
           training_id?: string;
           updated_at?: string;
         };
@@ -1285,6 +1312,50 @@ export type Database = {
           },
           {
             foreignKeyName: "training_progress_training_id_fkey";
+            columns: ["training_id"];
+            isOneToOne: false;
+            referencedRelation: "training_modules";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      training_questions: {
+        Row: {
+          correct_options: Json | null;
+          created_at: string;
+          id: string;
+          options: Json | null;
+          points: number | null;
+          question: string;
+          question_number: number;
+          training_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          correct_options?: Json | null;
+          created_at?: string;
+          id?: string;
+          options?: Json | null;
+          points?: number | null;
+          question: string;
+          question_number: number;
+          training_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          correct_options?: Json | null;
+          created_at?: string;
+          id?: string;
+          options?: Json | null;
+          points?: number | null;
+          question?: string;
+          question_number?: number;
+          training_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "training_questions_training_id_fkey";
             columns: ["training_id"];
             isOneToOne: false;
             referencedRelation: "training_modules";

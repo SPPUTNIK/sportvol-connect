@@ -2592,21 +2592,7 @@ export const leaderService = {
       .from("committee_shifts")
       .select(`
         committee_id,
-        shift_id,
-        shift:event_shifts(
-          id,
-          event_id,
-          role_id,
-          title,
-          location,
-          date,
-          start_time,
-          end_time,
-          role:event_roles(
-            id,
-            name
-          )
-        )
+        shift_id
       `)
       .in(
         "committee_id",
@@ -2647,6 +2633,86 @@ export const leaderService = {
     }
 
     const {
+      data: eventShifts,
+      error: eventShiftsError,
+    } = await supabase
+      .from("event_shifts")
+      .select(`
+        id,
+        event_id,
+        role_id,
+        title,
+        location,
+        date,
+        start_time,
+        end_time,
+        capacity,
+        instructions
+      `)
+      .in(
+        "id",
+        leaderShiftIds,
+      );
+
+    if (eventShiftsError) {
+      console.error(
+        "Event shifts lookup error:",
+        eventShiftsError,
+      );
+
+      return {
+        ok: false,
+        reason:
+          "EVENT_SHIFTS_QUERY_ERROR",
+      };
+    }
+
+    const shiftById = new Map(
+      (eventShifts ?? []).map(
+        (shift: any) => [shift.id, shift],
+      ),
+    );
+
+    const roleIds = [
+      ...new Set(
+        (eventShifts ?? [])
+          .map((shift: any) => shift.role_id)
+          .filter((id): id is string => typeof id === "string" && !!id),
+      ),
+    ];
+
+    let roleById = new Map();
+
+    if (roleIds.length) {
+      const {
+        data: roles,
+        error: rolesError,
+      } = await supabase
+        .from("event_roles")
+        .select(`
+          id,
+          name
+        `)
+        .in(
+          "id",
+          roleIds,
+        );
+
+      if (rolesError) {
+        console.error(
+          "Event roles lookup error:",
+          rolesError,
+        );
+      } else {
+        roleById = new Map(
+          (roles ?? []).map(
+            (role: any) => [role.id, role],
+          ),
+        );
+      }
+    }
+
+    const {
       data: volunteerAssignments,
       error: volunteerAssignmentsError,
     } = await supabase
@@ -2656,21 +2722,7 @@ export const leaderService = {
         profile_id,
         shift_id,
         status,
-        assigned_at,
-        shift:event_shifts(
-          id,
-          event_id,
-          role_id,
-          title,
-          location,
-          date,
-          start_time,
-          end_time,
-          role:event_roles(
-            id,
-            name
-          )
-        )
+        assigned_at
       `)
       .eq(
         "profile_id",
@@ -2691,7 +2743,6 @@ export const leaderService = {
         },
       );
 
-  
     if (volunteerAssignmentsError) {
       console.error(
         "Shift assignment lookup error:",
@@ -2705,57 +2756,70 @@ export const leaderService = {
       };
     }
 
-    const now = new Date();
-
-    const currentDate = now.toISOString().slice(0, 10);
-    const currentTime = now.toTimeString().slice(0, 8);
-
-    const matchingAssignments =
-      (volunteerAssignments ?? []).filter(
-        (assignment: any) => {
-          const shift = assignment.shift;
+    const exactMatches =
+      (volunteerAssignments ?? [])
+        .map((assignment: any) => {
+          const shift = shiftById.get(assignment.shift_id);
 
           if (!shift) {
-            return false;
+            return null;
           }
 
           if (
             shift.event_id !== accreditation.event_id ||
             shift.role_id !== accreditation.role_id
           ) {
-            return false;
+            return null;
           }
 
-          if (shift.date !== currentDate) {
-            return false;
-          }
+          const matchedCommittee =
+            leaderCommitteesForEvent.find(
+              (committee) =>
+                (leaderCommitteeShiftRows ?? []).some(
+                  (row: any) =>
+                    row.committee_id === committee.id &&
+                    row.shift_id === assignment.shift_id,
+                ),
+            ) ?? null;
 
-          return (
-            shift.start_time <= currentTime &&
-            currentTime <= shift.end_time
-          );
-        },
+          return {
+            assignment,
+            shift,
+            matchedCommittee,
+          };
+        })
+        .filter(Boolean);
+
+    if (!exactMatches.length) {
+      console.warn(
+        "Volunteer is not assigned to leader committee.",
       );
 
-    const assignment =
-      matchingAssignments[0];
+      return {
+        ok: false,
+        reason:
+          "NOT_ASSIGNED_TO_LEADER_COMMITTEE",
+      };
+    }
 
-    const shift =
-      assignment.shift;
+    if (exactMatches.length > 1) {
+      console.warn(
+        "Multiple exact shift assignments found for the same QR code.",
+      );
 
-    const matchedCommittee =
-      leaderCommitteesForEvent.find(
-        (committee) =>
-          (leaderCommitteeShiftRows ?? []).some(
-            (row: any) =>
-              row.committee_id ===
-                committee.id &&
-              row.shift_id ===
-                assignment.shift_id,
-          ),
-      ) ?? null;
+      return {
+        ok: false,
+        reason:
+          "MULTIPLE_EXACT_SHIFT_ASSIGNMENTS",
+      };
+    }
 
-    if (!shift || !matchedCommittee) {
+    const exactMatch = exactMatches[0] as any;
+    const assignment = exactMatch.assignment;
+    const shift = exactMatch.shift;
+    const matchedCommittee = exactMatch.matchedCommittee;
+
+    if (!matchedCommittee) {
       console.warn(
         "Volunteer is not assigned to leader committee.",
       );
@@ -2831,10 +2895,11 @@ export const leaderService = {
           "",
 
         role:
-          shift.role?.name ??
+          roleById.get(shift.role_id)?.name ??
           "Volunteer",
 
         roleId:
+          shift.role_id ??
           accreditation.role_id,
 
         committeeId:
@@ -3454,7 +3519,7 @@ export const leaderService = {
     if (existing) {
       const payload: Record<
         string,
-        unknown
+        any
       > = {
         status:
           nextStatus,

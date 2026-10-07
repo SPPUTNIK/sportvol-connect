@@ -261,6 +261,7 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
     return {
       total: 0,
       current_year: 0,
+      events_completed: 0,
       by_sport: [],
       by_event: [],
     };
@@ -300,6 +301,7 @@ export async function getVolunteerHours(): Promise<VolunteerHours> {
   return {
     total,
     current_year: currentYearTotal,
+    events_completed: rows.length,
     by_sport: Array.from(bySport.entries()).map(([label, value]) => ({ label, value })),
     by_event: Array.from(byEvent.entries()).map(([label, value]) => ({ label, value })),
   };
