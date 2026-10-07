@@ -2691,6 +2691,46 @@ export const leaderService = {
         },
       );
 
+    console.log("QR DEBUG - leaderShiftIds:", leaderShiftIds);
+
+    console.log(
+      "QR DEBUG - volunteerAssignments:",
+      volunteerAssignments,
+    );
+
+    console.log(
+      "QR DEBUG - volunteerAssignments count:",
+      volunteerAssignments?.length,
+    );
+
+    console.log(
+      "QR DEBUG - accreditation event/role:",
+      {
+        eventId: accreditation.event_id,
+        roleId: accreditation.role_id,
+      },
+    );
+
+    const matchingAssignments =
+      (volunteerAssignments ?? []).filter(
+        (assignment: any) =>
+          assignment.shift &&
+          assignment.shift.event_id ===
+            accreditation.event_id &&
+          assignment.shift.role_id ===
+            accreditation.role_id,
+      );
+
+    console.log(
+      "QR DEBUG - matchingAssignments:",
+      matchingAssignments,
+    );
+
+    console.log(
+      "QR DEBUG - matchingAssignments count:",
+      matchingAssignments.length,
+    );
+
     if (volunteerAssignmentsError) {
       console.error(
         "Shift assignment lookup error:",
