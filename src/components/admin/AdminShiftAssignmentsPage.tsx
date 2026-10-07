@@ -893,4 +893,5 @@ export function AdminShiftAssignmentsPage() {
         )}
       </div>
     </AdminLayout>
-  )
+  );
+}
