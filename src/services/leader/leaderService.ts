@@ -437,8 +437,11 @@ export const leaderService = {
     LeaderCommittee[]
   > {
     const userId = await getCurrentUserId();
+    console.log("getLeaderCommittees userId:", userId);
 
     if (!userId) {
+      console.error("getLeaderCommittees error:", error);
+      console.error("getLeaderCommittees userId:", userId);
       return [];
     }
 
