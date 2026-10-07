@@ -3691,6 +3691,13 @@ export const leaderService = {
     const timeNow =
       moroccoNow.time;
 
+    console.log("[ATTENDANCE TIME DEBUG]", {
+      jsNow: new Date().toISOString(),
+      moroccoNow,
+      timeNow,
+    });
+    
+
     const nextStatus =
       action === "check-in"
         ? "checked-in"
