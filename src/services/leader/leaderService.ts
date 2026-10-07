@@ -4176,4 +4176,4 @@ export const leaderService = {
   },
 };
 
-export default leaderService
+export default leaderService;
