@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Eye, LoaderCircle, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Eye, LoaderCircle, Plus, Search, Trash2 } from "lucide-react";
 
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import {
@@ -68,13 +68,15 @@ export function AdminShiftAssignmentsPage() {
         supabase
           .from("shift_assignments")
           .select(
-            "*, profiles!shift_assignments_profile_id_fkey(id, first_name, last_name, email, avatar_url), event_shifts!shift_assignments_shift_id_fkey(id, title, date, start_time, end_time, event_id)"
+            "*, profiles!shift_assignments_profile_id_fkey(id, first_name, last_name, email, avatar_url), event_shifts!shift_assignments_shift_id_fkey(id, title, date, start_time, end_time, event_id)",
           )
           .order("assigned_at", { ascending: false }),
+
         supabase
           .from("profiles")
           .select("id, first_name, last_name, email, avatar_url")
           .order("first_name", { ascending: true }),
+
         supabase
           .from("event_shifts")
           .select("id, title, date, start_time, end_time, event_id")
@@ -90,7 +92,11 @@ export function AdminShiftAssignmentsPage() {
       setShifts((shiftsRes.data ?? []) as ShiftOption[]);
     } catch (err) {
       console.error("Failed to load shift assignments:", err);
-      setError(err instanceof Error ? err.message : "Failed to load shift assignments.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load shift assignments.",
+      );
     } finally {
       setLoading(false);
     }
@@ -107,6 +113,7 @@ export function AdminShiftAssignmentsPage() {
       if (!map.has(assignment.shift_id)) {
         map.set(assignment.shift_id, []);
       }
+
       map.get(assignment.shift_id)?.push(assignment);
     });
 
@@ -114,14 +121,21 @@ export function AdminShiftAssignmentsPage() {
   }, [assignments]);
 
   const profileInitials = (profile: ProfileRow | null | undefined) => {
-    const initials = `${profile?.first_name?.charAt(0) ?? ""}${profile?.last_name?.charAt(0) ?? ""}`.trim();
+    const initials =
+      `${profile?.first_name?.charAt(0) ?? ""}${profile?.last_name?.charAt(0) ?? ""}`.trim();
+
     return initials || "V";
   };
 
   const profileDisplayName = (profile: ProfileRow | null | undefined) => {
     const lastName = profile?.last_name?.trim();
+
     if (lastName) return lastName;
-    if (profile?.first_name?.trim()) return profile.first_name.trim();
+
+    if (profile?.first_name?.trim()) {
+      return profile.first_name.trim();
+    }
+
     return "Volunteer";
   };
 
@@ -141,12 +155,20 @@ export function AdminShiftAssignmentsPage() {
   };
 
   const selectedShiftAssignments = useMemo(
-    () => (selectedShift ? assignedByShift.get(selectedShift.id) ?? [] : []),
+    () =>
+      selectedShift
+        ? assignedByShift.get(selectedShift.id) ?? []
+        : [],
     [assignedByShift, selectedShift],
   );
 
   const selectedAssignedProfileIds = useMemo(
-    () => new Set(selectedShiftAssignments.map((assignment) => assignment.profile_id)),
+    () =>
+      new Set(
+        selectedShiftAssignments.map(
+          (assignment) => assignment.profile_id,
+        ),
+      ),
     [selectedShiftAssignments],
   );
 
@@ -156,18 +178,36 @@ export function AdminShiftAssignmentsPage() {
     const query = search.trim().toLowerCase();
 
     return profiles.filter((profile) => {
-      if (selectedAssignedProfileIds.has(profile.id)) return false;
+      if (selectedAssignedProfileIds.has(profile.id)) {
+        return false;
+      }
 
-      const fullName = `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim().toLowerCase();
+      const fullName =
+        `${profile.first_name ?? ""} ${profile.last_name ?? ""}`
+          .trim()
+          .toLowerCase();
+
       const email = (profile.email ?? "").toLowerCase();
-      const matchesQuery = !query || fullName.includes(query) || email.includes(query);
+
+      const matchesQuery =
+        !query ||
+        fullName.includes(query) ||
+        email.includes(query);
 
       return matchesQuery;
     });
-  }, [profiles, search, selectedAssignedProfileIds, selectedShift]);
+  }, [
+    profiles,
+    search,
+    selectedAssignedProfileIds,
+    selectedShift,
+  ]);
 
   const assignedVolunteers = useMemo(
-    () => profiles.filter((profile) => selectedAssignedProfileIds.has(profile.id)),
+    () =>
+      profiles.filter((profile) =>
+        selectedAssignedProfileIds.has(profile.id),
+      ),
     [profiles, selectedAssignedProfileIds],
   );
 
@@ -178,34 +218,71 @@ export function AdminShiftAssignmentsPage() {
       .filter((shift) => {
         const matchesSearch =
           !normalizedSearch ||
-          shift.title.toLowerCase().includes(normalizedSearch) ||
-          `${shift.start_time} - ${shift.end_time}`.includes(normalizedSearch);
-        const matchesDate = !dateFilter || shift.date === dateFilter;
+          shift.title
+            .toLowerCase()
+            .includes(normalizedSearch) ||
+          `${shift.start_time} - ${shift.end_time}`.includes(
+            normalizedSearch,
+          );
+
+        const matchesDate =
+          !dateFilter || shift.date === dateFilter;
+
         const matchesTime =
           timeFilter === "all" ||
-          (timeFilter === "day" && shift.start_time < "18:00") ||
-          (timeFilter === "evening" && shift.start_time >= "18:00");
+          (timeFilter === "day" &&
+            shift.start_time < "18:00") ||
+          (timeFilter === "evening" &&
+            shift.start_time >= "18:00");
 
-        return matchesSearch && matchesDate && matchesTime;
+        return (
+          matchesSearch &&
+          matchesDate &&
+          matchesTime
+        );
       })
       .sort((a, b) => {
-        const left = new Date(`${a.date}T${a.start_time}`).getTime();
-        const right = new Date(`${b.date}T${b.start_time}`).getTime();
-        return sortOrder === "newest" ? right - left : left - right;
+        const left = new Date(
+          `${a.date}T${a.start_time}`,
+        ).getTime();
+
+        const right = new Date(
+          `${b.date}T${b.start_time}`,
+        ).getTime();
+
+        return sortOrder === "newest"
+          ? right - left
+          : left - right;
       });
-  }, [dateFilter, search, shifts, sortOrder, timeFilter]);
+  }, [
+    dateFilter,
+    search,
+    shifts,
+    sortOrder,
+    timeFilter,
+  ]);
 
-  const buildVolunteerQrCode = (profileId: string, eventId: string, roleId: string) => {
-    const seed = `${profileId}${eventId}${roleId}`.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
-    const token = seed.slice(-6).padStart(6, "0");
-    return `VOL-${token}`;
-  };
-
-  const handleAssignVolunteer = async (profileId: string, shiftId: string) => {
+  /**
+   * Assign a volunteer to a shift.
+   *
+   * IMPORTANT:
+   * The database trigger
+   * `sync_accreditation_from_shift_assignment()`
+   * is responsible for creating/updating the accreditation
+   * and generating the canonical QR code.
+   *
+   * The frontend must NOT generate or overwrite QR codes.
+   */
+  const handleAssignVolunteer = async (
+    profileId: string,
+    shiftId: string,
+  ) => {
     if (!profileId || !shiftId) return;
 
     const existingAssignment = assignments.find(
-      (assignment) => assignment.profile_id === profileId && assignment.shift_id === shiftId,
+      (assignment) =>
+        assignment.profile_id === profileId &&
+        assignment.shift_id === shiftId,
     );
 
     if (existingAssignment) {
@@ -215,119 +292,105 @@ export function AdminShiftAssignmentsPage() {
 
     try {
       setAddingVolunteerId(profileId);
-      const { data: shiftData, error: shiftError } = await supabase
-        .from("event_shifts")
-        .select("event_id, role_id, date")
-        .eq("id", shiftId)
-        .maybeSingle();
 
-      if (shiftError) throw shiftError;
+      const { error: assignmentError } = await supabase
+        .from("shift_assignments")
+        .insert({
+          profile_id: profileId,
+          shift_id: shiftId,
+          status: "assigned",
+        });
 
-      const { error: assignmentError } = await supabase.from("shift_assignments").insert({
-        profile_id: profileId,
-        shift_id: shiftId,
-        status: "assigned",
-      });
-
-      if (assignmentError) throw assignmentError;
-
-      if (shiftData?.event_id && shiftData?.role_id) {
-        const { data: existingAccreditation, error: accreditationLookupError } = await supabase
-          .from("accreditations")
-          .select("id")
-          .eq("profile_id", profileId)
-          .eq("event_id", shiftData.event_id)
-          .eq("role_id", shiftData.role_id)
-          .maybeSingle();
-
-        if (accreditationLookupError) throw accreditationLookupError;
-
-        const isToday =
-          shiftData.date &&
-          new Date(`${shiftData.date}T00:00:00`).toDateString() === new Date().toDateString();
-
-        const nextStatus = isToday ? "approved" : "pending";
-
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .select("first_name, last_name, email")
-          .eq("id", profileId)
-          .maybeSingle();
-
-        if (profileError) throw profileError;
-
-        const volunteerIdentifier =
-          [profileData?.first_name, profileData?.last_name].filter(Boolean).join(" ").trim() ||
-          profileData?.email ||
-          profileId;
-
-        const canonicalQrCode = buildVolunteerQrCode(
-          profileId,
-          shiftData.event_id,
-          shiftData.role_id,
-        );
-
-        if (!existingAccreditation) {
-          const { error: accreditationError } = await supabase.from("accreditations").insert({
-            profile_id: profileId,
-            event_id: shiftData.event_id,
-            role_id: shiftData.role_id,
-            volunteer_identifier: volunteerIdentifier,
-            qr_code_data: canonicalQrCode,
-            status: nextStatus,
-          });
-
-          if (accreditationError) throw accreditationError;
-        } else {
-          const { error: updateError } = await supabase
-            .from("accreditations")
-            .update({
-              status: nextStatus,
-              qr_code_data: canonicalQrCode,
-              volunteer_identifier: volunteerIdentifier,
-            })
-            .eq("id", existingAccreditation.id);
-
-          if (updateError) throw updateError;
-        }
+      if (assignmentError) {
+        throw assignmentError;
       }
 
+      /*
+       * Do NOT insert/update `accreditations` here.
+       *
+       * The database trigger attached to `shift_assignments`
+       * automatically calls:
+       *
+       * sync_accreditation_from_shift_assignment()
+       *
+       * which creates/updates the accreditation and generates
+       * `accreditations.qr_code_data`.
+       */
+
       setDraggedVolunteerId(null);
+
       await loadData();
     } catch (err) {
-      console.error("Failed to assign volunteer to shift:", err);
-      setError(err instanceof Error ? err.message : "Failed to assign volunteer to shift.");
+      console.error(
+        "Failed to assign volunteer to shift:",
+        err,
+      );
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to assign volunteer to shift.",
+      );
     } finally {
       setAddingVolunteerId(null);
     }
   };
 
-  const handleRemoveVolunteer = async (profileId: string, shiftId: string) => {
+  const handleRemoveVolunteer = async (
+    profileId: string,
+    shiftId: string,
+  ) => {
     const assignment = assignments.find(
-      (item) => item.profile_id === profileId && item.shift_id === shiftId,
+      (item) =>
+        item.profile_id === profileId &&
+        item.shift_id === shiftId,
     );
 
     if (!assignment) return;
 
-    const confirmed = window.confirm("Remove this volunteer from the shift?");
+    const confirmed = window.confirm(
+      "Remove this volunteer from the shift?",
+    );
+
     if (!confirmed) return;
 
     try {
-      const { error } = await supabase.from("shift_assignments").delete().eq("id", assignment.id);
-      if (error) throw error;
+      const { error } = await supabase
+        .from("shift_assignments")
+        .delete()
+        .eq("id", assignment.id);
+
+      if (error) {
+        throw error;
+      }
+
       await loadData();
     } catch (err) {
-      console.error("Failed to remove volunteer from shift:", err);
-      setError(err instanceof Error ? err.message : "Failed to remove volunteer from shift.");
+      console.error(
+        "Failed to remove volunteer from shift:",
+        err,
+      );
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to remove volunteer from shift.",
+      );
     }
   };
 
   const stats = useMemo(
     () => ({
       total: assignments.length,
-      assigned: assignments.filter((item) => item.status === "assigned").length,
-      removed: assignments.filter((item) => item.status === "removed").length,
-      completed: assignments.filter((item) => item.status === "completed").length,
+      assigned: assignments.filter(
+        (item) => item.status === "assigned",
+      ).length,
+      removed: assignments.filter(
+        (item) => item.status === "removed",
+      ).length,
+      completed: assignments.filter(
+        (item) => item.status === "completed",
+      ).length,
     }),
     [assignments],
   );
@@ -344,26 +407,45 @@ export function AdminShiftAssignmentsPage() {
         <div className="mt-8 grid gap-4 md:grid-cols-4">
           <VSCard className="rounded-[1.5rem] border-border">
             <VSCardContent className="p-5">
-              <p className="text-sm text-muted-foreground">Total</p>
-              <p className="mt-2 text-3xl font-semibold">{stats.total}</p>
+              <p className="text-sm text-muted-foreground">
+                Total
+              </p>
+              <p className="mt-2 text-3xl font-semibold">
+                {stats.total}
+              </p>
             </VSCardContent>
           </VSCard>
+
           <VSCard className="rounded-[1.5rem] border-border">
             <VSCardContent className="p-5">
-              <p className="text-sm text-muted-foreground">Assigned</p>
-              <p className="mt-2 text-3xl font-semibold">{stats.assigned}</p>
+              <p className="text-sm text-muted-foreground">
+                Assigned
+              </p>
+              <p className="mt-2 text-3xl font-semibold">
+                {stats.assigned}
+              </p>
             </VSCardContent>
           </VSCard>
+
           <VSCard className="rounded-[1.5rem] border-border">
             <VSCardContent className="p-5">
-              <p className="text-sm text-muted-foreground">Completed</p>
-              <p className="mt-2 text-3xl font-semibold">{stats.completed}</p>
+              <p className="text-sm text-muted-foreground">
+                Completed
+              </p>
+              <p className="mt-2 text-3xl font-semibold">
+                {stats.completed}
+              </p>
             </VSCardContent>
           </VSCard>
+
           <VSCard className="rounded-[1.5rem] border-border">
             <VSCardContent className="p-5">
-              <p className="text-sm text-muted-foreground">Removed</p>
-              <p className="mt-2 text-3xl font-semibold">{stats.removed}</p>
+              <p className="text-sm text-muted-foreground">
+                Removed
+              </p>
+              <p className="mt-2 text-3xl font-semibold">
+                {stats.removed}
+              </p>
             </VSCardContent>
           </VSCard>
         </div>
@@ -382,7 +464,9 @@ export function AdminShiftAssignmentsPage() {
               <div className="relative w-full md:max-w-sm">
                 <VSInput
                   value={search}
-                  onChange={(event) => setSearch(event.target.value)}
+                  onChange={(event) =>
+                    setSearch(event.target.value)
+                  }
                   placeholder="Search shift or time"
                   className="pr-10"
                 />
@@ -392,34 +476,54 @@ export function AdminShiftAssignmentsPage() {
                 <input
                   type="date"
                   value={dateFilter}
-                  onChange={(event) => setDateFilter(event.target.value)}
+                  onChange={(event) =>
+                    setDateFilter(event.target.value)
+                  }
                   className="rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-primary/20"
                 />
 
                 <select
                   value={timeFilter}
-                  onChange={(event) => setTimeFilter(event.target.value)}
+                  onChange={(event) =>
+                    setTimeFilter(event.target.value)
+                  }
                   className="rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="all">All times</option>
                   <option value="day">Day</option>
-                  <option value="evening">Evening</option>
+                  <option value="evening">
+                    Evening
+                  </option>
                 </select>
 
                 <select
                   value={sortOrder}
-                  onChange={(event) => setSortOrder(event.target.value as "newest" | "oldest")}
+                  onChange={(event) =>
+                    setSortOrder(
+                      event.target.value as
+                        | "newest"
+                        | "oldest",
+                    )
+                  }
                   className="rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-primary/20"
                 >
-                  <option value="newest">Newest first</option>
-                  <option value="oldest">Oldest first</option>
+                  <option value="newest">
+                    Newest first
+                  </option>
+                  <option value="oldest">
+                    Oldest first
+                  </option>
                 </select>
               </div>
             </div>
 
             {!showShiftList && selectedShift ? (
               <div className="space-y-4">
-                <VSButton variant="outline" size="sm" onClick={handleBackToShifts}>
+                <VSButton
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBackToShifts}
+                >
                   Back to shifts
                 </VSButton>
 
@@ -430,12 +534,21 @@ export function AdminShiftAssignmentsPage() {
                         <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
                           Shift details
                         </p>
-                        <h3 className="mt-2 text-2xl font-semibold">{selectedShift.title}</h3>
+
+                        <h3 className="mt-2 text-2xl font-semibold">
+                          {selectedShift.title}
+                        </h3>
+
                         <div className="mt-2 flex flex-wrap gap-3 text-sm text-muted-foreground">
-                          <span>{selectedShift.date}</span>
-                          <span>•</span>
                           <span>
-                            {selectedShift.start_time} - {selectedShift.end_time}
+                            {selectedShift.date}
+                          </span>
+
+                          <span>•</span>
+
+                          <span>
+                            {selectedShift.start_time} -{" "}
+                            {selectedShift.end_time}
                           </span>
                         </div>
                       </div>
@@ -443,62 +556,95 @@ export function AdminShiftAssignmentsPage() {
                       <div className="grid gap-6 lg:grid-cols-2">
                         <div className="space-y-4 rounded-[1.5rem] border border-border bg-muted/10 p-4">
                           <div className="flex items-center justify-between gap-3">
-                            <h4 className="text-lg font-semibold">Assigned Volunteers</h4>
+                            <h4 className="text-lg font-semibold">
+                              Assigned Volunteers
+                            </h4>
+
                             <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
                               {assignedVolunteers.length}
                             </span>
                           </div>
 
-                          {assignedVolunteers.length === 0 ? (
+                          {assignedVolunteers.length ===
+                          0 ? (
                             <div className="rounded-xl border border-dashed border-border bg-background p-4 text-sm text-muted-foreground">
-                              No volunteers assigned to this shift yet.
+                              No volunteers assigned to
+                              this shift yet.
                             </div>
                           ) : (
                             <div className="flex flex-wrap gap-2">
-                              {assignedVolunteers.map((profile) => (
-                                <div
-                                  key={profile.id}
-                                  className="flex items-center gap-2 rounded-full border border-border bg-background px-2.5 py-1.5"
-                                >
-                                  <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-[11px] font-semibold text-primary">
-                                    {profile.avatar_url ? (
-                                      <img
-                                        src={profile.avatar_url}
-                                        alt={profileDisplayName(profile)}
-                                        className="h-full w-full object-cover"
-                                      />
-                                    ) : (
-                                      profileInitials(profile)
-                                    )}
-                                  </div>
-                                  <span className="text-sm font-medium">{profileDisplayName(profile)}</span>
-                                  <button
-                                    type="button"
-                                    className="ml-1 text-muted-foreground transition hover:text-destructive"
-                                    onClick={() => void handleRemoveVolunteer(profile.id, selectedShift.id)}
-                                    aria-label={`Remove ${profileDisplayName(profile)}`}
+                              {assignedVolunteers.map(
+                                (profile) => (
+                                  <div
+                                    key={profile.id}
+                                    className="flex items-center gap-2 rounded-full border border-border bg-background px-2.5 py-1.5"
                                   >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </button>
-                                </div>
-                              ))}
+                                    <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-[11px] font-semibold text-primary">
+                                      {profile.avatar_url ? (
+                                        <img
+                                          src={
+                                            profile.avatar_url
+                                          }
+                                          alt={profileDisplayName(
+                                            profile,
+                                          )}
+                                          className="h-full w-full object-cover"
+                                        />
+                                      ) : (
+                                        profileInitials(
+                                          profile,
+                                        )
+                                      )}
+                                    </div>
+
+                                    <span className="text-sm font-medium">
+                                      {profileDisplayName(
+                                        profile,
+                                      )}
+                                    </span>
+
+                                    <button
+                                      type="button"
+                                      className="ml-1 text-muted-foreground transition hover:text-destructive"
+                                      onClick={() =>
+                                        void handleRemoveVolunteer(
+                                          profile.id,
+                                          selectedShift.id,
+                                        )
+                                      }
+                                      aria-label={`Remove ${profileDisplayName(profile)}`}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
+                                ),
+                              )}
                             </div>
                           )}
                         </div>
 
                         <div className="space-y-4 rounded-[1.5rem] border border-border bg-muted/10 p-4">
                           <div>
-                            <h4 className="text-lg font-semibold">Add Volunteers</h4>
+                            <h4 className="text-lg font-semibold">
+                              Add Volunteers
+                            </h4>
+
                             <p className="mt-1 text-sm text-muted-foreground">
-                              Search and drop volunteers into this shift.
+                              Search and drop volunteers
+                              into this shift.
                             </p>
                           </div>
 
                           <div className="flex items-center gap-2 rounded-xl border border-input bg-background px-3 py-2.5">
                             <Search className="h-4 w-4 text-muted-foreground" />
+
                             <VSInput
                               value={search}
-                              onChange={(event) => setSearch(event.target.value)}
+                              onChange={(event) =>
+                                setSearch(
+                                  event.target.value,
+                                )
+                              }
                               placeholder="Search volunteers"
                               className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
                             />
@@ -506,60 +652,109 @@ export function AdminShiftAssignmentsPage() {
 
                           <div
                             className="grid max-h-72 gap-2 overflow-y-auto rounded-xl border border-dashed border-border bg-background p-2"
-                            onDragOver={(event) => event.preventDefault()}
+                            onDragOver={(event) =>
+                              event.preventDefault()
+                            }
                             onDrop={(event) => {
                               event.preventDefault();
-                              const volunteerId = event.dataTransfer.getData("text/plain") || draggedVolunteerId;
-                              if (volunteerId && selectedShift) {
-                                void handleAssignVolunteer(volunteerId, selectedShift.id);
+
+                              const volunteerId =
+                                event.dataTransfer.getData(
+                                  "text/plain",
+                                ) ||
+                                draggedVolunteerId;
+
+                              if (
+                                volunteerId &&
+                                selectedShift
+                              ) {
+                                void handleAssignVolunteer(
+                                  volunteerId,
+                                  selectedShift.id,
+                                );
                               }
+
                               setDraggedVolunteerId(null);
                             }}
                           >
-                            {availableVolunteers.length === 0 ? (
+                            {availableVolunteers.length ===
+                            0 ? (
                               <p className="p-2 text-sm text-muted-foreground">
-                                No more volunteers available for this event.
+                                No more volunteers
+                                available for this
+                                event.
                               </p>
                             ) : (
-                              availableVolunteers.map((profile) => (
-                                <div
-                                  key={profile.id}
-                                  draggable
-                                  onDragStart={(event) => {
-                                    event.dataTransfer.effectAllowed = "copy";
-                                    event.dataTransfer.setData("text/plain", profile.id);
-                                    setDraggedVolunteerId(profile.id);
-                                  }}
-                                  onDragEnd={() => setDraggedVolunteerId(null)}
-                                  onClick={() => {
-                                    if (selectedShift) {
-                                      void handleAssignVolunteer(profile.id, selectedShift.id);
-                                    }
-                                  }}
-                                  className="flex cursor-grab items-center justify-between gap-3 rounded-xl border border-border bg-background p-2.5 transition hover:border-primary hover:bg-primary/5 active:cursor-grabbing"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-[11px] font-semibold text-primary">
-                                      {profile.avatar_url ? (
-                                        <img
-                                          src={profile.avatar_url}
-                                          alt={profileDisplayName(profile)}
-                                          className="h-full w-full object-cover"
-                                        />
-                                      ) : (
-                                        profileInitials(profile)
-                                      )}
-                                    </div>
-                                    <span className="text-sm font-medium">{profileDisplayName(profile)}</span>
-                                  </div>
+                              availableVolunteers.map(
+                                (profile) => (
+                                  <div
+                                    key={profile.id}
+                                    draggable
+                                    onDragStart={(event) => {
+                                      event.dataTransfer.effectAllowed =
+                                        "copy";
 
-                                  {addingVolunteerId === profile.id ? (
-                                    <LoaderCircle className="h-4 w-4 animate-spin text-primary" />
-                                  ) : (
-                                    <Plus className="h-4 w-4 text-muted-foreground" />
-                                  )}
-                                </div>
-                              ))
+                                      event.dataTransfer.setData(
+                                        "text/plain",
+                                        profile.id,
+                                      );
+
+                                      setDraggedVolunteerId(
+                                        profile.id,
+                                      );
+                                    }}
+                                    onDragEnd={() =>
+                                      setDraggedVolunteerId(
+                                        null,
+                                      )
+                                    }
+                                    onClick={() => {
+                                      if (
+                                        selectedShift
+                                      ) {
+                                        void handleAssignVolunteer(
+                                          profile.id,
+                                          selectedShift.id,
+                                        );
+                                      }
+                                    }}
+                                    className="flex cursor-grab items-center justify-between gap-3 rounded-xl border border-border bg-background p-2.5 transition hover:border-primary hover:bg-primary/5 active:cursor-grabbing"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-[11px] font-semibold text-primary">
+                                        {profile.avatar_url ? (
+                                          <img
+                                            src={
+                                              profile.avatar_url
+                                            }
+                                            alt={profileDisplayName(
+                                              profile,
+                                            )}
+                                            className="h-full w-full object-cover"
+                                          />
+                                        ) : (
+                                          profileInitials(
+                                            profile,
+                                          )
+                                        )}
+                                      </div>
+
+                                      <span className="text-sm font-medium">
+                                        {profileDisplayName(
+                                          profile,
+                                        )}
+                                      </span>
+                                    </div>
+
+                                    {addingVolunteerId ===
+                                    profile.id ? (
+                                      <LoaderCircle className="h-4 w-4 animate-spin text-primary" />
+                                    ) : (
+                                      <Plus className="h-4 w-4 text-muted-foreground" />
+                                    )}
+                                  </div>
+                                ),
+                              )
                             )}
                           </div>
                         </div>
@@ -576,29 +771,53 @@ export function AdminShiftAssignmentsPage() {
             ) : (
               <div className="space-y-4">
                 {filteredShifts.map((shift) => {
-                  const shiftAssignments = assignedByShift.get(shift.id) ?? [];
-                  const visibleAssigned = shiftAssignments.slice(0, 6);
-                  const hasMore = shiftAssignments.length > visibleAssigned.length;
+                  const shiftAssignments =
+                    assignedByShift.get(shift.id) ?? [];
+
+                  const visibleAssigned =
+                    shiftAssignments.slice(0, 6);
+
+                  const hasMore =
+                    shiftAssignments.length >
+                    visibleAssigned.length;
 
                   return (
-                    <VSCard key={shift.id} className="rounded-[1.5rem] border-border">
+                    <VSCard
+                      key={shift.id}
+                      className="rounded-[1.5rem] border-border"
+                    >
                       <VSCardContent className="p-5">
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                           <div>
                             <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
                               Shift
                             </p>
-                            <h3 className="mt-1 text-xl font-semibold">{shift.title}</h3>
+
+                            <h3 className="mt-1 text-xl font-semibold">
+                              {shift.title}
+                            </h3>
+
                             <p className="mt-1 text-sm text-muted-foreground">
-                              {shift.date} · {shift.start_time} - {shift.end_time}
+                              {shift.date} ·{" "}
+                              {shift.start_time} -{" "}
+                              {shift.end_time}
                             </p>
                           </div>
 
                           <div className="flex items-center gap-2">
                             <VSButton
-                              variant={selectedShiftId === shift.id ? "default" : "outline"}
+                              variant={
+                                selectedShiftId ===
+                                shift.id
+                                  ? "default"
+                                  : "outline"
+                              }
                               size="sm"
-                              onClick={() => handleViewShiftDetails(shift.id)}
+                              onClick={() =>
+                                handleViewShiftDetails(
+                                  shift.id,
+                                )
+                              }
                             >
                               <Eye className="h-4 w-4" />
                               View details
@@ -612,34 +831,55 @@ export function AdminShiftAssignmentsPage() {
                               No volunteers assigned
                             </span>
                           ) : (
-                            visibleAssigned.map((assignment) => {
-                              const volunteer = profiles.find((profile) => profile.id === assignment.profile_id);
+                            visibleAssigned.map(
+                              (assignment) => {
+                                const volunteer =
+                                  profiles.find(
+                                    (profile) =>
+                                      profile.id ===
+                                      assignment.profile_id,
+                                  );
 
-                              return (
-                                <div
-                                  key={assignment.id}
-                                  className="flex items-center gap-2 rounded-full border border-border bg-background px-2 py-1.5"
-                                >
-                                  <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-[11px] font-semibold text-primary">
-                                    {volunteer?.avatar_url ? (
-                                      <img
-                                        src={volunteer.avatar_url}
-                                        alt={profileDisplayName(volunteer)}
-                                        className="h-full w-full object-cover"
-                                      />
-                                    ) : (
-                                      profileInitials(volunteer)
-                                    )}
+                                return (
+                                  <div
+                                    key={assignment.id}
+                                    className="flex items-center gap-2 rounded-full border border-border bg-background px-2 py-1.5"
+                                  >
+                                    <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-[11px] font-semibold text-primary">
+                                      {volunteer?.avatar_url ? (
+                                        <img
+                                          src={
+                                            volunteer.avatar_url
+                                          }
+                                          alt={profileDisplayName(
+                                            volunteer,
+                                          )}
+                                          className="h-full w-full object-cover"
+                                        />
+                                      ) : (
+                                        profileInitials(
+                                          volunteer,
+                                        )
+                                      )}
+                                    </div>
+
+                                    <span className="text-sm font-medium">
+                                      {profileDisplayName(
+                                        volunteer,
+                                      )}
+                                    </span>
                                   </div>
-                                  <span className="text-sm font-medium">{profileDisplayName(volunteer)}</span>
-                                </div>
-                              );
-                            })
+                                );
+                              },
+                            )
                           )}
 
                           {hasMore ? (
                             <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                              +{shiftAssignments.length - visibleAssigned.length} more
+                              +
+                              {shiftAssignments.length -
+                                visibleAssigned.length}{" "}
+                              more
                             </span>
                           ) : null}
                         </div>
@@ -653,5 +893,4 @@ export function AdminShiftAssignmentsPage() {
         )}
       </div>
     </AdminLayout>
-  );
-}
+  )

@@ -178,32 +178,65 @@ function getMoroccoCalendarDate(date = new Date()) {
   }).format(date);
 }
 
-function isLeaderFeedExpired(eventEndDate: string | null | undefined, graceDays = 1): boolean {
+function isLeaderFeedExpired(
+  eventEndDate: string | null | undefined,
+  graceDays = 1,
+): boolean {
   if (!eventEndDate) {
     return false;
   }
 
-  const currentDate = new Date(`${getMoroccoCalendarDate()}T00:00:00`);
-  const cutoffDate = new Date(`${eventEndDate}T00:00:00`);
-  cutoffDate.setDate(cutoffDate.getDate() + graceDays);
+  const currentDate = new Date(
+    `${getMoroccoCalendarDate()}T00:00:00`,
+  );
 
-  return currentDate.getTime() > cutoffDate.getTime();
+  const cutoffDate = new Date(
+    `${eventEndDate}T00:00:00`,
+  );
+
+  cutoffDate.setDate(
+    cutoffDate.getDate() + graceDays,
+  );
+
+  return (
+    currentDate.getTime() >
+    cutoffDate.getTime()
+  );
 }
 
-function isLeaderShiftExpired(shiftDate: string | null | undefined, endTime: string | null | undefined, graceDays = 1): boolean {
+function isLeaderShiftExpired(
+  shiftDate: string | null | undefined,
+  endTime: string | null | undefined,
+  graceDays = 1,
+): boolean {
   if (!shiftDate) {
     return false;
   }
 
-  const normalizedEndTime = String(endTime ?? "").trim();
-  const shiftEndValue = normalizedEndTime.includes(":") ? normalizedEndTime : `${normalizedEndTime}:00`;
-  const endDateTime = new Date(`${shiftDate}T${shiftEndValue || "00:00:00"}`);
+  const normalizedEndTime =
+    String(endTime ?? "").trim();
 
-  if (Number.isNaN(endDateTime.getTime())) {
+  const shiftEndValue =
+    normalizedEndTime.includes(":")
+      ? normalizedEndTime
+      : `${normalizedEndTime}:00`;
+
+  const endDateTime = new Date(
+    `${shiftDate}T${shiftEndValue || "00:00:00"}`,
+  );
+
+  if (
+    Number.isNaN(
+      endDateTime.getTime(),
+    )
+  ) {
     return false;
   }
 
-  const cutoffTime = endDateTime.getTime() + 1000 * 60 * 60 * 24 * graceDays;
+  const cutoffTime =
+    endDateTime.getTime() +
+    1000 * 60 * 60 * 24 * graceDays;
+
   return Date.now() > cutoffTime;
 }
 
@@ -214,20 +247,26 @@ function isLeaderShiftExpired(shiftDate: string | null | undefined, endTime: str
  * the browser/server timezone.
  */
 function getMoroccoDateTime() {
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Africa/Casablanca",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hourCycle: "h23",
-  }).formatToParts(new Date());
+  const parts = new Intl.DateTimeFormat(
+    "en-GB",
+    {
+      timeZone: "Africa/Casablanca",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+    },
+  ).formatToParts(new Date());
 
-  const getPart = (type: string): string =>
+  const getPart = (
+    type: string,
+  ): string =>
     parts.find(
-      (part) => part.type === type,
+      (part) =>
+        part.type === type,
     )?.value ?? "00";
 
   const year = getPart("year");
@@ -244,6 +283,52 @@ function getMoroccoDateTime() {
     minutes: Number(minute),
     seconds: Number(second),
   };
+}
+
+/**
+ * Formats minutes into HH:mm.
+ *
+ * Used for attendance validation messages.
+ */
+function formatTime(
+  totalMinutes: number,
+): string {
+  const hours = Math.floor(
+    totalMinutes / 60,
+  );
+
+  const minutes =
+    totalMinutes % 60;
+
+  return `${String(hours).padStart(
+    2,
+    "0",
+  )}:${String(minutes).padStart(
+    2,
+    "0",
+  )}`;
+}
+
+/**
+ * Normalizes a stored/scanned QR value for comparison.
+ *
+ * IMPORTANT:
+ * This does NOT generate a QR code.
+ * The canonical QR always comes from:
+ *
+ * public.accreditations.qr_code_data
+ */
+function normalizeQrValue(
+  value: string | null | undefined,
+): string {
+  return (value ?? "")
+    .toString()
+    .trim()
+    .replace(
+      /[^a-zA-Z0-9]/g,
+      "",
+    )
+    .toUpperCase();
 }
 
 /**
@@ -421,7 +506,9 @@ export const leaderService = {
       lastName:
         data.last_name ?? "",
       role:
-        String(data.role ?? "leader"),
+        String(
+          data.role ?? "leader",
+        ),
       email:
         data.email ?? null,
       avatarUrl:
@@ -433,31 +520,51 @@ export const leaderService = {
   // COMMITTEES
   // ============================================================
 
-  async getLeaderCommittees(): Promise<LeaderCommittee[]> {
-    console.log("=== getLeaderCommittees START ===");
+  async getLeaderCommittees(): Promise<
+    LeaderCommittee[]
+  > {
+    console.log(
+      "=== getLeaderCommittees START ===",
+    );
 
-    const userId = await getCurrentUserId();
+    const userId =
+      await getCurrentUserId();
 
-    console.log("getLeaderCommittees userId:", userId);
+    console.log(
+      "getLeaderCommittees userId:",
+      userId,
+    );
 
     if (!userId) {
-      console.error("getLeaderCommittees: NO USER ID");
+      console.error(
+        "getLeaderCommittees: NO USER ID",
+      );
+
       return [];
     }
 
-    const result = await supabase
-      .from("committees")
-      .select(`
-        id,
-        event_id,
-        name,
-        description,
-        leader_profile_id,
-        status,
-        created_at
-      `)
-      .eq("leader_profile_id", userId)
-      .order("created_at", { ascending: false });
+    const result =
+      await supabase
+        .from("committees")
+        .select(`
+          id,
+          event_id,
+          name,
+          description,
+          leader_profile_id,
+          status,
+          created_at
+        `)
+        .eq(
+          "leader_profile_id",
+          userId,
+        )
+        .order(
+          "created_at",
+          {
+            ascending: false,
+          },
+        );
 
     console.log(
       "getLeaderCommittees RAW RESULT:",
@@ -499,18 +606,35 @@ export const leaderService = {
     const leader =
       await this.getCurrentLeaderProfile();
 
-    const committees: LeaderCommittee[] = [];
+    const committees:
+      LeaderCommittee[] = [];
 
-    for (const committee of result.data) {
-      const { count, error: countError } =
-        await supabase
-          .from("committee_members")
-          .select("id", {
+    for (
+      const committee of
+        result.data
+    ) {
+      const {
+        count,
+        error: countError,
+      } = await supabase
+        .from(
+          "committee_members",
+        )
+        .select(
+          "id",
+          {
             count: "exact",
             head: true,
-          })
-          .eq("committee_id", committee.id)
-          .eq("status", "assigned");
+          },
+        )
+        .eq(
+          "committee_id",
+          committee.id,
+        )
+        .eq(
+          "status",
+          "assigned",
+        );
 
       if (countError) {
         console.error(
@@ -521,17 +645,26 @@ export const leaderService = {
 
       committees.push({
         id: committee.id,
-        eventId: committee.event_id,
-        name: committee.name,
-        description: committee.description ?? null,
-        status: String(committee.status ?? "active"),
+        eventId:
+          committee.event_id,
+        name:
+          committee.name,
+        description:
+          committee.description ??
+          null,
+        status:
+          String(
+            committee.status ??
+              "active",
+          ),
         leader: leader
           ? getDisplayName(
               leader.firstName,
               leader.lastName,
             )
           : "Leader",
-        memberCount: count ?? 0,
+        memberCount:
+          count ?? 0,
       });
     }
 
@@ -549,7 +682,10 @@ export const leaderService = {
     const committees =
       await this.getLeaderCommittees();
 
-    return committees[0] ?? null;
+    return (
+      committees[0] ??
+      null
+    );
   },
 
   // ============================================================
@@ -581,26 +717,29 @@ export const leaderService = {
       return [];
     }
 
-    const { data: events, error } =
-      await supabase
-        .from("events")
-        .select(`
-          id,
-          title,
-          description,
-          start_date,
-          end_date,
-          city,
-          country,
-          venue,
-          status,
-          cover_url,
-          start_time,
-          end_time
-        `)
-        .in("id", eventIds);
-
-    const visibleEvents = (events ?? []).filter((event) => !isLeaderFeedExpired(event.end_date, 1));
+    const {
+      data: events,
+      error,
+    } = await supabase
+      .from("events")
+      .select(`
+        id,
+        title,
+        description,
+        start_date,
+        end_date,
+        city,
+        country,
+        venue,
+        status,
+        cover_url,
+        start_time,
+        end_time
+      `)
+      .in(
+        "id",
+        eventIds,
+      );
 
     if (error) {
       console.error(
@@ -615,19 +754,33 @@ export const leaderService = {
       return [];
     }
 
+    const visibleEvents =
+      events.filter(
+        (event) =>
+          !isLeaderFeedExpired(
+            event.end_date,
+            1,
+          ),
+      );
+
     const committeesByEvent =
       new Map<
         string,
         LeaderCommittee[]
       >();
 
-    for (const committee of committees) {
+    for (
+      const committee of
+        committees
+    ) {
       const existing =
         committeesByEvent.get(
           committee.eventId,
         ) ?? [];
 
-      existing.push(committee);
+      existing.push(
+        committee,
+      );
 
       committeesByEvent.set(
         committee.eventId,
@@ -653,13 +806,16 @@ export const leaderService = {
             event.title,
 
           description:
-            event.description ?? null,
+            event.description ??
+            null,
 
           startDate:
-            event.start_date ?? "",
+            event.start_date ??
+            "",
 
           endDate:
-            event.end_date ?? "",
+            event.end_date ??
+            "",
 
           location:
             [
@@ -668,7 +824,8 @@ export const leaderService = {
               event.country,
             ]
               .filter(Boolean)
-              .join(" — ") || "TBD",
+              .join(" — ") ||
+            "TBD",
 
           status:
             String(
@@ -677,7 +834,8 @@ export const leaderService = {
             ),
 
           coverImage:
-            event.cover_url ?? null,
+            event.cover_url ??
+            null,
 
           committeeName:
             primaryCommittee?.name ??
@@ -688,10 +846,12 @@ export const leaderService = {
             "Leader",
 
           startTime:
-            event.start_time ?? null,
+            event.start_time ??
+            null,
 
           endTime:
-            event.end_time ?? null,
+            event.end_time ??
+            null,
         };
       })
       .sort((a, b) => {
@@ -709,7 +869,9 @@ export const leaderService = {
               ).getTime()
             : Number.MAX_SAFE_INTEGER;
 
-        return dateA - dateB;
+        return (
+          dateA - dateB
+        );
       });
   },
 
@@ -723,28 +885,30 @@ export const leaderService = {
       return null;
     }
 
-    const { data: event, error } =
-      await supabase
-        .from("events")
-        .select(`
-          id,
-          title,
-          description,
-          start_date,
-          end_date,
-          city,
-          country,
-          venue,
-          status,
-          cover_url,
-          start_time,
-          end_time
-        `)
-        .eq(
-          "id",
-          committee.eventId,
-        )
-        .maybeSingle();
+    const {
+      data: event,
+      error,
+    } = await supabase
+      .from("events")
+      .select(`
+        id,
+        title,
+        description,
+        start_date,
+        end_date,
+        city,
+        country,
+        venue,
+        status,
+        cover_url,
+        start_time,
+        end_time
+      `)
+      .eq(
+        "id",
+        committee.eventId,
+      )
+      .maybeSingle();
 
     if (error) {
       console.error(
@@ -766,13 +930,16 @@ export const leaderService = {
         event.title,
 
       description:
-        event.description ?? null,
+        event.description ??
+        null,
 
       startDate:
-        event.start_date ?? "",
+        event.start_date ??
+        "",
 
       endDate:
-        event.end_date ?? "",
+        event.end_date ??
+        "",
 
       location:
         [
@@ -781,7 +948,8 @@ export const leaderService = {
           event.country,
         ]
           .filter(Boolean)
-          .join(" — ") || "TBD",
+          .join(" — ") ||
+        "TBD",
 
       status:
         String(
@@ -790,7 +958,8 @@ export const leaderService = {
         ),
 
       coverImage:
-        event.cover_url ?? null,
+        event.cover_url ??
+        null,
 
       committeeName:
         committee.name,
@@ -799,10 +968,12 @@ export const leaderService = {
         committee.leader,
 
       startTime:
-        event.start_time ?? null,
+        event.start_time ??
+        null,
 
       endTime:
-        event.end_time ?? null,
+        event.end_time ??
+        null,
     };
   },
 
@@ -810,7 +981,9 @@ export const leaderService = {
   // COMMITTEE → SHIFTS
   // ============================================================
 
-  async getLeaderCommitteeShifts(): Promise<any[]> {
+  async getLeaderCommitteeShifts(): Promise<
+    any[]
+  > {
     const committees =
       await this.getLeaderCommittees();
 
@@ -923,7 +1096,8 @@ export const leaderService = {
 
             committee: committee
               ? {
-                  id: committee.id,
+                  id:
+                    committee.id,
                   event_id:
                     committee.eventId,
                   name:
@@ -976,10 +1150,16 @@ export const leaderService = {
         "committee_id",
         committeeIds,
       )
-      .eq("status", "assigned")
-      .order("joined_at", {
-        ascending: true,
-      });
+      .eq(
+        "status",
+        "assigned",
+      )
+      .order(
+        "joined_at",
+        {
+          ascending: true,
+        },
+      );
 
     if (membersError) {
       console.error(
@@ -1014,7 +1194,10 @@ export const leaderService = {
         last_name,
         avatar_url
       `)
-      .in("id", profileIds);
+      .in(
+        "id",
+        profileIds,
+      );
 
     if (profilesError) {
       console.error(
@@ -1123,10 +1306,12 @@ export const leaderService = {
         ),
       );
 
-    const members: LeaderMember[] =
-      [];
+    const members:
+      LeaderMember[] = [];
 
-    for (const row of memberRows) {
+    for (
+      const row of memberRows
+    ) {
       const profile =
         profilesById.get(
           row.profile_id,
@@ -1168,10 +1353,12 @@ export const leaderService = {
           )
           .filter(Boolean);
 
-      let shiftAssignments: any[] =
-        [];
+      let shiftAssignments:
+        any[] = [];
 
-      if (memberShiftIds.length) {
+      if (
+        memberShiftIds.length
+      ) {
         const {
           data: assignments,
           error: assignmentError,
@@ -1225,7 +1412,8 @@ export const leaderService = {
       }
 
       const selectedAssignment =
-        shiftAssignments[0] ?? null;
+        shiftAssignments[0] ??
+        null;
 
       const shift =
         selectedAssignment?.shift ??
@@ -1235,15 +1423,19 @@ export const leaderService = {
         shift?.role?.name ??
         "Volunteer";
 
-      let attendanceData: any =
-        null;
+      let attendanceData:
+        any = null;
 
-      if (memberShiftIds.length) {
+      if (
+        memberShiftIds.length
+      ) {
         const {
           data: attendance,
           error: attendanceError,
         } = await supabase
-          .from("attendance_records")
+          .from(
+            "attendance_records",
+          )
           .select(`
             id,
             shift_id,
@@ -1329,7 +1521,9 @@ export const leaderService = {
       if (feedbackSubmitted) {
         feedbackStatus =
           "Submitted";
-      } else if (feedbackAvailable) {
+      } else if (
+        feedbackAvailable
+      ) {
         feedbackStatus =
           "Pending";
       } else {
@@ -1385,7 +1579,9 @@ export const leaderService = {
   // SHIFTS
   // ============================================================
 
-  async getEventShifts(): Promise<LeaderShift[]> {
+  async getEventShifts(): Promise<
+    LeaderShift[]
+  > {
     const committeeShifts =
       await this.getLeaderCommitteeShifts();
 
@@ -1393,10 +1589,13 @@ export const leaderService = {
       return [];
     }
 
-    const result: LeaderShift[] =
-      [];
+    const result:
+      LeaderShift[] = [];
 
-    for (const item of committeeShifts) {
+    for (
+      const item of
+        committeeShifts
+    ) {
       const shift =
         item.shift;
 
@@ -1409,14 +1608,22 @@ export const leaderService = {
         continue;
       }
 
-      if (isLeaderShiftExpired(shift.date, shift.end_time, 1)) {
+      if (
+        isLeaderShiftExpired(
+          shift.date,
+          shift.end_time,
+          1,
+        )
+      ) {
         continue;
       }
 
       const {
         data: assignments,
       } = await supabase
-        .from("shift_assignments")
+        .from(
+          "shift_assignments",
+        )
         .select(`
           profile_id,
           status
@@ -1427,7 +1634,9 @@ export const leaderService = {
         );
 
       const assigned =
-        (assignments ?? []).filter(
+        (
+          assignments ?? []
+        ).filter(
           (assignment) =>
             assignment.status ===
             "assigned",
@@ -1636,7 +1845,9 @@ export const leaderService = {
       data: assignments,
       error: assignmentsError,
     } = await supabase
-      .from("shift_assignments")
+      .from(
+        "shift_assignments",
+      )
       .select(`
         profile_id,
         status,
@@ -1664,7 +1875,9 @@ export const leaderService = {
     const profileIds =
       Array.from(
         new Set(
-          (assignments ?? [])
+          (
+            assignments ?? []
+          )
             .map(
               (assignment) =>
                 assignment.profile_id,
@@ -1708,7 +1921,9 @@ export const leaderService = {
           ),
 
         supabase
-          .from("attendance_records")
+          .from(
+            "attendance_records",
+          )
           .select(`
             profile_id,
             status,
@@ -1775,87 +1990,89 @@ export const leaderService = {
     const members:
       LeaderShiftMember[] =
       (assignments ?? [])
-        .map((assignment) => {
-          const profile =
-            profileMap.get(
-              assignment.profile_id,
-            );
+        .map(
+          (assignment) => {
+            const profile =
+              profileMap.get(
+                assignment.profile_id,
+              );
 
-          if (!profile) {
-            return null;
-          }
+            if (!profile) {
+              return null;
+            }
 
-          const attendanceRecord =
-            attendanceMap.get(
-              assignment.profile_id,
-            );
+            const attendanceRecord =
+              attendanceMap.get(
+                assignment.profile_id,
+              );
 
-          let attendanceStatus:
-            LeaderShiftMember["attendanceStatus"] =
-            "Assigned";
+            let attendanceStatus:
+              LeaderShiftMember["attendanceStatus"] =
+              "Assigned";
 
-          if (
-            attendanceRecord?.check_out_time ||
-            attendanceRecord?.status ===
-              "checked-out" ||
-            attendanceRecord?.status ===
-              "checked_out"
-          ) {
-            attendanceStatus =
-              "Checked out";
-          } else if (
-            attendanceRecord?.check_in_time ||
-            attendanceRecord?.status ===
-              "checked-in" ||
-            attendanceRecord?.status ===
-              "checked_in"
-          ) {
-            attendanceStatus =
-              "Checked in";
-          } else if (
-            attendanceRecord?.status ===
-            "absent"
-          ) {
-            attendanceStatus =
-              "Absent";
-          }
+            if (
+              attendanceRecord?.check_out_time ||
+              attendanceRecord?.status ===
+                "checked-out" ||
+              attendanceRecord?.status ===
+                "checked_out"
+            ) {
+              attendanceStatus =
+                "Checked out";
+            } else if (
+              attendanceRecord?.check_in_time ||
+              attendanceRecord?.status ===
+                "checked-in" ||
+              attendanceRecord?.status ===
+                "checked_in"
+            ) {
+              attendanceStatus =
+                "Checked in";
+            } else if (
+              attendanceRecord?.status ===
+              "absent"
+            ) {
+              attendanceStatus =
+                "Absent";
+            }
 
-          return {
-            id:
-              profile.id,
+            return {
+              id:
+                profile.id,
 
-            firstName:
-              profile.first_name ??
-              "",
+              firstName:
+                profile.first_name ??
+                "",
 
-            lastName:
-              profile.last_name ??
-              "",
+              lastName:
+                profile.last_name ??
+                "",
 
-            avatar:
-              profile.avatar_url ??
-              null,
+              avatar:
+                profile.avatar_url ??
+                null,
 
-            role:
-              "Volunteer",
+              role:
+                "Volunteer",
 
-            assignmentStatus:
-              assignment.status ??
-              "assigned",
+              assignmentStatus:
+                assignment.status ??
+                "assigned",
 
-            attendanceStatus,
+              attendanceStatus,
 
-            checkInTime:
-              attendanceRecord?.check_in_time ??
-              null,
+              checkInTime:
+                attendanceRecord?.check_in_time ??
+                null,
 
-            checkOutTime:
-              attendanceRecord?.check_out_time ??
-              null,
-          };
-        })
+              checkOutTime:
+                attendanceRecord?.check_out_time ??
+                null,
+            };
+          },
+        )
         .filter(Boolean) as
-        LeaderShiftMember[];
+      LeaderShiftMember[];
 
     return {
       ...shift,
@@ -1889,7 +2106,9 @@ export const leaderService = {
       data,
       error,
     } = await supabase
-      .from("attendance_records")
+      .from(
+        "attendance_records",
+      )
       .select(`
         id,
         profile_id,
@@ -1968,7 +2187,9 @@ export const leaderService = {
 
       roleIds.length
         ? supabase
-            .from("event_roles")
+            .from(
+              "event_roles",
+            )
             .select(`
               id,
               name
@@ -2065,7 +2286,9 @@ export const leaderService = {
       data: memberRows,
       error,
     } = await supabase
-      .from("committee_members")
+      .from(
+        "committee_members",
+      )
       .select(`
         profile_id,
         committee_id,
@@ -2113,9 +2336,24 @@ export const leaderService = {
       ),
     ];
 
+    const eventIds = [
+      ...new Set(
+        committees
+          .map(
+            (committee) =>
+              committee.eventId,
+          )
+          .filter(Boolean),
+      ),
+    ];
+
     const [
       { data: profiles },
       { data: roles },
+      {
+        data: accreditationRows,
+        error: accreditationError,
+      },
     ] = await Promise.all([
       supabase
         .from("profiles")
@@ -2132,7 +2370,9 @@ export const leaderService = {
 
       roleIds.length
         ? supabase
-            .from("event_roles")
+            .from(
+              "event_roles",
+            )
             .select(`
               id,
               name
@@ -2144,7 +2384,47 @@ export const leaderService = {
         : Promise.resolve({
             data: [],
           }),
+
+      eventIds.length
+        ? supabase
+            .from(
+              "accreditations",
+            )
+            .select(`
+              id,
+              profile_id,
+              event_id,
+              role_id,
+              status,
+              volunteer_identifier,
+              qr_code_data
+            `)
+            .in(
+              "profile_id",
+              profileIds,
+            )
+            .in(
+              "event_id",
+              eventIds,
+            )
+            .eq(
+              "status",
+              "approved",
+            )
+        : Promise.resolve({
+            data: [],
+            error: null,
+          }),
     ]);
+
+    if (accreditationError) {
+      console.error(
+        "Failed to load volunteer accreditations:",
+        accreditationError,
+      );
+
+      return [];
+    }
 
     const profilesById =
       new Map(
@@ -2166,11 +2446,40 @@ export const leaderService = {
         ),
       );
 
+    /**
+     * Canonical accreditation lookup.
+     *
+     * Key:
+     * profile_id:event_id:role_id
+     *
+     * QR is NEVER generated here.
+     */
+    const accreditationByKey =
+      new Map<
+        string,
+        (typeof accreditationRows)[number]
+      >();
+
+    for (
+      const accreditation of
+        accreditationRows ?? []
+    ) {
+      const key =
+        `${accreditation.profile_id}:${accreditation.event_id}:${accreditation.role_id}`;
+
+      accreditationByKey.set(
+        key,
+        accreditation,
+      );
+    }
+
     const volunteers:
       LeaderScannerVolunteer[] =
       [];
 
-    for (const row of memberRows) {
+    for (
+      const row of memberRows
+    ) {
       const profile =
         profilesById.get(
           row.profile_id,
@@ -2190,11 +2499,74 @@ export const leaderService = {
         continue;
       }
 
+      /**
+       * When the committee member has an explicit event role,
+       * require the accreditation for that exact role.
+       *
+       * This prevents accidentally showing a QR belonging to
+       * another role for the same volunteer/event.
+       */
+      let accreditation =
+        row.event_role_id
+          ? accreditationByKey.get(
+              `${row.profile_id}:${committee.eventId}:${row.event_role_id}`,
+            )
+          : undefined;
+
+      /**
+       * If the committee member does not have an explicit role,
+       * we can safely use an approved accreditation for the
+       * same volunteer + event.
+       */
+      if (
+        !row.event_role_id
+      ) {
+        accreditation =
+          (
+            accreditationRows ??
+            []
+          ).find(
+            (item) =>
+              item.profile_id ===
+                row.profile_id &&
+              item.event_id ===
+                committee.eventId,
+          );
+      }
+
+      /**
+       * No approved accreditation = no scanner QR.
+       *
+       * The database trigger is responsible for creating the
+       * accreditation after a shift assignment.
+       */
+      if (
+        !accreditation ||
+        !accreditation.qr_code_data
+      ) {
+        console.warn(
+          "[Leader Scanner] No approved accreditation found for volunteer:",
+          {
+            profileId:
+              row.profile_id,
+            eventId:
+              committee.eventId,
+            roleId:
+              row.event_role_id,
+          },
+        );
+
+        continue;
+      }
+
       const {
         data: committeeShiftRows,
-        error: committeeShiftError,
+        error:
+          committeeShiftError,
       } = await supabase
-        .from("committee_shifts")
+        .from(
+          "committee_shifts",
+        )
         .select(`
           shift_id
         `)
@@ -2211,22 +2583,29 @@ export const leaderService = {
       }
 
       const shiftIds =
-        (committeeShiftRows ?? [])
+        (
+          committeeShiftRows ??
+          []
+        )
           .map(
             (item) =>
               item.shift_id,
           )
           .filter(Boolean);
 
-      let attendance: any =
-        null;
+      let attendance:
+        any = null;
 
       if (shiftIds.length) {
         const {
-          data: attendanceData,
-          error: attendanceError,
+          data:
+            attendanceData,
+          error:
+            attendanceError,
         } = await supabase
-          .from("attendance_records")
+          .from(
+            "attendance_records",
+          )
           .select(`
             status,
             check_in_time,
@@ -2279,14 +2658,22 @@ export const leaderService = {
           )?.name ??
           "Volunteer",
 
+        roleId:
+          row.event_role_id ??
+          accreditation.role_id ??
+          undefined,
+
         committeeId:
           row.committee_id,
+
+        committeeName:
+          committee.name,
 
         eventId:
           committee.eventId,
 
         accreditationQrCode:
-          profile.id,
+          accreditation.qr_code_data,
 
         attendanceStatus:
           normalizeAttendanceStatus(
@@ -2349,7 +2736,8 @@ export const leaderService = {
 
       return {
         ok: false,
-        reason: "LEADER_HAS_NO_COMMITTEES",
+        reason:
+          "LEADER_HAS_NO_COMMITTEES",
       };
     }
 
@@ -2367,141 +2755,98 @@ export const leaderService = {
     const normalizedQrCode =
       qrCode.trim();
 
-    const normalizeQrValue = (value: string | null | undefined) =>
-      (value ?? "")
-        .toString()
-        .trim()
-        .replace(/[^a-zA-Z0-9]/g, "")
-        .toUpperCase();
-
     const normalizedQrValue =
-      normalizeQrValue(normalizedQrCode);
-
-    const canonicalVolunteerQrLegacy = (
-      profileId: string,
-      eventId: string,
-      roleId: string,
-    ) => {
-      const seed = `${profileId}${eventId}${roleId}`.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
-      const token = seed.slice(-6).padStart(6, "0");
-      return `VOL-${token}`;
-    };
-
-    const canonicalVolunteerQr = async (
-      profileId: string,
-      eventId: string,
-      roleId: string,
-    ) => {
-      const seed = `${profileId}|${eventId}|${roleId}`;
-      const digest = await crypto.subtle.digest(
-        "SHA-256",
-        new TextEncoder().encode(seed),
+      normalizeQrValue(
+        normalizedQrCode,
       );
 
-      const token = Array.from(new Uint8Array(digest))
-        .map((byte) => byte.toString(16).padStart(2, "0"))
-        .join("")
-        .slice(0, 10)
-        .toUpperCase();
-
-      return `VOL-${token}`;
-    };
+    if (!normalizedQrValue) {
+      return {
+        ok: false,
+        reason:
+          "INVALID_QR_CODE",
+      };
+    }
 
     console.log(
       "QR lookup:",
       normalizedQrCode,
     );
 
-    let accreditation: any =
-      null;
-
-    const matchAccreditationRows = async (rows: any[] = []) => {
-      for (const item of rows) {
-        const legacyQr = `volunteer:${item.profile_id}:${item.event_id}:${item.role_id}`;
-        const values = [
-          item.qr_code_data,
-          item.volunteer_identifier,
-          item.profile_id,
-          legacyQr,
-          canonicalVolunteerQrLegacy(item.profile_id, item.event_id, item.role_id),
-          await canonicalVolunteerQr(item.profile_id, item.event_id, item.role_id),
-        ];
-
-        if (
-          values.some(
-            (value) =>
-              normalizeQrValue(value) === normalizedQrValue,
-          )
-        ) {
-          return item;
-        }
-      }
-
-      return null;
-    };
-
-    const [{ data: eventAccreditations, error: eventAccreditationsError }, { data: fallbackAccreditations, error: fallbackAccreditationsError }] = await Promise.all([
-      eventIds.length
-        ? supabase
-            .from("accreditations")
-            .select(`
-              id,
-              profile_id,
-              event_id,
-              role_id,
-              status,
-              volunteer_identifier,
-              qr_code_data,
-              profile:profiles(
-                id,
-                first_name,
-                last_name,
-                avatar_url
-              )
-            `)
-            .in("event_id", eventIds)
-        : Promise.resolve({ data: [], error: null }),
-      supabase
-        .from("accreditations")
-        .select(`
+    /**
+     * IMPORTANT:
+     *
+     * We ONLY search the canonical QR stored in:
+     *
+     * public.accreditations.qr_code_data
+     *
+     * No client-side QR generation.
+     * No legacy QR generation.
+     * No SHA-256 QR generation.
+     * No profile_id fallback.
+     * No global accreditation fallback.
+     */
+    const {
+      data: accreditationRows,
+      error:
+        accreditationsError,
+    } = await supabase
+      .from(
+        "accreditations",
+      )
+      .select(`
+        id,
+        profile_id,
+        event_id,
+        role_id,
+        status,
+        volunteer_identifier,
+        qr_code_data,
+        profile:profiles(
           id,
-          profile_id,
-          event_id,
-          role_id,
-          status,
-          volunteer_identifier,
-          qr_code_data,
-          profile:profiles(
-            id,
-            first_name,
-            last_name,
-            avatar_url
-          )
-        `)
-        .limit(500),
-    ]);
-
-    if (eventAccreditationsError) {
-      console.error(
-        "QR lookup event accreditations error:",
-        eventAccreditationsError,
+          first_name,
+          last_name,
+          avatar_url
+        )
+      `)
+      .in(
+        "event_id",
+        eventIds,
       );
+
+    if (accreditationsError) {
+      console.error(
+        "QR lookup accreditation query error:",
+        accreditationsError,
+      );
+
+      return {
+        ok: false,
+        reason:
+          "ACCREDITATIONS_QUERY_ERROR",
+      };
     }
 
-    if (fallbackAccreditationsError) {
-      console.error(
-        "QR lookup fallback accreditations error:",
-        fallbackAccreditationsError,
+    /**
+     * Normalize only for scan comparison.
+     *
+     * The actual returned QR remains the exact DB value.
+     */
+    const accreditation =
+      (
+        accreditationRows ??
+        []
+      ).find(
+        (item) =>
+          normalizeQrValue(
+            item.qr_code_data,
+          ) ===
+          normalizedQrValue,
       );
-    }
-
-    accreditation =
-      (await matchAccreditationRows(eventAccreditations ?? [])) ??
-      (await matchAccreditationRows(fallbackAccreditations ?? []));
 
     if (!accreditation) {
       console.warn(
-        "No accreditation found for QR:",
+        "No accreditation found for canonical QR:",
         normalizedQrCode,
       );
 
@@ -2513,7 +2858,8 @@ export const leaderService = {
     }
 
     if (
-      accreditation.status !== "approved"
+      accreditation.status !==
+      "approved"
     ) {
       return {
         ok: false,
@@ -2522,8 +2868,18 @@ export const leaderService = {
       };
     }
 
+    if (
+      !accreditation.qr_code_data
+    ) {
+      return {
+        ok: false,
+        reason:
+          "ACCREDITATION_QR_MISSING",
+      };
+    }
+
     console.log(
-      "Accreditation found:",
+      "Canonical accreditation found:",
       {
         id:
           accreditation.id,
@@ -2536,9 +2892,6 @@ export const leaderService = {
 
         roleId:
           accreditation.role_id,
-
-        volunteerIdentifier:
-          accreditation.volunteer_identifier,
 
         qrCodeData:
           accreditation.qr_code_data,
@@ -2568,7 +2921,8 @@ export const leaderService = {
 
     const {
       data: profile,
-      error: profileError,
+      error:
+        profileError,
     } = await supabase
       .from("profiles")
       .select(`
@@ -2577,7 +2931,10 @@ export const leaderService = {
         last_name,
         avatar_url
       `)
-      .eq("id", accreditation.profile_id)
+      .eq(
+        "id",
+        accreditation.profile_id,
+      )
       .maybeSingle();
 
     if (profileError) {
@@ -2613,10 +2970,14 @@ export const leaderService = {
       );
 
     const {
-      data: leaderCommitteeShiftRows,
-      error: leaderCommitteeShiftError,
+      data:
+        leaderCommitteeShiftRows,
+      error:
+        leaderCommitteeShiftError,
     } = await supabase
-      .from("committee_shifts")
+      .from(
+        "committee_shifts",
+      )
       .select(`
         committee_id,
         shift_id
@@ -2626,7 +2987,9 @@ export const leaderService = {
         leaderCommitteeIds,
       );
 
-    if (leaderCommitteeShiftError) {
+    if (
+      leaderCommitteeShiftError
+    ) {
       console.error(
         "Committee shifts lookup error:",
         leaderCommitteeShiftError,
@@ -2640,7 +3003,10 @@ export const leaderService = {
     }
 
     const leaderShiftIds =
-      (leaderCommitteeShiftRows ?? [])
+      (
+        leaderCommitteeShiftRows ??
+        []
+      )
         .map(
           (row: any) =>
             row.shift_id,
@@ -2661,7 +3027,8 @@ export const leaderService = {
 
     const {
       data: eventShifts,
-      error: eventShiftsError,
+      error:
+        eventShiftsError,
     } = await supabase
       .from("event_shifts")
       .select(`
@@ -2694,28 +3061,51 @@ export const leaderService = {
       };
     }
 
-    const shiftById = new Map(
-      (eventShifts ?? []).map(
-        (shift: any) => [shift.id, shift],
-      ),
-    );
+    const shiftById =
+      new Map(
+        (
+          eventShifts ??
+          []
+        ).map(
+          (shift: any) => [
+            shift.id,
+            shift,
+          ],
+        ),
+      );
 
     const roleIds = [
       ...new Set(
-        (eventShifts ?? [])
-          .map((shift: any) => shift.role_id)
-          .filter((id): id is string => typeof id === "string" && !!id),
+        (
+          eventShifts ??
+          []
+        )
+          .map(
+            (shift: any) =>
+              shift.role_id,
+          )
+          .filter(
+            (
+              id,
+            ): id is string =>
+              typeof id ===
+                "string" &&
+              !!id,
+          ),
       ),
     ];
 
-    let roleById = new Map();
+    let roleById =
+      new Map();
 
     if (roleIds.length) {
       const {
         data: roles,
         error: rolesError,
       } = await supabase
-        .from("event_roles")
+        .from(
+          "event_roles",
+        )
         .select(`
           id,
           name
@@ -2731,19 +3121,29 @@ export const leaderService = {
           rolesError,
         );
       } else {
-        roleById = new Map(
-          (roles ?? []).map(
-            (role: any) => [role.id, role],
-          ),
-        );
+        roleById =
+          new Map(
+            (
+              roles ?? []
+            ).map(
+              (role: any) => [
+                role.id,
+                role,
+              ],
+            ),
+          );
       }
     }
 
     const {
-      data: volunteerAssignments,
-      error: volunteerAssignmentsError,
+      data:
+        volunteerAssignments,
+      error:
+        volunteerAssignmentsError,
     } = await supabase
-      .from("shift_assignments")
+      .from(
+        "shift_assignments",
+      )
       .select(`
         id,
         profile_id,
@@ -2770,7 +3170,9 @@ export const leaderService = {
         },
       );
 
-    if (volunteerAssignmentsError) {
+    if (
+      volunteerAssignmentsError
+    ) {
       console.error(
         "Shift assignment lookup error:",
         volunteerAssignmentsError,
@@ -2784,37 +3186,60 @@ export const leaderService = {
     }
 
     const exactMatches =
-      (volunteerAssignments ?? [])
-        .map((assignment: any) => {
-          const shift = shiftById.get(assignment.shift_id);
+      (
+        volunteerAssignments ??
+        []
+      )
+        .map(
+          (assignment: any) => {
+            const shift =
+              shiftById.get(
+                assignment.shift_id,
+              );
 
-          if (!shift) {
-            return null;
-          }
+            if (!shift) {
+              return null;
+            }
 
-          if (
-            shift.event_id !== accreditation.event_id ||
-            shift.role_id !== accreditation.role_id
-          ) {
-            return null;
-          }
+            /**
+             * The accreditation must match:
+             *
+             * event_id
+             * role_id
+             *
+             * of the actual assigned shift.
+             */
+            if (
+              shift.event_id !==
+                accreditation.event_id ||
+              shift.role_id !==
+                accreditation.role_id
+            ) {
+              return null;
+            }
 
-          const matchedCommittee =
-            leaderCommitteesForEvent.find(
-              (committee) =>
-                (leaderCommitteeShiftRows ?? []).some(
-                  (row: any) =>
-                    row.committee_id === committee.id &&
-                    row.shift_id === assignment.shift_id,
-                ),
-            ) ?? null;
+            const matchedCommittee =
+              leaderCommitteesForEvent.find(
+                (committee) =>
+                  (
+                    leaderCommitteeShiftRows ??
+                    []
+                  ).some(
+                    (row: any) =>
+                      row.committee_id ===
+                        committee.id &&
+                      row.shift_id ===
+                        assignment.shift_id,
+                  ),
+              ) ?? null;
 
-          return {
-            assignment,
-            shift,
-            matchedCommittee,
-          };
-        })
+            return {
+              assignment,
+              shift,
+              matchedCommittee,
+            };
+          },
+        )
         .filter(Boolean);
 
     if (!exactMatches.length) {
@@ -2829,7 +3254,9 @@ export const leaderService = {
       };
     }
 
-    if (exactMatches.length > 1) {
+    if (
+      exactMatches.length > 1
+    ) {
       console.warn(
         "Multiple exact shift assignments found for the same QR code.",
       );
@@ -2841,10 +3268,17 @@ export const leaderService = {
       };
     }
 
-    const exactMatch = exactMatches[0] as any;
-    const assignment = exactMatch.assignment;
-    const shift = exactMatch.shift;
-    const matchedCommittee = exactMatch.matchedCommittee;
+    const exactMatch =
+      exactMatches[0] as any;
+
+    const assignment =
+      exactMatch.assignment;
+
+    const shift =
+      exactMatch.shift;
+
+    const matchedCommittee =
+      exactMatch.matchedCommittee;
 
     if (!matchedCommittee) {
       console.warn(
@@ -2874,9 +3308,12 @@ export const leaderService = {
 
     const {
       data: attendance,
-      error: attendanceError,
+      error:
+        attendanceError,
     } = await supabase
-      .from("attendance_records")
+      .from(
+        "attendance_records",
+      )
       .select(`
         status,
         check_in_time,
@@ -2922,7 +3359,9 @@ export const leaderService = {
           "",
 
         role:
-          roleById.get(shift.role_id)?.name ??
+          roleById.get(
+            shift.role_id,
+          )?.name ??
           "Volunteer",
 
         roleId:
@@ -2949,8 +3388,13 @@ export const leaderService = {
           shift.title ??
           "Assigned shift",
 
+        /**
+         * ALWAYS return the canonical QR stored in DB.
+         *
+         * Never return the scanned/normalized/generated value.
+         */
         accreditationQrCode:
-          normalizedQrCode,
+          accreditation.qr_code_data,
 
         attendanceStatus:
           normalizeAttendanceStatus(
@@ -3008,7 +3452,8 @@ export const leaderService = {
 
     const {
       data: committee,
-      error: committeeError,
+      error:
+        committeeError,
     } = await supabase
       .from("committees")
       .select(`
@@ -3064,7 +3509,8 @@ export const leaderService = {
 
     const {
       data: event,
-      error: eventError,
+      error:
+        eventError,
     } = await supabase
       .from("events")
       .select(`
@@ -3103,9 +3549,12 @@ export const leaderService = {
 
     const {
       data: membership,
-      error: membershipError,
+      error:
+        membershipError,
     } = await supabase
-      .from("committee_members")
+      .from(
+        "committee_members",
+      )
       .select(`
         id,
         profile_id,
@@ -3168,7 +3617,8 @@ export const leaderService = {
     }
 
     const {
-      error: feedbackError,
+      error:
+        feedbackError,
     } = await supabase
       .from(
         "committee_feedback",
@@ -3258,7 +3708,8 @@ export const leaderService = {
 
     const {
       data: assignedShift,
-      error: assignedShiftError,
+      error:
+        assignedShiftError,
     } = await supabase
       .from("event_shifts")
       .select(`
@@ -3293,9 +3744,12 @@ export const leaderService = {
 
     const {
       data: exactAssignment,
-      error: exactAssignmentError,
+      error:
+        exactAssignmentError,
     } = await supabase
-      .from("shift_assignments")
+      .from(
+        "shift_assignments",
+      )
       .select(`
         id,
         profile_id,
@@ -3462,26 +3916,38 @@ export const leaderService = {
     const checkOutEndMinutes =
       shiftEndMinutes + 60;
 
-    if (action === "check-in") {
+    if (
+      action === "check-in"
+    ) {
       const canCheckIn =
-        currentMinutes >= checkInStartMinutes &&
-        currentMinutes <= shiftEndMinutes;
+        currentMinutes >=
+          checkInStartMinutes &&
+        currentMinutes <=
+          shiftEndMinutes;
 
       if (!canCheckIn) {
         throw new Error(
-          `Check-in is allowed from ${formatTime(checkInStartMinutes)} to ${endTime}.`,
+          `Check-in is allowed from ${formatTime(
+            checkInStartMinutes,
+          )} to ${endTime}.`,
         );
       }
     }
 
-    if (action === "check-out") {
+    if (
+      action === "check-out"
+    ) {
       const canCheckOut =
-        currentMinutes >= shiftStartMinutes &&
-        currentMinutes <= checkOutEndMinutes;
+        currentMinutes >=
+          shiftStartMinutes &&
+        currentMinutes <=
+          checkOutEndMinutes;
 
       if (!canCheckOut) {
         throw new Error(
-          `Check-out is allowed from ${startTime} to ${formatTime(checkOutEndMinutes)}.`,
+          `Check-out is allowed from ${startTime} to ${formatTime(
+            checkOutEndMinutes,
+          )}.`,
         );
       }
     }
@@ -3494,7 +3960,9 @@ export const leaderService = {
       data: existing,
       error: existingError,
     } = await supabase
-      .from("attendance_records")
+      .from(
+        "attendance_records",
+      )
       .select(`
         id,
         check_in_time,
@@ -3523,7 +3991,8 @@ export const leaderService = {
 
     if (
       action === "check-in" &&
-      existing?.status === "checked-out"
+      existing?.status ===
+        "checked-out"
     ) {
       throw new Error(
         "This volunteer has already checked out from this shift.",
@@ -3707,5 +4176,4 @@ export const leaderService = {
   },
 };
 
-export default leaderService;
-
+export default leaderService
