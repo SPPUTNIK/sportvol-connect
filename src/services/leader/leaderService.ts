@@ -2726,54 +2726,37 @@ export const leaderService = {
       };
     }
 
+    const now = new Date();
+
+    const currentDate = now.toISOString().slice(0, 10);
+    const currentTime = now.toTimeString().slice(0, 8);
+
     const matchingAssignments =
       (volunteerAssignments ?? []).filter(
-        (assignment: any) =>
-          assignment.shift &&
-          assignment.shift.event_id ===
-            accreditation.event_id &&
-          assignment.shift.role_id ===
-            accreditation.role_id,
-      );
+        (assignment: any) => {
+          const shift = assignment.shift;
 
-    console.log(
-    "QR DEBUG - matchingAssignments:",
-    matchingAssignments,
-  );
+          if (!shift) {
+            return false;
+          }
 
-  console.log(
-    "QR DEBUG - matchingAssignments count:",
-    matchingAssignments.length,
-  );
+          if (
+            shift.event_id !== accreditation.event_id ||
+            shift.role_id !== accreditation.role_id
+          ) {
+            return false;
+          }
 
+          if (shift.date !== currentDate) {
+            return false;
+          }
 
-    if (
-      matchingAssignments.length !==
-      1
-    ) {
-      console.warn(
-        "Expected exactly one matching shift:",
-        {
-          profileId:
-            accreditation.profile_id,
-
-          roleId:
-            accreditation.role_id,
-
-          matches:
-            matchingAssignments.length,
+          return (
+            shift.start_time <= currentTime &&
+            currentTime <= shift.end_time
+          );
         },
       );
-
-      return {
-        ok: false,
-        reason:
-          matchingAssignments.length ===
-          0
-            ? "NO_EXACT_SHIFT_ASSIGNMENT"
-            : "MULTIPLE_EXACT_SHIFT_ASSIGNMENTS",
-      };
-    }
 
     const assignment =
       matchingAssignments[0];
