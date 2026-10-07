@@ -433,19 +433,19 @@ export const leaderService = {
   // COMMITTEES
   // ============================================================
 
-  async getLeaderCommittees(): Promise<
-    LeaderCommittee[]
-  > {
+  async getLeaderCommittees(): Promise<LeaderCommittee[]> {
+    console.log("=== getLeaderCommittees START ===");
+
     const userId = await getCurrentUserId();
+
     console.log("getLeaderCommittees userId:", userId);
 
     if (!userId) {
-      console.error("getLeaderCommittees error:", error);
-      console.error("getLeaderCommittees userId:", userId);
+      console.error("getLeaderCommittees: NO USER ID");
       return [];
     }
 
-    const { data, error } = await supabase
+    const result = await supabase
       .from("committees")
       .select(`
         id,
@@ -459,21 +459,49 @@ export const leaderService = {
       .eq("leader_profile_id", userId)
       .order("created_at", { ascending: false });
 
-    if (error) {
+    console.log(
+      "getLeaderCommittees RAW RESULT:",
+      result,
+    );
+
+    console.log(
+      "getLeaderCommittees DATA:",
+      result.data,
+    );
+
+    console.log(
+      "getLeaderCommittees ERROR:",
+      result.error,
+    );
+
+    if (result.error) {
+      console.error(
+        "getLeaderCommittees query failed:",
+        result.error,
+      );
+
       return [];
     }
 
-    if (!data?.length) {
+    if (!result.data?.length) {
+      console.warn(
+        "getLeaderCommittees: query succeeded but returned 0 rows",
+      );
+
       return [];
     }
+
+    console.log(
+      "getLeaderCommittees found committees:",
+      result.data.length,
+    );
 
     const leader =
       await this.getCurrentLeaderProfile();
 
-    const committees: LeaderCommittee[] =
-      [];
+    const committees: LeaderCommittee[] = [];
 
-    for (const committee of data) {
+    for (const committee of result.data) {
       const { count, error: countError } =
         await supabase
           .from("committee_members")
@@ -481,10 +509,7 @@ export const leaderService = {
             count: "exact",
             head: true,
           })
-          .eq(
-            "committee_id",
-            committee.id,
-          )
+          .eq("committee_id", committee.id)
           .eq("status", "assigned");
 
       if (countError) {
@@ -496,27 +521,24 @@ export const leaderService = {
 
       committees.push({
         id: committee.id,
-        eventId:
-          committee.event_id,
-        name:
-          committee.name,
-        description:
-          committee.description ?? null,
-        status:
-          String(
-            committee.status ??
-              "active",
-          ),
+        eventId: committee.event_id,
+        name: committee.name,
+        description: committee.description ?? null,
+        status: String(committee.status ?? "active"),
         leader: leader
           ? getDisplayName(
               leader.firstName,
               leader.lastName,
             )
           : "Leader",
-        memberCount:
-          count ?? 0,
+        memberCount: count ?? 0,
       });
     }
+
+    console.log(
+      "getLeaderCommittees FINAL:",
+      committees,
+    );
 
     return committees;
   },
