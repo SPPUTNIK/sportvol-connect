@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
+import { VolunteerBottomNav } from "@/components/volunteer/VolunteerBottomNav";
 
 import { notificationService } from "@/services/volunteer/notificationService";
 import { useAuth } from "@/lib/auth";
@@ -411,8 +412,11 @@ export function VolunteerLayout({
         </header>
 
         {/* Page */}
-        <main className="px-5 py-8 sm:px-8 lg:px-10">{children}</main>
+        <main className="px-5 pb-28 pt-8 sm:px-8 lg:px-10 lg:pb-8">
+          {children}
+        </main>
       </div>
+      <VolunteerBottomNav />
     </div>
   );
 }
