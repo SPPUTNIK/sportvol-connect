@@ -38,22 +38,54 @@ const leaderNavigation: NavGroup[] = [
   {
     label: "Leader",
     items: [
-      { label: "Dashboard", href: "/leader/dashboard", icon: LayoutDashboard },
-      { label: "My Event", href: "/leader/event", icon: CalendarDays },
-      { label: "Volunteers", href: "/leader/volunteers", icon: Users },
-      { label: "Shifts", href: "/leader/shifts", icon: Clock3 },
-      { label: "QR Scanner", href: "/leader/scanner", icon: QrCode },
+      {
+        label: "Dashboard",
+        href: "/leader/dashboard",
+        icon: LayoutDashboard,
+      },
+      {
+        label: "My Event",
+        href: "/leader/event",
+        icon: CalendarDays,
+      },
+      {
+        label: "Volunteers",
+        href: "/leader/volunteers",
+        icon: Users,
+      },
+      {
+        label: "Shifts",
+        href: "/leader/shifts",
+        icon: Clock3,
+      },
+      {
+        label: "QR Scanner",
+        href: "/leader/scanner",
+        icon: QrCode,
+      },
     ],
   },
   {
     label: "Account",
     items: [
-      { label: "Profile", href: "/leader/profile", icon: UserRound },
+      {
+        label: "Profile",
+        href: "/leader/profile",
+        icon: UserRound,
+      },
     ],
   },
 ];
 
-function LeaderNavigation({ onNavigate }: { onNavigate: () => void }) {
+type LeaderNavigationProps = {
+  onNavigate: () => void;
+  isMobile?: boolean;
+};
+
+function LeaderNavigation({
+  onNavigate,
+  isMobile = false,
+}: LeaderNavigationProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
@@ -69,22 +101,24 @@ function LeaderNavigation({ onNavigate }: { onNavigate: () => void }) {
   const handleSignOut = async () => {
     try {
       await signOut();
-
       onNavigate();
-
-      await navigate({
-        to: "/login",
-      });
+      await navigate({ to: "/login" });
     } catch (error) {
       console.error("Failed to sign out:", error);
     }
   };
 
   return (
-    <div className="relative flex h-full flex-col overflow-y-auto overflow-x-hidden scrollbar-hide px-4 py-6">
-      <div className="pointer-events-none absolute inset-0 zellij-sidebar-bg opacity-[0.02]" />
+      <div
+        className={cn(
+          "relative flex h-full flex-col overflow-y-auto overflow-x-hidden scrollbar-hide px-4 py-6",
+          isMobile && "pb-28",
+        )}
+      >
+        <div className="pointer-events-none absolute inset-0 zellij-sidebar-bg opacity-[0.02]" />
 
-      <div className="relative flex min-h-full flex-col">
+      <div className="relative flex min-h-full flex-1 flex-col">
+        {/* Logo */}
         <div className="mb-8 flex items-center justify-between px-3">
           <Link
             to="/"
@@ -103,7 +137,6 @@ function LeaderNavigation({ onNavigate }: { onNavigate: () => void }) {
               <p className="font-display text-lg font-semibold tracking-tight">
                 SPORTVOL
               </p>
-
               <p className="text-[0.58rem] uppercase tracking-[0.3em] text-primary">
                 CONNECT
               </p>
@@ -120,6 +153,7 @@ function LeaderNavigation({ onNavigate }: { onNavigate: () => void }) {
           </button>
         </div>
 
+        {/* Navigation links */}
         <nav className="space-y-7">
           {leaderNavigation.map((group) => (
             <div key={group.label}>
@@ -147,15 +181,17 @@ function LeaderNavigation({ onNavigate }: { onNavigate: () => void }) {
 
                       <span>{label}</span>
 
-                      {active ? (
+                      {active && (
                         <ChevronRight className="ml-auto h-4 w-4" />
-                      ) : null}
+                      )}
                     </Link>
                   );
                 })}
               </div>
             </div>
           ))}
+        </nav>
+
         {/* Leader account */}
         <div className="mt-auto pt-8">
           <div className="mb-3 border-t border-border pt-5">
@@ -168,7 +204,6 @@ function LeaderNavigation({ onNavigate }: { onNavigate: () => void }) {
                 <p className="truncate text-sm font-semibold text-foreground">
                   {leaderName}
                 </p>
-
                 <p className="text-xs text-muted-foreground">
                   Leader account
                 </p>
@@ -176,24 +211,23 @@ function LeaderNavigation({ onNavigate }: { onNavigate: () => void }) {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleSignOut}
-            className="flex w-full items-center gap-3 rounded-2xl border border-destructive/15 bg-destructive/5 px-3 py-3 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 active:scale-[0.98]"
-          >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
-              <LogOut className="h-4 w-4" />
-            </span>
+          {/* Sign out appears inside navigation on mobile only */}
+          {isMobile && (
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="flex w-full items-center gap-3 rounded-2xl border border-destructive/15 bg-destructive/5 px-3 py-3 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 active:scale-[0.98]"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
+                <LogOut className="h-4 w-4" />
+              </span>
 
-            <span>Sign out</span>
+              <span>Sign out</span>
 
-            <ChevronRight className="ml-auto h-4 w-4 opacity-60" />
-          </button>
+              <ChevronRight className="ml-auto h-4 w-4 opacity-60" />
+            </button>
+          )}
         </div>
-        </nav>
-
-
-
       </div>
     </div>
   );
@@ -201,13 +235,20 @@ function LeaderNavigation({ onNavigate }: { onNavigate: () => void }) {
 
 export function LeaderLayout({ children }: LeaderLayoutProps) {
   const [open, setOpen] = useState(false);
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
   const [notificationCount, setNotificationCount] = useState(0);
 
   useEffect(() => {
-    void leaderService.getRecentScans().then((items) => {
-      setNotificationCount(items.length);
-    });
+    void leaderService
+      .getRecentScans()
+      .then((items) => {
+        setNotificationCount(items.length);
+      })
+      .catch((error) => {
+        console.error("Failed to load notifications:", error);
+      });
   }, []);
 
   const leaderName = profile
@@ -216,19 +257,49 @@ export function LeaderLayout({ children }: LeaderLayoutProps) {
 
   const displayName = leaderName.split(" ")[0] ?? "Leader";
 
+  const handleDesktopSignOut = async () => {
+    try {
+      await signOut();
+      await navigate({ to: "/login" });
+    } catch (error) {
+      console.error("Failed to sign out:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background/70 text-foreground">
+      {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[272px] overflow-hidden border-r border-border bg-card/80 lg:block">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[url('./assets/zellij-pattern.jpg')] bg-[length:520px_auto] bg-repeat bg-top opacity-[0.06]"
         />
 
-        <div className="relative z-10 h-full">
-          <LeaderNavigation onNavigate={() => setOpen(false)} />
+        <div className="relative z-10 flex h-full flex-col">
+          {/* Navigation: takes the space above the desktop footer */}
+          <div className="min-h-0 flex-1">
+            <LeaderNavigation
+              onNavigate={() => setOpen(false)}
+              isMobile={false}
+            />
+          </div>
+
+          {/* Desktop Sign out: outside LeaderNavigation */}
+          <div className="shrink-0 border-t border-border/70 p-4">
+            <button
+              type="button"
+              onClick={handleDesktopSignOut}
+              className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive active:scale-[0.98]"
+            >
+              <LogOut className="h-4 w-4 shrink-0" />
+              <span>Sign out</span>
+              <ChevronRight className="ml-auto h-4 w-4 opacity-60" />
+            </button>
+          </div>
         </div>
       </aside>
 
+      {/* Mobile navigation drawer */}
       {open && (
         <>
           <button
@@ -238,12 +309,20 @@ export function LeaderLayout({ children }: LeaderLayoutProps) {
             aria-label="Close navigation overlay"
           />
 
-          <aside className="fixed inset-y-0 left-0 z-50 w-[min(86vw,320px)] border-r border-border bg-card/80 lg:hidden">
-            <LeaderNavigation onNavigate={() => setOpen(false)} />
+
+          <aside className="fixed inset-y-0 left-0 z-50 flex w-[min(86vw,320px)] flex-col border-r border-border bg-card/80 lg:hidden">
+            <div className="min-h-0 flex-1">
+              <LeaderNavigation
+                onNavigate={() => setOpen(false)}
+                isMobile
+              />
+            </div>
           </aside>
+
         </>
       )}
 
+      {/* Main content */}
       <div className="lg:pl-[272px]">
         <header className="sticky top-0 z-30 border-b border-border bg-background/60 backdrop-blur-xl">
           <div className="flex h-[72px] items-center justify-between gap-4 px-5 sm:px-8">
@@ -301,6 +380,7 @@ export function LeaderLayout({ children }: LeaderLayoutProps) {
           {children}
         </main>
       </div>
+
       <LeaderBottomNav />
     </div>
   );
