@@ -130,7 +130,7 @@ export const dict: Record<Lang, Dict> = {
       eyebrow: "Together, every event is possible",
       titleLines: ["Morocco's Largest", "Sports Volunteer"],
       titleAccent: "Platform",
-      lead: "Join thousands of passionate volunteers creating unforgettable sporting events across Morocco — from Rabat's marathon lanes to the Atlas climbs.",
+      lead: "Join thousands of passionate volunteers creating unforgettable sporting events across Morocco from Rabat's marathon lanes to the Atlas climbs.",
       ctaPrimary: "Become a volunteer",
       stats: [
         { value: "12,400+", label: "Active volunteers" },
@@ -298,12 +298,9 @@ export const dict: Record<Lang, Dict> = {
       subscribe: "Subscribe",
       sent: "You're on the list. See you at the start line.",
       columns: [
-        { title: "Platform", links: ["Events", "Volunteers", "Organizations", "About"] },
-        { title: "Resources", links: ["Volunteer guide", "Training", "Journal", "Press"] },
         { title: "Support", links: ["Help center", "Privacy", "Terms", "Cookies"] },
       ],
       rights: "All rights reserved.",
-      built: "Built in Casablanca.",
     },
   },
 
@@ -322,7 +319,7 @@ export const dict: Record<Lang, Dict> = {
       eyebrow: "Ensemble, chaque événement est possible",
       titleLines: ["La plus grande", "plateforme de bénévoles"],
       titleAccent: "sportifs du Maroc",
-      lead: "Rejoignez des milliers de bénévoles passionnés qui créent des événements sportifs inoubliables partout au Maroc — des avenues du marathon de Rabat aux sommets de l'Atlas.",
+      lead: "Rejoignez des milliers de bénévoles passionnés qui créent des événements sportifs inoubliables partout au Maroc des avenues du marathon de Rabat aux sommets de l'Atlas.",
       ctaPrimary: "Devenir bénévole",
       stats: [
         { value: "12 400+", label: "Bénévoles actifs" },
@@ -530,7 +527,7 @@ export const dict: Record<Lang, Dict> = {
       eyebrow: "معًا، كل حدث ممكن",
       titleLines: ["أكبر منصة", "للمتطوعين"],
       titleAccent: "الرياضيين بالمغرب",
-      lead: "انضم إلى آلاف المتطوعين الشغوفين الذين يصنعون فعاليات رياضية لا تُنسى في جميع أنحاء المغرب — من مسارات ماراطون الرباط إلى قمم الأطلس.",
+      lead: "انضم إلى آلاف المتطوعين الشغوفين الذين يصنعون فعاليات رياضية لا تُنسى في جميع أنحاء المغرب من مسارات ماراطون الرباط إلى قمم الأطلس.",
       ctaPrimary: "كن متطوعًا",
       stats: [
         { value: "+12,400", label: "متطوع نشيط" },

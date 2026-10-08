@@ -3,7 +3,6 @@ import { useRef } from "react";
 import { ArrowRight, Play } from "lucide-react";
 import heroImg from "@/assets/hero.jpg";
 import { useI18n } from "@/lib/i18n";
-import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Link } from "@tanstack/react-router";
 
 export function Hero() {
@@ -46,7 +45,7 @@ export function Hero() {
             transition={{ delay: 0.25, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="mb-8 flex lg:hidden"
           >
-            <LanguageSwitcher />
+
           </motion.div>
 
           <motion.p
@@ -55,7 +54,6 @@ export function Hero() {
             transition={{ delay: 0.35, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="eyebrow"
           >
-            <span className="size-1.5 rounded-full bg-primary" />
             {t.hero.eyebrow}
           </motion.p>
 

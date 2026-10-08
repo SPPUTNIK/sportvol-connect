@@ -159,7 +159,6 @@ export function Footer() {
           <p>
             © {year ?? ""} VolunSport Morocco. {t.footer.rights}
           </p>
-          <p>{t.footer.built}</p>
         </div>
       </div>
     </footer>

@@ -1,33 +1,46 @@
+
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
-import { Menu, X, ArrowRight } from "lucide-react";
+import {
+  ArrowRight,
+  LogIn,
+  Menu,
+  UserRound,
+  UserPlus,
+  X,
+} from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+
 import logoAsset from "@/assets/volunsport-logo.png";
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+
   const { t } = useI18n();
 
   const links = [
     { label: t.nav.mission, href: "#mission" },
-    { label: t.nav.events, href: "#events" },
     { label: t.nav.journey, href: "#journey" },
-    { label: t.nav.stories, href: "#stories" },
     { label: t.nav.faq, href: "#faq" },
   ];
 
   useEffect(() => {
     const onScroll = () => {
-      setScrolled(window.scrollY > 40);
+      setScrolled(window.scrollY > 30);
     };
 
     const onResize = () => {
       if (window.innerWidth >= 1024) {
         setOpen(false);
+      }
+
+      if (window.innerWidth >= 768) {
+        setProfileOpen(false);
       }
     };
 
@@ -52,114 +65,230 @@ export function Nav() {
 
   const closeMenu = () => setOpen(false);
 
+  const closeProfile = () => setProfileOpen(false);
+
   return (
     <motion.header
-      initial={{ y: -24, opacity: 0 }}
+      initial={{ y: -30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{
-        duration: 0.9,
+        duration: 0.7,
         ease: [0.16, 1, 0.3, 1],
-        delay: 0.2,
+        delay: 0.1,
       }}
       className="fixed inset-x-0 top-0 z-50"
     >
       {/* ======================================================
-          NAV BAR
+          NAVBAR
       ====================================================== */}
+
       <div
-        className={`transition-all duration-500 ${
+        className={[
+          "relative transition-all duration-500",
           scrolled
-            ? "border-b border-hairline-invert/60 bg-ink/85 shadow-[0_8px_40px_rgba(0,0,0,0.12)] backdrop-blur-2xl"
-            : "border-b border-transparent bg-ink/70 backdrop-blur-md"
-        }`}
+            ? "border-b border-white/10 bg-black/5 backdrop-blur-xl"
+            : "bg-transparent",
+        ].join(" ")}
       >
         <nav
           aria-label="Main navigation"
-          className="shell relative flex h-[4.5rem] items-center justify-between gap-4 sm:h-20"
+          className="shell relative flex h-[4.5rem] items-center justify-between gap-3 sm:h-[4.75rem] lg:h-[5.25rem]"
         >
-          {/* Mobile logo — centered */}
+          {/* ==================================================
+              LOGO
+          ================================================== */}
+
           <Link
             to="/"
             aria-label="VolunSport Morocco home"
-            onClick={closeMenu}
-            className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 sm:hidden"
+            onClick={() => {
+              closeMenu();
+              closeProfile();
+            }}
+            className="group shrink-0"
           >
-            <img
-              src={logoAsset}
-              alt="VolunSport Morocco"
-              width={180}
-              height={100}
-              className="h-11 w-auto object-contain"
-            />
+            <div className="relative flex items-center">
+              <div className="absolute -inset-3 rounded-full bg-[#045694]/20 opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-100" />
+
+              <img
+                src={logoAsset}
+                alt="VolunSport Morocco"
+                width={180}
+                height={100}
+                className="relative h-10 w-auto object-contain transition-transform duration-500 group-hover:scale-[1.03] sm:h-12 lg:h-14"
+              />
+
+              {/* Desktop brand text */}
+              <div className="ml-3 hidden border-l border-white/20 pl-3 md:block">
+                <span className="block font-display text-sm font-bold tracking-tight text-white lg:text-base">
+                  VolunSport
+                </span>
+
+                <span className="mt-1 block font-mono text-[0.48rem] uppercase tracking-[0.18em] text-white/55 lg:text-[0.56rem]">
+                  {t.nav.tagline}
+                </span>
+              </div>
+            </div>
           </Link>
 
-          {/* Desktop / tablet logo */}
-          <Link
-            to="/"
-            aria-label="VolunSport Morocco home"
-            onClick={closeMenu}
-            className="hidden shrink-0 items-center gap-3 sm:flex"
-          >
-            <img
-              src={logoAsset}
-              alt="VolunSport Morocco"
-              width={180}
-              height={100}
-              className="h-14 w-auto object-contain lg:h-16"
-            />
+          {/* ==================================================
+              DESKTOP NAVIGATION
+          ================================================== */}
 
-            <span className="leading-none">
-              <span className="block font-display text-sm font-semibold tracking-tight text-primary lg:text-[1.05rem]">
-                VolunSport
-              </span>
-
-              <span className="mt-1 block font-mono text-[0.48rem] uppercase tracking-[0.2em] text-ink-foreground/50 lg:text-[0.6rem]">
-                {t.nav.tagline}
-              </span>
-            </span>
-          </Link>
-
-          {/* Desktop nav */}
           <div className="hidden flex-1 items-center justify-center lg:flex">
-            <div className="flex items-center gap-5 xl:gap-8 2xl:gap-10">
+            <div className="flex items-center gap-1">
               {links.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
-                  className="group relative whitespace-nowrap px-1 py-2 text-[0.8rem] font-medium text-ink-foreground/65 transition-colors duration-300 hover:text-ink-foreground xl:text-sm"
+                  className="group relative px-4 py-3 text-sm font-semibold uppercase tracking-[0.04em] text-white/75 transition-colors duration-300 hover:text-white xl:px-5"
                 >
                   {link.label}
 
-                  <span className="absolute inset-x-1 bottom-0 h-px origin-left scale-x-0 bg-primary transition-transform duration-300 group-hover:scale-x-100" />
+                  <span className="absolute inset-x-4 bottom-1 h-[2px] origin-center scale-x-0 rounded-full bg-[#045694] transition-transform duration-300 group-hover:scale-x-100" />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
-            <div className="hidden md:block">
-              <LanguageSwitcher />
-            </div>
+          {/* ==================================================
+              DESKTOP ACTIONS
+          ================================================== */}
 
+          <div className="hidden items-center gap-3 lg:flex">
+            <LanguageSwitcher />
+
+            {/* Sign in */}
             <Link
-              to="/register"
-              className="hidden items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg md:inline-flex lg:px-5 lg:text-sm"
+              to="/login"
+              className="group inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-[#009F63] via-[#009F63] to-[#009F63] px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-white shadow-[0_8px_25px_rgba(4,86,148,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(4,86,148,0.32)]"
             >
-              {t.nav.join}
-              <ArrowRight className="size-3.5 lg:size-4" />
+              <span>Sign in</span>
+              <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
 
-            {/* Mobile menu */}
+
+          </div>
+
+          {/* ==================================================
+              MOBILE ACTIONS
+          ================================================== */}
+
+          <div className="ml-auto flex items-center gap-2 lg:hidden">
+            {/* Profile */}
+            <div className="relative">
+              <button
+                type="button"
+                aria-label="Account"
+                aria-expanded={profileOpen}
+                onClick={() => {
+                  setProfileOpen((value) => !value);
+                  setOpen(false);
+                }}
+                className={[
+                  "flex size-10 items-center justify-center rounded-md border",
+                  "transition-all duration-300 sm:size-11",
+                  profileOpen
+                    ? "border-white/50 bg-white/15 text-white backdrop-blur-xl"
+                    : "border-white/25 bg-white/5 text-white backdrop-blur-md hover:border-white/50 hover:bg-white/10",
+                ].join(" ")}
+              >
+                <UserRound className="size-[19px]" />
+              </button>
+
+              {/* Profile dropdown */}
+              <AnimatePresence>
+                {profileOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 top-[calc(100%+0.65rem)] w-56 overflow-hidden rounded-xl border border-white/15 bg-black/30 p-1.5 shadow-2xl backdrop-blur-2xl"
+                  >
+                    <div className="px-3 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/45">
+                        Your account
+                      </p>
+
+                      <p className="mt-1 text-sm text-white/70">
+                        Already have an account?
+                      </p>
+                    </div>
+
+                    {/* Sign in */}
+                    <Link
+                      to="/login"
+                      onClick={closeProfile}
+                      className="group flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                    >
+                      <span className="flex size-8 items-center justify-center rounded-md bg-white/10">
+                        <LogIn className="size-4" />
+                      </span>
+
+                      <span>Sign in</span>
+
+                      <ArrowRight className="ml-auto size-4 opacity-40 transition-transform group-hover:translate-x-0.5 group-hover:opacity-100" />
+                    </Link>
+
+                    {/* Join / Sign up */}
+                    <Link
+                      to="/register"
+                      onClick={closeProfile}
+                      className="group mt-1 flex items-center gap-3 rounded-lg bg-[#009F63] px-3 py-3 text-sm font-bold text-white transition-colors hover:bg-[#0878B8]"
+                    >
+                      <span className="flex size-8 items-center justify-center rounded-md bg-white/10">
+                        <UserPlus className="size-4" />
+                      </span>
+
+                      <span>Join now</span>
+
+                      <ArrowRight className="ml-auto size-4 transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Menu */}
             <button
               type="button"
-              onClick={() => setOpen((value) => !value)}
+              onClick={() => {
+                setOpen((value) => !value);
+                setProfileOpen(false);
+              }}
               aria-label={open ? "Close menu" : t.nav.menu}
               aria-expanded={open}
               aria-controls="mobile-navigation"
-              className="flex size-10 items-center justify-center rounded-full border border-hairline-invert/70 bg-white/[0.03] text-ink-foreground transition-all duration-300 hover:border-primary/60 hover:bg-white/[0.06] sm:size-11 lg:hidden"
+              className={[
+                "flex size-10 items-center justify-center rounded-md border",
+                "transition-all duration-300 sm:size-11",
+                open
+                  ? "border-white/50 bg-white/15 text-white backdrop-blur-xl"
+                  : "border-white/25 bg-white/5 text-white backdrop-blur-md hover:border-white/50 hover:bg-white/10",
+              ].join(" ")}
             >
-              {open ? <X className="size-5" /> : <Menu className="size-5" />}
+              <AnimatePresence mode="wait" initial={false}>
+                {open ? (
+                  <motion.span
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                  >
+                    <X className="size-5" />
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                  >
+                    <Menu className="size-5" />
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </button>
           </div>
         </nav>
@@ -168,6 +297,7 @@ export function Nav() {
       {/* ======================================================
           MOBILE MENU
       ====================================================== */}
+
       <AnimatePresence>
         {open && (
           <>
@@ -178,82 +308,54 @@ export function Nav() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
               onClick={closeMenu}
-              className="fixed inset-0 top-[4.5rem] -z-10 bg-black/40 backdrop-blur-sm sm:top-20 lg:hidden"
+              className="fixed inset-0 top-[4.5rem] -z-10 bg-black/20 backdrop-blur-md sm:top-[4.75rem] lg:hidden"
             />
 
             {/* Menu */}
             <motion.div
               id="mobile-navigation"
-              initial={{
-                opacity: 0,
-                y: -12,
-                scale: 0.98,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-                scale: 1,
-              }}
-              exit={{
-                opacity: 0,
-                y: -12,
-                scale: 0.98,
-              }}
+              initial={{ opacity: 0, y: -15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
               transition={{
                 duration: 0.3,
                 ease: [0.16, 1, 0.3, 1],
               }}
-              className="border-b border-hairline-invert/60 bg-ink/95 shadow-2xl backdrop-blur-2xl lg:hidden"
+              className="border-b border-white/10 bg-black/10 backdrop-blur-2xl lg:hidden"
             >
-              <div className="shell max-h-[calc(100vh-4.5rem)] overflow-y-auto py-5 sm:max-h-[calc(100vh-5rem)] sm:py-7">
+              <div className="shell max-h-[calc(100vh-5rem)] overflow-y-auto py-4 sm:py-6">
                 {/* Links */}
-                <div className="divide-y divide-hairline-invert/30">
+                <div className="space-y-1">
                   {links.map((link, index) => (
                     <motion.a
                       key={link.href}
                       href={link.href}
                       onClick={closeMenu}
-                      initial={{
-                        opacity: 0,
-                        x: -12,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        x: 0,
-                      }}
+                      initial={{ opacity: 0, x: -15 }}
+                      animate={{ opacity: 1, x: 0 }}
                       transition={{
-                        delay: 0.04 * index,
+                        delay: index * 0.05,
                         duration: 0.3,
                       }}
-                      className="group flex items-center justify-between py-4 text-lg font-medium text-ink-foreground/80 transition-colors hover:text-primary sm:py-5 sm:text-2xl"
+                      className="group flex items-center justify-between border-b border-white/10 px-2 py-4 text-base font-semibold text-white/85 transition-colors hover:text-white sm:py-5 sm:text-xl"
                     >
                       <span>{link.label}</span>
 
-                      <ArrowRight className="size-4 -translate-x-2 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 sm:size-5" />
+                      <span className="flex size-8 items-center justify-center rounded-full border border-white/20 bg-white/5 transition-all duration-300 group-hover:border-[#045694] group-hover:bg-[#045694]">
+                        <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                      </span>
                     </motion.a>
                   ))}
                 </div>
 
-                {/* Mobile actions */}
-                <div className="mt-6 grid gap-3 border-t border-hairline-invert/30 pt-6 sm:mt-8 sm:pt-8">
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="text-xs font-medium uppercase tracking-[0.16em] text-ink-foreground/40">
-                      Language
-                    </span>
+                {/* Mobile language */}
+                <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-5 sm:mt-7 sm:pt-7">
+                  <span className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-white/45">
+                    Language
+                  </span>
 
-                    <LanguageSwitcher />
-                  </div>
-
-                  <Link
-                    to="/register"
-                    onClick={closeMenu}
-                    className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground transition-transform duration-300 active:scale-[0.98]"
-                  >
-                    {t.nav.join}
-                    <ArrowRight className="size-4" />
-                  </Link>
+                  <LanguageSwitcher />
                 </div>
               </div>
             </motion.div>

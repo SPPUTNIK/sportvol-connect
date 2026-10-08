@@ -78,11 +78,10 @@ export function Impact() {
 
           <Reveal delay={0.15}>
             <div className="mt-6 flex justify-between font-mono text-[0.6rem] uppercase tracking-[0.2em] text-ink-foreground/35">
-              <span>2021</span>
-              <span>2022</span>
               <span>2023</span>
               <span>2024</span>
               <span>2025</span>
+              <span>2026</span>
             </div>
           </Reveal>
         </div>
