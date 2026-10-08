@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
@@ -21,7 +20,9 @@ export function Nav() {
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+
+  const isRTL = lang === "ar";
 
   const links = [
     { label: t.nav.mission, href: "#mission" },
@@ -107,28 +108,30 @@ export function Nav() {
             }}
             className="group shrink-0"
           >
-            <div className="relative flex items-center">
-              <div className="absolute -inset-3 rounded-full bg-[#045694]/20 opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-100" />
+       
+          <div className="relative flex items-center">
+            <div className="absolute -inset-3 rounded-full bg-[#045694]/20 opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-100" />
 
-              <img
-                src={logoAsset}
-                alt="VolunSport Morocco"
-                width={180}
-                height={100}
-                className="relative h-10 w-auto object-contain transition-transform duration-500 group-hover:scale-[1.03] sm:h-12 lg:h-14"
-              />
+            <img
+              src={logoAsset}
+              alt="VolunSport Morocco"
+              width={180}
+              height={100}
+              className="relative h-9 w-auto object-contain transition-transform duration-500 group-hover:scale-[1.03] sm:h-10 lg:h-14"
+            />
 
-              {/* Desktop brand text */}
-              <div className="ml-3 hidden border-l border-white/20 pl-3 md:block">
-                <span className="block font-display text-sm font-bold tracking-tight text-white lg:text-base">
-                  VolunSport
-                </span>
+            {/* Brand text — visible on all devices */}
+            <div className="ms-2 border-s border-white/20 ps-2 sm:ms-3 sm:ps-3">
+              <span className="block font-display text-xs font-bold tracking-tight text-white sm:text-sm lg:text-base">
+                VolunSport
+              </span>
 
-                <span className="mt-1 block font-mono text-[0.48rem] uppercase tracking-[0.18em] text-white/55 lg:text-[0.56rem]">
-                  {t.nav.tagline}
-                </span>
-              </div>
+              <span className="mt-0.5 block font-mono text-[0.38rem] uppercase tracking-[0.12em] text-white/55 sm:mt-1 sm:text-[0.48rem] sm:tracking-[0.18em] lg:text-[0.56rem]">
+                {t.nav.tagline}
+              </span>
             </div>
+          </div>
+
           </Link>
 
           {/* ==================================================
@@ -163,9 +166,8 @@ export function Nav() {
               to="/login"
               className="group inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-[#009F63] via-[#009F63] to-[#009F63] px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-white shadow-[0_8px_25px_rgba(4,86,148,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(4,86,148,0.32)]"
             >
-              <span>Sign in</span>
-              <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
+              <span>{t.nav.signIn}</span>
+              <ArrowRight className="rtl-arrow size-4 transition-transform duration-300 group-hover:translate-x-1" />            </Link>
 
 
           </div>
@@ -174,12 +176,11 @@ export function Nav() {
               MOBILE ACTIONS
           ================================================== */}
 
-          <div className="ml-auto flex items-center gap-2 lg:hidden">
-            {/* Profile */}
+          <div className="ms-auto flex items-center gap-2 lg:hidden">            {/* Profile */}
             <div className="relative">
               <button
                 type="button"
-                aria-label="Account"
+                aria-label={t.nav.account}
                 aria-expanded={profileOpen}
                 onClick={() => {
                   setProfileOpen((value) => !value);
@@ -204,15 +205,15 @@ export function Nav() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.97 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute right-0 top-[calc(100%+0.65rem)] w-56 overflow-hidden rounded-xl border border-white/15 bg-black/30 p-1.5 shadow-2xl backdrop-blur-2xl"
+                    className="absolute end-0 top-[calc(100%+0.65rem)] w-56 overflow-hidden rounded-xl border border-white/15 bg-black/30 p-1.5 shadow-2xl backdrop-blur-2xl"
                   >
                     <div className="px-3 py-3">
                       <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/45">
-                        Your account
+                        {t.nav.account}
                       </p>
 
                       <p className="mt-1 text-sm text-white/70">
-                        Already have an account?
+                        {t.nav.alreadyHaveAccount}
                       </p>
                     </div>
 
@@ -226,7 +227,7 @@ export function Nav() {
                         <LogIn className="size-4" />
                       </span>
 
-                      <span>Sign in</span>
+                      <span>{t.nav.signIn}</span>
 
                       <ArrowRight className="ml-auto size-4 opacity-40 transition-transform group-hover:translate-x-0.5 group-hover:opacity-100" />
                     </Link>
@@ -241,7 +242,7 @@ export function Nav() {
                         <UserPlus className="size-4" />
                       </span>
 
-                      <span>Join now</span>
+                      <span>{t.nav.joinNow}</span>
 
                       <ArrowRight className="ml-auto size-4 transition-transform group-hover:translate-x-0.5" />
                     </Link>
@@ -257,7 +258,7 @@ export function Nav() {
                 setOpen((value) => !value);
                 setProfileOpen(false);
               }}
-              aria-label={open ? "Close menu" : t.nav.menu}
+              aria-label={open ? t.nav.closeMenu : t.nav.menu}
               aria-expanded={open}
               aria-controls="mobile-navigation"
               className={[
@@ -304,7 +305,7 @@ export function Nav() {
             {/* Backdrop */}
             <motion.button
               type="button"
-              aria-label="Close navigation"
+              aria-label={t.nav.closeMenu}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -332,7 +333,7 @@ export function Nav() {
                       key={link.href}
                       href={link.href}
                       onClick={closeMenu}
-                      initial={{ opacity: 0, x: -15 }}
+                      initial={{ opacity: 0, x: isRTL ? 15 : -15 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{
                         delay: index * 0.05,
@@ -352,7 +353,7 @@ export function Nav() {
                 {/* Mobile language */}
                 <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-5 sm:mt-7 sm:pt-7">
                   <span className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-white/45">
-                    Language
+                    {t.nav.language}
                   </span>
 
                   <LanguageSwitcher />

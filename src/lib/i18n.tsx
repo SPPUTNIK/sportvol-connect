@@ -18,6 +18,16 @@ type Dict = {
     join: string;
     menu: string;
     tagline: string;
+
+    // Account / authentication
+    signIn: string;
+    account: string;
+    alreadyHaveAccount: string;
+    noAccount: string;
+    joinNow: string;
+    language: string;
+    home: string;
+    closeMenu: string;
   };
   hero: {
     eyebrow: string;
@@ -125,6 +135,14 @@ export const dict: Record<Lang, Dict> = {
       join: "Join now",
       menu: "Toggle menu",
       tagline: "Moroccan Sports Volunteers",
+      signIn: "Sign in",
+      account: "Your account",
+      alreadyHaveAccount: "Already have an account?",
+      noAccount: "Don't have an account?",
+      joinNow: "Join now",
+      language: "Language",
+      home: "VolunSport Morocco home",
+      closeMenu: "Close menu",
     },
     hero: {
       eyebrow: "Together, every event is possible",
@@ -314,6 +332,14 @@ export const dict: Record<Lang, Dict> = {
       join: "Rejoindre",
       menu: "Ouvrir le menu",
       tagline: "Bénévoles sportifs du Maroc",
+      signIn: "Se connecter",
+      account: "Votre compte",
+      alreadyHaveAccount: "Vous avez déjà un compte ?",
+      noAccount: "Vous n'avez pas encore de compte ?",
+      joinNow: "Rejoindre",
+      language: "Langue",
+      home: "Accueil VolunSport Maroc",
+      closeMenu: "Fermer le menu",
     },
     hero: {
       eyebrow: "Ensemble, chaque événement est possible",
@@ -522,6 +548,14 @@ export const dict: Record<Lang, Dict> = {
       join: "انضم الآن",
       menu: "فتح القائمة",
       tagline: "متطوعو الرياضة بالمغرب",
+      signIn: "تسجيل الدخول",
+      account: "حسابك",
+      alreadyHaveAccount: "لديك حساب بالفعل؟",
+      noAccount: "ليس لديك حساب بعد؟",
+      joinNow: "إنشاء حساب",
+      language: "اللغة",
+      home: "الصفحة الرئيسية لفولنسبورت المغرب",
+      closeMenu: "إغلاق القائمة",
     },
     hero: {
       eyebrow: "معًا، كل حدث ممكن",
