@@ -68,7 +68,7 @@ const steps = [
 ];
 
 const stats = [
-  ["12,400+", "Active volunteers"],
+  ["+1,400", "Active volunteers"],
   ["310", "Events supported"],
   ["64", "Partner organizations"],
   ["148K", "Volunteer hours"],
@@ -159,7 +159,7 @@ function About() {
                     {/* Description */}
                     <p className="mt-8 max-w-2xl text-base leading-relaxed text-white/65 sm:text-lg">
                       VolunSport connects passionate people with the sporting events that bring
-                      Morocco together — creating meaningful opportunities to contribute, learn and
+                      Morocco together creating meaningful opportunities to contribute, learn and
                       belong.
                     </p>
 
@@ -206,7 +206,7 @@ function About() {
                   {/* Right */}
                   <div className="space-y-6 text-base leading-relaxed text-muted-foreground">
                     <p>
-                      Sporting events are powered by thousands of people behind the scenes —
+                      Sporting events are powered by thousands of people behind the scenes
                       welcoming participants, managing information, supporting operations and
                       creating unforgettable experiences.
                     </p>

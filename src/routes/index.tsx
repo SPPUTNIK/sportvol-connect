@@ -13,7 +13,7 @@ import { PublicLayout } from "@/components/layouts/PublicLayout";
 import { I18nProvider } from "@/lib/i18n";
 import { JoinDialog } from "@/components/site/JoinDialog";
 
-const title = "SportVol Morocco — Sports Volunteer Platform";
+const title = "SportVol Morocco - Sports Volunteer Platform";
 const description =
   "Join thousands of volunteers creating unforgettable sporting events across Morocco. Find events, get certified hours and build your sports career.";
 

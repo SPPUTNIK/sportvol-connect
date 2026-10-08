@@ -151,7 +151,7 @@ export const dict: Record<Lang, Dict> = {
       lead: "Join thousands of passionate volunteers creating unforgettable sporting events across Morocco from Rabat's marathon lanes to the Atlas climbs.",
       ctaPrimary: "Become a volunteer",
       stats: [
-        { value: "12,400+", label: "Active volunteers" },
+        { value: "+1,400", label: "Active volunteers" },
         { value: "310", label: "Events staffed" },
         { value: "64", label: "Partner federations" },
         { value: "148K", label: "Volunteer hours" },
@@ -163,7 +163,7 @@ export const dict: Record<Lang, Dict> = {
     mission: {
       eyebrow: "Our mission",
       titleLines: ["We believe sport runs", "on the people beside it."],
-      body: "VolunSport is the operating layer between organizers and the people who make race day happen. Not charity — infrastructure. Built in Morocco, for the clubs, federations and cities shaping its sporting decade.",
+      body: "VolunSport is the operating layer between organizers and the people who make race day happen. Not charity infrastructure. Built in Morocco, for the clubs, federations and cities shaping its sporting decade.",
       points: [
         "Match volunteers to events by skill, city and availability",
         "Federation-grade scheduling, briefings and accreditation",
@@ -299,7 +299,7 @@ export const dict: Record<Lang, Dict> = {
     },
     join: {
       title: "Join VolunSport",
-      body: "Create your volunteer profile — we'll match you with events in your city.",
+      body: "Create your volunteer profile we'll match you with events in your city.",
       name: "Full name",
       email: "Email",
       city: "City",
@@ -307,7 +307,7 @@ export const dict: Record<Lang, Dict> = {
       submit: "Create my profile",
       close: "Close",
       successTitle: "You're in!",
-      successBody: "Check your inbox — your first event matches are on the way.",
+      successBody: "Check your inbox your first event matches are on the way.",
     },
     footer: {
       blurb: "The operating layer connecting volunteers with sporting events across Morocco.",
@@ -360,7 +360,7 @@ export const dict: Record<Lang, Dict> = {
     mission: {
       eyebrow: "Notre mission",
       titleLines: ["Le sport avance grâce", "à celles et ceux qui l'entourent."],
-      body: "VolunSport est la couche opérationnelle entre les organisateurs et celles et ceux qui font vivre le jour de course. Pas de la charité — de l'infrastructure. Conçu au Maroc, pour les clubs, fédérations et villes qui écrivent sa décennie sportive.",
+      body: "VolunSport est la couche opérationnelle entre les organisateurs et celles et ceux qui font vivre le jour de course. Pas de la charité de l'infrastructure. Conçu au Maroc, pour les clubs, fédérations et villes qui écrivent sa décennie sportive.",
       points: [
         "Associer les bénévoles aux événements selon compétences, ville et disponibilité",
         "Planification, briefings et accréditation aux standards des fédérations",
@@ -512,7 +512,7 @@ export const dict: Record<Lang, Dict> = {
     },
     join: {
       title: "Rejoindre VolunSport",
-      body: "Créez votre profil de bénévole — nous vous proposerons des événements dans votre ville.",
+      body: "Créez votre profil de bénévole nous vous proposerons des événements dans votre ville.",
       name: "Nom complet",
       email: "E-mail",
       city: "Ville",
@@ -520,7 +520,7 @@ export const dict: Record<Lang, Dict> = {
       submit: "Créer mon profil",
       close: "Fermer",
       successTitle: "C'est fait !",
-      successBody: "Consultez votre boîte mail — vos premiers événements arrivent.",
+      successBody: "Consultez votre boîte mail vos premiers événements arrivent.",
     },
     footer: {
       blurb: "La couche opérationnelle qui relie les bénévoles aux événements sportifs du Maroc.",
@@ -529,8 +529,6 @@ export const dict: Record<Lang, Dict> = {
       subscribe: "S'abonner",
       sent: "Vous êtes inscrit. À bientôt sur la ligne de départ.",
       columns: [
-        { title: "Plateforme", links: ["Événements", "Bénévoles", "Organisations", "À propos"] },
-        { title: "Ressources", links: ["Guide du bénévole", "Formation", "Journal", "Presse"] },
         { title: "Support", links: ["Centre d'aide", "Confidentialité", "Conditions", "Cookies"] },
       ],
       rights: "Tous droits réservés.",
@@ -564,7 +562,7 @@ export const dict: Record<Lang, Dict> = {
       lead: "انضم إلى آلاف المتطوعين الشغوفين الذين يصنعون فعاليات رياضية لا تُنسى في جميع أنحاء المغرب من مسارات ماراطون الرباط إلى قمم الأطلس.",
       ctaPrimary: "كن متطوعًا",
       stats: [
-        { value: "+12,400", label: "متطوع نشيط" },
+        { value: "+1,400", label: "متطوع نشيط" },
         { value: "310", label: "فعالية مؤطرة" },
         { value: "64", label: "جامعة شريكة" },
         { value: "148K", label: "ساعة تطوع" },
@@ -576,7 +574,7 @@ export const dict: Record<Lang, Dict> = {
     mission: {
       eyebrow: "رسالتنا",
       titleLines: ["الرياضة تنهض", "بالناس الذين يقفون بجانبها."],
-      body: "فولنسبورت هي الطبقة التشغيلية بين المنظمين والأشخاص الذين يصنعون يوم السباق. ليست عملًا خيريًا — بل بنية تحتية. صُنعت في المغرب، للأندية والجامعات والمدن التي تصنع عقده الرياضي.",
+      body: "فولنسبورت هي الطبقة التشغيلية بين المنظمين والأشخاص الذين يصنعون يوم السباق. ليست عملًا خيريًا بل بنية تحتية. صُنعت في المغرب، للأندية والجامعات والمدن التي تصنع عقده الرياضي.",
       points: [
         "مطابقة المتطوعين مع الفعاليات حسب المهارة والمدينة والتوفر",
         "جدولة وإحاطات واعتمادات بمعايير الجامعات الرياضية",
@@ -708,7 +706,7 @@ export const dict: Record<Lang, Dict> = {
     },
     join: {
       title: "انضم إلى فولنسبورت",
-      body: "أنشئ ملف المتطوع الخاص بك — سنقترح عليك فعاليات في مدينتك.",
+      body: "أنشئ ملف المتطوع الخاص بك سنقترح عليك فعاليات في مدينتك.",
       name: "الاسم الكامل",
       email: "البريد الإلكتروني",
       city: "المدينة",
@@ -716,7 +714,7 @@ export const dict: Record<Lang, Dict> = {
       submit: "إنشاء ملفي",
       close: "إغلاق",
       successTitle: "تم تسجيلك!",
-      successBody: "تفقد بريدك — أولى الفعاليات المقترحة في الطريق.",
+      successBody: "تفقد بريدك أولى الفعاليات المقترحة في الطريق.",
     },
     footer: {
       blurb: "الطبقة التشغيلية التي تربط المتطوعين بالفعاليات الرياضية في كل أنحاء المغرب.",
@@ -725,8 +723,6 @@ export const dict: Record<Lang, Dict> = {
       subscribe: "اشترك",
       sent: "تم تسجيلك. نراك على خط الانطلاق.",
       columns: [
-        { title: "المنصة", links: ["الفعاليات", "المتطوعون", "المنظمات", "من نحن"] },
-        { title: "موارد", links: ["دليل المتطوع", "التكوين", "المدونة", "الصحافة"] },
         { title: "الدعم", links: ["مركز المساعدة", "الخصوصية", "الشروط", "الكوكيز"] },
       ],
       rights: "جميع الحقوق محفوظة.",

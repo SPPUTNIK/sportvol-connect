@@ -230,20 +230,6 @@ export function LeaderDashboardPage() {
           }
         />
 
-        <button
-          type="button"
-          onClick={() => void loadDashboard(true)}
-          disabled={refreshing}
-          className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 lg:self-auto"
-        >
-          <RefreshCw
-            className={cn(
-              "h-4 w-4",
-              refreshing && "animate-spin",
-            )}
-          />
-          {refreshing ? "Refreshing…" : "Refresh"}
-        </button>
       </div>
 
       {/* =====================================================
@@ -455,15 +441,17 @@ export function LeaderDashboardPage() {
           TODAY + TEAM
       ===================================================== */}
 
-      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
         {/* TODAY'S SHIFTS */}
-        <VSCard className="rounded-[2rem] border-border">
-          <VSCardContent className="p-6 sm:p-8">
-            <div className="flex items-start justify-between gap-4">
-              <VSSectionHeader
-                title="Today's shifts"
-                description="The shifts currently requiring your attention."
-              />
+        <VSCard className="min-w-0 overflow-hidden rounded-[2rem] border-border">
+          <VSCardContent className="min-w-0 p-4 sm:p-8">
+            <div className="flex min-w-0 items-start justify-between gap-3 sm:gap-4">
+              <div className="min-w-0 flex-1">
+                <VSSectionHeader
+                  title="Today's shifts"
+                  description="The shifts currently requiring your attention."
+                />
+              </div>
 
               <Link
                 to="/leader/shifts"
@@ -473,7 +461,7 @@ export function LeaderDashboardPage() {
               </Link>
             </div>
 
-            <div className="mt-6 space-y-3">
+            <div className="mt-5 min-w-0 space-y-3 sm:mt-6">
               {todayShifts.length === 0 ? (
                 <VSEmptyState
                   title="No shifts today"
@@ -490,25 +478,26 @@ export function LeaderDashboardPage() {
                   return (
                     <div
                       key={shift.id}
-                      className="group rounded-2xl border border-border bg-background p-4 transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-sm"
+                      className="min-w-0 overflow-hidden rounded-2xl border border-border bg-background p-3.5 transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-sm sm:p-4"
                     >
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-1 text-[11px] font-bold text-muted-foreground">
+                      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            <span className="inline-flex max-w-full shrink-0 items-center rounded-full bg-muted px-2.5 py-1 text-[11px] font-bold text-muted-foreground">
                               {shift.startTime} – {shift.endTime}
                             </span>
 
                             <VSStatusBadge status={shift.status} />
                           </div>
 
-                          <h3 className="mt-3 truncate text-base font-bold text-foreground sm:text-lg">
+                          <h3 className="mt-3 min-w-0 break-words text-base font-bold text-foreground sm:text-lg">
                             {shift.title}
                           </h3>
 
-                          <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
+                          <p className="mt-1 flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
                             <MapPin className="h-3.5 w-3.5 shrink-0" />
-                            <span className="truncate">
+
+                            <span className="min-w-0 truncate">
                               {shift.location}
                             </span>
                           </p>
@@ -525,18 +514,18 @@ export function LeaderDashboardPage() {
                         </div>
                       </div>
 
-                      <div className="mt-4">
-                        <div className="mb-2 flex items-center justify-between text-xs">
+                      <div className="mt-4 min-w-0">
+                        <div className="mb-2 flex items-center justify-between gap-3 text-xs">
                           <span className="font-medium text-muted-foreground">
                             Coverage
                           </span>
 
-                          <span className="font-bold text-foreground">
+                          <span className="shrink-0 font-bold text-foreground">
                             {progress}%
                           </span>
                         </div>
 
-                        <div className="h-2 overflow-hidden rounded-full bg-muted">
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                           <div
                             className="h-full rounded-full bg-primary transition-all duration-500"
                             style={{ width: `${progress}%` }}
@@ -545,20 +534,20 @@ export function LeaderDashboardPage() {
                       </div>
 
                       {shift.assignedVolunteers.length > 0 && (
-                        <div className="mt-4 flex flex-wrap gap-1.5">
+                        <div className="mt-4 flex min-w-0 flex-wrap gap-1.5">
                           {shift.assignedVolunteers
                             .slice(0, 5)
                             .map((name) => (
                               <span
                                 key={name}
-                                className="rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground"
+                                className="max-w-full truncate rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground"
                               >
                                 {name}
                               </span>
                             ))}
 
                           {shift.assignedVolunteers.length > 5 && (
-                            <span className="rounded-full border border-border bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                            <span className="shrink-0 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
                               +{shift.assignedVolunteers.length - 5}
                             </span>
                           )}
@@ -573,15 +562,15 @@ export function LeaderDashboardPage() {
         </VSCard>
 
         {/* COMMITTEE */}
-        <VSCard className="rounded-[2rem] border-border">
-          <VSCardContent className="p-6 sm:p-8">
-            <div className="flex items-start justify-between gap-4">
-              <VSSectionHeader
-                title="Your committee"
-                description={
-                  committee?.name ?? "Assigned volunteers"
-                }
-              />
+        <VSCard className="min-w-0 overflow-hidden rounded-[2rem] border-border">
+          <VSCardContent className="min-w-0 p-4 sm:p-8">
+            <div className="flex min-w-0 items-start justify-between gap-3 sm:gap-4">
+              <div className="min-w-0 flex-1">
+                <VSSectionHeader
+                  title="Your committee"
+                  description={committee?.name ?? "Assigned volunteers"}
+                />
+              </div>
 
               <Link
                 to="/leader/volunteers"
@@ -591,7 +580,7 @@ export function LeaderDashboardPage() {
               </Link>
             </div>
 
-            <div className="mt-6 space-y-2.5">
+            <div className="mt-5 min-w-0 space-y-2.5 sm:mt-6">
               {members.length === 0 ? (
                 <VSEmptyState
                   title="No volunteers assigned"
@@ -601,16 +590,16 @@ export function LeaderDashboardPage() {
                 members.slice(0, 6).map((member) => (
                   <div
                     key={member.id}
-                    className="group flex items-center justify-between gap-3 rounded-2xl border border-transparent p-3 transition-all hover:border-border hover:bg-background"
+                    className="flex min-w-0 items-center justify-between gap-2 overflow-hidden rounded-2xl border border-transparent p-2.5 transition-all hover:border-border hover:bg-background sm:gap-3 sm:p-3"
                   >
-                    <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
                       <VSAvatar
                         name={`${member.firstName} ${member.lastName}`}
                         src={member.avatar ?? undefined}
                         size="sm"
                       />
 
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-bold text-foreground">
                           {member.firstName} {member.lastName}
                         </p>
@@ -625,7 +614,9 @@ export function LeaderDashboardPage() {
                       </div>
                     </div>
 
-                    <VSStatusBadge status={member.status} />
+                    <div className="shrink-0">
+                      <VSStatusBadge status={member.status} />
+                    </div>
                   </div>
                 ))
               )}

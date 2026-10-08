@@ -3,7 +3,7 @@ import { Reveal } from "./motion";
 import { useI18n } from "@/lib/i18n";
 
 const figures = [
-  { to: 12400, suffix: "+" },
+  { to: 1400, suffix: "+" },
   { to: 310, suffix: "" },
   { to: 64, suffix: "" },
   { to: 148, suffix: "K" },

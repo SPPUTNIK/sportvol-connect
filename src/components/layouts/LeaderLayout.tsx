@@ -17,6 +17,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { leaderService } from "@/services/leader/leaderService";
+import { LeaderBottomNav } from "@/components/leader/LeaderBottomNav";
 
 export type LeaderLayoutProps = {
   children: ReactNode;
@@ -290,10 +291,11 @@ export function LeaderLayout({ children }: LeaderLayoutProps) {
           </div>
         </header>
 
-        <main className="px-5 py-8 sm:px-8 lg:px-10">
+        <main className="px-5 pb-24 pt-8 sm:px-8 lg:px-10 lg:pb-8">
           {children}
         </main>
       </div>
+      <LeaderBottomNav />
     </div>
   );
 }

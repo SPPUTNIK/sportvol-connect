@@ -228,7 +228,7 @@
 @utility display-xl {
   font-family: var(--font-display);
   font-weight: 600;
-  line-height: 0.92;
+  line-height: 1.09;
   letter-spacing: -0.045em;
   font-size: clamp(2.75rem, 8.2vw, 7rem);
 }

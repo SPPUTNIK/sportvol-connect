@@ -187,11 +187,11 @@ export function Nav() {
                   setOpen(false);
                 }}
                 className={[
-                  "flex size-10 items-center justify-center rounded-md border",
+                  "flex size-10 items-center justify-center rounded-md",
                   "transition-all duration-300 sm:size-11",
                   profileOpen
-                    ? "border-white/50 bg-white/15 text-white backdrop-blur-xl"
-                    : "border-white/25 bg-white/5 text-white backdrop-blur-md hover:border-white/50 hover:bg-white/10",
+                    ? "text-white"
+                    : "text-white  hover:border-white/50 hover:bg-white/10",
                 ].join(" ")}
               >
                 <UserRound className="size-[19px]" />
@@ -262,11 +262,11 @@ export function Nav() {
               aria-expanded={open}
               aria-controls="mobile-navigation"
               className={[
-                "flex size-10 items-center justify-center rounded-md border",
+                "flex size-10 items-center justify-center rounded-md ",
                 "transition-all duration-300 sm:size-11",
                 open
-                  ? "border-white/50 bg-white/15 text-white backdrop-blur-xl"
-                  : "border-white/25 bg-white/5 text-white backdrop-blur-md hover:border-white/50 hover:bg-white/10",
+                  ? " text-white"
+                  : "text-white hover:border-white/50 hover:bg-white/10",
               ].join(" ")}
             >
               <AnimatePresence mode="wait" initial={false}>
