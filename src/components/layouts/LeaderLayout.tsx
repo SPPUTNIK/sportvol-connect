@@ -156,8 +156,6 @@ function LeaderNavigation({ onNavigate }: { onNavigate: () => void }) {
               </div>
             </div>
           ))}
-        </nav>
-
         {/* Leader account */}
         <div className="mt-auto pt-8">
           <div className="mb-3 border-t border-border pt-5">
@@ -181,13 +179,21 @@ function LeaderNavigation({ onNavigate }: { onNavigate: () => void }) {
           <button
             type="button"
             onClick={handleSignOut}
-            className="group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-foreground/70 transition hover:bg-destructive/10 hover:text-destructive"
+            className="flex w-full items-center gap-3 rounded-2xl border border-destructive/15 bg-destructive/5 px-3 py-3 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10 active:scale-[0.98]"
           >
-            <LogOut className="h-4 w-4 shrink-0" />
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
+              <LogOut className="h-4 w-4" />
+            </span>
 
             <span>Sign out</span>
+
+            <ChevronRight className="ml-auto h-4 w-4 opacity-60" />
           </button>
         </div>
+        </nav>
+
+
+
       </div>
     </div>
   );
